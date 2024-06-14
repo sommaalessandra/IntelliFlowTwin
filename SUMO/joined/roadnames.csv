@@ -1,0 +1,87 @@
+nome_via;edge_id;orientamento
+Via Irma Bandiera;a59;NE
+Via Irma Bandiera;a8;SO
+Via Pietro Busacchi;a19;O
+Via Pietro Busacchi;a222b;E
+Via XXI Aprile 1945;a16;O
+Via XXI Aprile 1945;a159;E
+Via Eugenio Curiel;a9;O
+Via Eugenio Curiel;a212;E
+Via Mario Bastia;a82;NO
+Via Mario Bastia;a45;SO
+Via Paolo Giovanni Martini;a75;N
+Via Paolo Giovanni Martini;a33;SO
+Via Gino Onofri;a206;
+Via Francesco Orioli;a32;
+Via Antonio Zoccoli;a28;
+Via Luigi Valeriani;a93;SO
+Via Luigi Valeriani;a153;NE
+Via Antonio Zannoni;a97;
+Via Fernando De Rosa;a48;
+Via Filippo Turati;a195;SO
+Via Filippo Turati;a173;NE
+Via Andrea Costa;a78;SO
+Via Andrea Costa;a115;E
+Via Francesco Roncati;a58;SO
+Via Francesco Roncati;a118;NE
+Via Alessandro Guidotti;a60;S
+Via Alessandro Guidotti;a197;NO
+Via Rodolfo Audinot;a120;NO
+Via Rodolfo Audinot;a131;S
+Via della Crocetta;a191;S
+Via Olindo Guerrini;a171;S
+Via del Carso;a194;N
+Via Montefiorito;a79;SO
+Via Montefiorito;a67;NE
+Viale Carlo Pepoli;a210;SE
+Viale Carlo Pepoli;a113;NO
+Viale Giovanni Vicini;a201;SE
+Viale Giovanni Vicini;a203[1];NO
+Via del Pratello;a166;S
+Via del Pratello;a165;E
+Via Sant'Isaia;a134;O
+Via Sant'Isaia;a133;E
+Via Valdossola;a25;O
+Via Valdossola;a74;NE
+Viale Mohandas Karamchand Gandhi;b1[0];O
+Viale Mohandas Karamchand Gandhi;b2[0];E
+Largo Vittime Lager Nazisti;b22[0];O
+Largo Vittime Lager Nazisti;b21;NE
+Via Marzabotto;b24;SE
+Via Marzabotto;b16[0];NE
+Via Piave;b34[1][2];S
+Via Piave;b34[0];N
+Via del Timavo;b38[0];S
+Via del Timavo;b39[0];N
+Viale Sandro Pertini;b13[0];SO
+Viale Sandro Pertini;b3[1];N
+Via Pasubio;b14;NO
+Via Pasubio;b47;SE
+Via Bruno Monterumici;b28;NO
+Via Bruno Monterumici;b29[0];SE
+Via Ragazzi del '99;b30;NO
+Via Bainsizza;b67;N
+Via Cimabue;b31;SO
+Via Cimabue;b33;NE
+Via Gorizia;b98;E
+Via Gorizia;b96;O
+Via Col di Lana;b97;E
+Via Sabotino;a72 [0];O
+Via Sabotino;a1b;E
+Via Vittorio Veneto;b49[0];SO
+Via Vittorio Veneto;b50[0];NE
+Via Innocenzo Malvasia;b53;SO
+Via Innocenzo Malvasia;b52;NE
+Via Emilia Ponente;b8;NO
+Via Emilia Ponente;b56[1][0];SE
+Via Aurelio Saffi;b35[1][0];NO
+Via Aurelio Saffi;b12;SE
+Via Prati di Caprara;b4[1][1][1];SO
+Via Prati di Caprara;b3[0];N
+Via dell'Ospedale;b64;SO
+Via dell'Ospedale;b65;NE
+Via Montello;a224[0];N
+Viale Antonio Silvani;a204[1][1];SO
+Viale Antonio Silvani;a203[0];NE
+Via San Felice;a54;O
+Via San Felice;a55;E

@@ -1,0 +1,19 @@
+<data>
+  <interval begin="0" end="3600">
+    <edge id="a54" entered="219" />
+    <edge id="b56[1][0]" entered="103" />
+    <edge id="b12" entered="667" />
+    <edge id="a55" entered="68" />
+    <edge id="a191" entered="49" />
+    <edge id="b2[0]" entered="727" />
+    <edge id="b1[0]" entered="1515" />
+    <edge id="b24" entered="65" />
+    <edge id="a204[1][1]" entered="533" />
+    <edge id="b16[0]" entered="263" />
+    <edge id="a93" entered="57" />
+    <edge id="a78[0]" entered="589" />
+    <edge id="a78[0]" entered="591" />
+    <edge id="a54" entered="321" />
+    <edge id="a203[1]" entered="481" />
+  </interval>
+</data>
