@@ -52,7 +52,7 @@ def filter_roads(input_file, road_file, output_file = 'filtered_output.csv', inp
 
 def filter_with_accuracy(file_input, file_accuracy, date_column='data', sensor_id_column='codice_spira', output_file='accurate_output.csv', accepted_percentage=90):
     """
-    The function filters the dataset using accuracy information. Both files must have the date and the ID of the sensor
+    The function filters the traffic_loop_dataset using accuracy information. Both files must have the date and the ID of the sensor
     to be filtered properly. A threshold percentage can be provided to only accept the measurement above that value.
     """
     df1 = pd.read_csv(file_input, sep=';', encoding="UTF-8")

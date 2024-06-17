@@ -1,7 +1,10 @@
 from ngsildclient import Client
-import libraries.preprocessingUtils
+
+import physical_system_startup
 from libraries.constants import *
-from libraries.preprocessingUtils import *
+from libraries.general_utils import *
+from libraries.preprocessing_utils import *
+from libraries.classes.iotagent_adapter import *
 
 if __name__ == "__main__":
 
@@ -26,4 +29,13 @@ if __name__ == "__main__":
     # filter_day(linked_roads)
 
     # After running the platform's containers, a client is instantiated to connect to Orion CB
+
+    envVar = load_env_var(containerEnvPath)
+    cbport = envVar.get("ORIONLD_PORT")
+    iotanorth = envVar.get("IOTA_NORTH_PORT")
+    iotasouth = envVar.get("IOTA_SOUTH_PORT")
     orion = Client("localhost", 1026, tenant="openiot", overwrite=True)
+    IoTAgent = Agent(aid="01", cb_port=cbport, south_port=iotasouth, northport=iotanorth, fw_service="openiot",
+                     fw_path="/")
+
+    tfo, files = physical_system_startup.setup_physicalsystem(IoTAgent)
