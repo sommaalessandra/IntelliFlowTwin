@@ -22,41 +22,41 @@ selectedTimeSlot = "00:00-01:00"
 tlColumnsNames = ["index", selectedTimeSlot, "edge_id", "geopoint", "direzione"]
 
 def setup_physicalsystem(agent_instance):
-    traffic_loop = {}
+    trafficLoop = {}
     tfo = {}
-    natural_number = 1
-    key_length = 26
+    naturalNumber = 1
+    keyLength = 26
 
-    [trafficdata, files] = reading_files(tlPath)
+    [trafficData, files] = reading_files(tlPath)
     # trafficdata = trafficdata[trafficdata['data'].str.contains('01/02/2024')]
     for i, file in enumerate(files):
-        trafficdata[file].columns = tlColumnsNames
+        trafficData[file].columns = tlColumnsNames
 
     ind = 0
     for i, file in enumerate(files):
         # the key is generated here because it is the same for all devices of the same type
-        tfo_keys = generate_random_key(key_length)
-        for index, rows in trafficdata[file].iterrows():
-            if rows['edge_id'] not in traffic_loop.values():
+        tfo_keys = generate_random_key(keyLength)
+        for index, rows in trafficData[file].iterrows():
+            if rows['edge_id'] not in trafficLoop.values():
                 traffic_loop_name = "T{}".format(rows['edge_id'])
-                traffic_loop[ind] = PhysicalSystemConnector(traffic_loop_name, file)
-                tfo_id = "TFO{:03d}".format(natural_number)
+                trafficLoop[ind] = PhysicalSystemConnector(traffic_loop_name, file)
+                tfo_id = "TFO{:03d}".format(naturalNumber)
                 # tfo_keys = generate_random_key(key_length)
-                tfo[i] = Sensor(tfo_id, devicekey=tfo_keys, name="TFO", sensortype="TrafficFlowObserved")
-                traffic_loop[ind].add_sensors(tfo[i])
-                traffic_loop[ind].save_connected_device(outputPath)
+                tfo[index] = Sensor(tfo_id, devicekey=tfo_keys, name="TFO", sensortype="TrafficFlowObserved")
+                trafficLoop[ind].add_sensors(tfo[i])
+                trafficLoop[ind].save_connected_device(outputPath)
                 ind +=1
-                natural_number += 1
+                naturalNumber += 1
 
     # device and measurement registration
-    device_entitytype = "Traffic Loop"
-    for i in traffic_loop:
-        for sensor in traffic_loop[i].sensors:
-            agent_response = agent_instance.device_registration(sensor.device_partial_id, sensor.api_key, device_entitytype)
+    deviceEntityType = "Traffic Loop"
+    for i in trafficLoop:
+        for sensor in trafficLoop[i].sensors:
+            agent_response = agent_instance.device_registration(sensor.device_partial_id, sensor.api_key, deviceEntityType)
             if agent_response is not None:
                 entitytype = "Device"
                 timezone = "Europe/Rome"
-                static_attribute = "urn:ngsi-ld:TrafficFlowObserved:{}".format(traffic_loop[i].name_identifier)
+                static_attribute = "urn:ngsi-ld:TrafficFlowObserved:{}".format(trafficLoop[i].name_identifier)
                 if sensor.name == "TFO":
                     # if the devices has not been previously registered -> device measurement must be registered
                     measurement_type = "location"
@@ -67,3 +67,29 @@ def setup_physicalsystem(agent_instance):
                     raise TypeError("Only Traffic Flow Observed type is allowed")
     # result = bus
     return tfo, files
+
+def start_physicalsystem(trafficLoop: dict[int, PhysicalSystemConnector]):
+    """
+    Starts the simulation of data transmission for each bus using threading.
+
+    :param bus: A dictionary of buses initialized in the setup_physicalsystem function.
+    """
+    # STEP 3. DEVICE MEASUREMENTS TRANSMISSION SIMULATION
+    [trafficData, files] = reading_files(tlPath)
+    for i, file in enumerate(files):
+        trafficData[file].columns = tlColumnsNames
+    # Stop data from GTFS are needed to identify latitue and longitude NOT USEFUL
+    # stopdata = pd.read_csv(stopdata_path)
+
+    # Create and start a thread for each bus to simulate data processing
+    # threads = []
+    # for i, file in enumerate(files):
+    #     thread = threading.Thread(target=processingTlData, args=(trafficData[file], trafficLoop[i]))
+    #     threads.append(thread)
+    #     thread.start()
+    #
+    # # Wait for all threads to finish
+    # for thread in threads:
+    #     thread.join()
+
+    processingTlData(trafficData,trafficLoop)

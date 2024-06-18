@@ -47,3 +47,11 @@ def load_env_var(file_path):
 #         delta, last_datetime = delay_calculation(actual_datetime, last_datetime)
 #         # print(delta)
 #         time.sleep(delta)
+
+def processingTlData(trafficData, trafficLoop):
+    # for index, row in trafficData.iterrows():
+    #     direction = row["direzione"]
+    for key, value in trafficData.items():
+        direction = value
+        print(key)
+

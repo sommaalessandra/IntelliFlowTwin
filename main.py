@@ -1,10 +1,11 @@
+import multiprocessing
 from ngsildclient import Client
-
 import physical_system_startup
 from libraries.constants import *
 from libraries.general_utils import *
 from libraries.preprocessing_utils import *
 from libraries.classes.iotagent_adapter import *
+from physical_system_startup import *
 
 if __name__ == "__main__":
 
@@ -39,3 +40,7 @@ if __name__ == "__main__":
                      fw_path="/")
 
     tfo, files = physical_system_startup.setup_physicalsystem(IoTAgent)
+
+    # process = multiprocessing.Process(target=start_physicalsystem, args=(tfo,))
+    # process.start()
+    start_physicalsystem(tfo)
