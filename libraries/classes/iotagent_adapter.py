@@ -115,18 +115,23 @@ class Agent:
 
     def retrieving_data(self, *data, device_id, device_key):
         # --------- to be ADDED: CHECK IF DEVICE ID AND DEVICE KEY EXISTS OTHERWISE RAISE EXCEPTION
-        if "GPS" in device_id:
+        if "GPS" in str(device_id):
             # print("Processing location data...")
             coordinates = data[0][0]
             timestamp = data[0][1]
             arrivaltime = data[0][2]
             self.sending_location(coordinates, timestamp, arrivaltime, device_id=device_id, device_key=device_key)
-        elif "APC" in device_id:
+        elif "APC" in str(device_id):
             # print("Processing occupancy data...")
             occupancy = data[0][0]
             timestamp = data[0][1]
             arrivaltime = data[0][2]
             self.sending_occupancy(occupancy, timestamp, arrivaltime, device_id=device_id, device_key=device_key)
+        elif isinstance(device_id,int):
+            flow = data[0][0]
+            coordinates = data[0][1]
+            direction = data[0][2]
+            self.sending_flow(flow, coordinates, direction, device_id=device_id, device_key=device_key)
         else:
             raise TypeError("Unkwown device type")
 
@@ -139,7 +144,11 @@ class Agent:
         self.measurement_sending(occupancy, timestamp, arrivaltime, measure_type="occupancy",
                                  device_key=device_key, device_id=device_id)
 
-    def measurement_sending(self, value, timestamp, arrivaltime, measure_type, device_key, device_id):
+    def sending_flow(self, flow, coordinates, direction, device_id, device_key):
+        self.measurement_sending(flow, coordinates, direction, measure_type="intensity",
+                                 device_key=device_key, device_id=device_id)
+
+    def measurement_sending(self, flow, coordinates, direction, measure_type, device_key, device_id):
         url_sending = "http://localhost:{}/iot/json?k={}&i={}".format(self.agent_southport_number,
                                                                       device_key, device_id)
         # print(url_sending)
@@ -150,20 +159,14 @@ class Agent:
         header["fiware-servicepath"] = "/"
 
         payload = {}
-        if measure_type == "location":
+        if measure_type == "intensity":
             payload = {
+                "intensity": int(flow),
                 "location": {
                     "type": "Point",
-                    "coordinates": value
+                    "coordinates": coordinates
                 },
-                "timestamp": timestamp,
-                "arrivaltime": arrivaltime
-            }
-        elif measure_type == "occupancy":
-            payload = {
-                "occupancy": int(value),
-                "timestamp": timestamp,
-                "arrivaltime": arrivaltime
+                "laneDirection": direction
             }
         # print(payload)
         sending_response = requests.post(url_sending, headers=header, data=json.dumps(payload))

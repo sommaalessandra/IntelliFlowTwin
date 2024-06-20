@@ -39,8 +39,8 @@ if __name__ == "__main__":
     IoTAgent = Agent(aid="01", cb_port=cbport, south_port=iotasouth, northport=iotanorth, fw_service="openiot",
                      fw_path="/")
 
-    tfo, files = physical_system_startup.setup_physicalsystem(IoTAgent)
+    trafficLoop, files = physical_system_startup.setup_physicalsystem(IoTAgent)
 
     # process = multiprocessing.Process(target=start_physicalsystem, args=(tfo,))
     # process.start()
-    start_physicalsystem(tfo)
+    start_physicalsystem(trafficLoop)

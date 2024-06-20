@@ -15,11 +15,12 @@
 
 from libraries.constants import *
 from libraries.classes.physical_adapter import *
+from libraries.classes.iotagent_adapter import Agent
 import threading
 
 # the time slot column reports the number of cars that passed through a traffic loop sensor during that time frame
 selectedTimeSlot = "00:00-01:00"
-tlColumnsNames = ["index", selectedTimeSlot, "edge_id", "geopoint", "direzione"]
+tlColumnsNames = ["index", "ID_loop", selectedTimeSlot, "edge_id", "geopoint", "direzione"]
 
 def setup_physicalsystem(agent_instance):
     trafficLoop = {}
@@ -38,12 +39,15 @@ def setup_physicalsystem(agent_instance):
         tfo_keys = generate_random_key(keyLength)
         for index, rows in trafficData[file].iterrows():
             if rows['edge_id'] not in trafficLoop.values():
-                traffic_loop_name = "T{}".format(rows['edge_id'])
+                traffic_loop_name = "T{}".format(naturalNumber)
                 trafficLoop[ind] = PhysicalSystemConnector(traffic_loop_name, file)
-                tfo_id = "TFO{:03d}".format(naturalNumber)
+                # tfo_id = "TFO{:03d}".format(naturalNumber)
+                # tfo_id = rows['edge_id']
+                tfo_id = rows["ID_loop"]
                 # tfo_keys = generate_random_key(key_length)
-                tfo[index] = Sensor(tfo_id, devicekey=tfo_keys, name="TFO", sensortype="TrafficFlowObserved")
-                trafficLoop[ind].add_sensors(tfo[i])
+                tfo[ind] = Sensor(tfo_id, devicekey=tfo_keys, name="TFO", sensortype="TrafficFlowObserved")
+                tfo[ind].set_data_callback(agent_instance.retrieving_data)
+                trafficLoop[ind].add_sensors(tfo[ind])
                 trafficLoop[ind].save_connected_device(outputPath)
                 ind +=1
                 naturalNumber += 1
@@ -66,7 +70,7 @@ def setup_physicalsystem(agent_instance):
                 else:
                     raise TypeError("Only Traffic Flow Observed type is allowed")
     # result = bus
-    return tfo, files
+    return trafficLoop, files
 
 def start_physicalsystem(trafficLoop: dict[int, PhysicalSystemConnector]):
     """

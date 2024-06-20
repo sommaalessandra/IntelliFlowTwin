@@ -2,6 +2,7 @@ import os
 import pandas as pd
 import string
 import secrets
+from datetime import datetime
 
 def reading_files(folder):
     files = os.listdir(folder)
@@ -28,6 +29,14 @@ def load_env_var(file_path):
                 env_vars[key.strip()] = value.strip()  # removing leading or trailing spaces
     return env_vars
 
+# function to calculate difference between actual and previous date time of dataset entries to properly simulate devices
+def delay_calculation(actual_datetime, last_datetime):
+    if last_datetime == -1:
+        last_datetime = actual_datetime
+    delta = int((actual_datetime - last_datetime).total_seconds()) / 100000
+    last_datetime = actual_datetime
+
+    return delta, last_datetime
 
 # TODO: change/create new processing function for properly collect data from traffic loops
 # def processing_bus_data(busdata, stopdata, bus):
@@ -48,10 +57,21 @@ def load_env_var(file_path):
 #         # print(delta)
 #         time.sleep(delta)
 
+# TODO: handle multiple hours time-slots in such a way that the sending of data is proportional
+#  to the time of the measurement
 def processingTlData(trafficData, trafficLoop):
     # for index, row in trafficData.iterrows():
     #     direction = row["direzione"]
-    for key, value in trafficData.items():
-        direction = value
-        print(key)
+    # iterate through collected data
+    for key, values in trafficData.items():
+        # iterate through registered devices
+        for ind,device in trafficLoop.items():
+            # look for sensor belonging to device (only one in the traffic loop case)
+            for sensor in device.sensors:
+                if sensor.name == "TFO":
+                    tl = values.loc[values["ID_loop"] == sensor.device_partial_id]
+                    flow = tl["00:00-01:00"].values[0]
+                    coordinates = str(tl["geopoint"].values[0])
+                    direction = str(tl["direzione"].values[0])
+                    sensor.send_data(flow, coordinates, direction,device_id=sensor.device_partial_id, device_key=sensor.api_key)
 
