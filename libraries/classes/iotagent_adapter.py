@@ -69,7 +69,7 @@ class Agent:
 
         payload = {}
         # TODO: check if this type is compliant to the one of the FIWARE SDM
-        if measure_type == "location":
+        if measure_type == "intensity":
             payload = {
                 "devices": [
                     {
@@ -78,56 +78,21 @@ class Agent:
                         "entity_type": entity_type,
                         "timezone": timezone,
                         "attributes": [
-                            {"object_id": "location", "name": "location", "type": "geo:point"},
-                            {"object_id": "timestamp", "name": "timestamp", "type": "DateTime"},
-                            {"object_id": "arrivaltime", "name": "arrivaltime", "type": "DateTime"}
-                        ],
-                        "static_attributes": [
-                            {"name": "deviceCategory", "type": "Text", "value": "Sensor"},
-                            {"name": "controlledAsset", "type": "Relationship", "value": controlled_asset}
-                        ]
-                    }
-                ]
-            }
-        # left here, could remove it later
-        elif measure_type == "occupancy":
-            payload = {
-                "devices": [
-                    {
-                        "device_id": device_id,
-                        "entity_name": "urn:ngsi-ld:{}:{}".format(entity_type, device_id),
-                        "entity_type": entity_type,
-                        "timezone": timezone,
-                        "attributes": [
-                            {"object_id": "occupancy", "name": "occupancy", "type": "Integer"},
-                            {"object_id": "timestamp", "name": "timestamp", "type": "DateTime"},
-                            {"object_id": "arrivaltime", "name": "arrivaltime", "type": "DateTime"}
+                            {"object_id": "intensity", "name": "intensity", "type": "Integer"},
+                            {"object_id": "timestamp", "name": "timestamp", "type": "DateTime"}
                         ],
                         "static_attributes": [
                             {"name": "deviceCategory", "type": "Text", "value": "Sensor"},
                             {"name": "controlledAsset", "type": "Relationship", "value": controlled_asset}
                         ]
                     }]}
-
         # print(payload)
         reg_response = requests.post(url_registration, headers=header, data=json.dumps(payload))
         return reg_response
 
     def retrieving_data(self, *data, device_id, device_key):
         # --------- to be ADDED: CHECK IF DEVICE ID AND DEVICE KEY EXISTS OTHERWISE RAISE EXCEPTION
-        if "GPS" in str(device_id):
-            # print("Processing location data...")
-            coordinates = data[0][0]
-            timestamp = data[0][1]
-            arrivaltime = data[0][2]
-            self.sending_location(coordinates, timestamp, arrivaltime, device_id=device_id, device_key=device_key)
-        elif "APC" in str(device_id):
-            # print("Processing occupancy data...")
-            occupancy = data[0][0]
-            timestamp = data[0][1]
-            arrivaltime = data[0][2]
-            self.sending_occupancy(occupancy, timestamp, arrivaltime, device_id=device_id, device_key=device_key)
-        elif isinstance(device_id,int):
+        if isinstance(device_id,int):
             flow = data[0][0]
             coordinates = data[0][1]
             direction = data[0][2]

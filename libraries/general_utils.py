@@ -72,6 +72,6 @@ def processingTlData(trafficData, trafficLoop):
                     tl = values.loc[values["ID_loop"] == sensor.device_partial_id]
                     flow = tl["00:00-01:00"].values[0]
                     coordinates = str(tl["geopoint"].values[0])
-                    direction = str(tl["direzione"].values[0])
+                    direction = str(tl["direction"].values[0])
                     sensor.send_data(flow, coordinates, direction,device_id=sensor.device_partial_id, device_key=sensor.api_key)
 

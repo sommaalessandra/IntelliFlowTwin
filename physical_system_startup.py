@@ -20,7 +20,7 @@ import threading
 
 # the time slot column reports the number of cars that passed through a traffic loop sensor during that time frame
 selectedTimeSlot = "00:00-01:00"
-tlColumnsNames = ["index", "ID_loop", selectedTimeSlot, "edge_id", "geopoint", "direzione"]
+tlColumnsNames = ["index", "ID_loop", selectedTimeSlot, "edge_id", "geopoint", "direction"]
 
 def setup_physicalsystem(agent_instance):
     trafficLoop = {}
@@ -53,7 +53,7 @@ def setup_physicalsystem(agent_instance):
                 naturalNumber += 1
 
     # device and measurement registration
-    deviceEntityType = "Traffic Loop"
+    deviceEntityType = "TrafficFlowObserved"
     for i in trafficLoop:
         for sensor in trafficLoop[i].sensors:
             agent_response = agent_instance.device_registration(sensor.device_partial_id, sensor.api_key, deviceEntityType)
@@ -63,7 +63,8 @@ def setup_physicalsystem(agent_instance):
                 static_attribute = "urn:ngsi-ld:TrafficFlowObserved:{}".format(trafficLoop[i].name_identifier)
                 if sensor.name == "TFO":
                     # if the devices has not been previously registered -> device measurement must be registered
-                    measurement_type = "location"
+                    # TODO: change measurement_type
+                    measurement_type = "intensity"
                     measurement_response = agent_instance.measurement_registration(measurement_type, sensor.device_partial_id,
                                                                                    entitytype, timezone,
                                                                                    static_attribute)
