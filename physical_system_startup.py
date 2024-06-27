@@ -32,7 +32,6 @@ def setup_physicalsystem(agent_instance):
     # trafficdata = trafficdata[trafficdata['data'].str.contains('01/02/2024')]
     for i, file in enumerate(files):
         trafficData[file].columns = tlColumnsNames
-
     ind = 0
     for i, file in enumerate(files):
         # the key is generated here because it is the same for all devices of the same type
@@ -40,14 +39,14 @@ def setup_physicalsystem(agent_instance):
         for index, rows in trafficData[file].iterrows():
             if rows['edge_id'] not in trafficLoop.values():
                 traffic_loop_name = "T{}".format(naturalNumber)
-                trafficLoop[ind] = PhysicalSystemConnector(traffic_loop_name, file)
+                trafficLoop[ind] = PhysicalSystemConnector(naturalNumber, traffic_loop_name)
                 # tfo_id = "TFO{:03d}".format(naturalNumber)
                 # tfo_id = rows['edge_id']
-                tfo_id = rows["ID_loop"]
-                # tfo_keys = generate_random_key(key_length)
+                tfo_id = str(rows["ID_loop"])
                 tfo[ind] = Sensor(tfo_id, devicekey=tfo_keys, name="TFO", sensortype="TrafficFlowObserved")
-                tfo[ind].set_data_callback(agent_instance.retrieving_data)
+                tfo[ind].set_data_callback(agent_instance.retrievingData)
                 trafficLoop[ind].add_sensors(tfo[ind])
+                ### TODO: check to be added to avoid creating the same device inside the file
                 trafficLoop[ind].save_connected_device(outputPath)
                 ind +=1
                 naturalNumber += 1
@@ -56,16 +55,16 @@ def setup_physicalsystem(agent_instance):
     deviceEntityType = "TrafficFlowObserved"
     for i in trafficLoop:
         for sensor in trafficLoop[i].sensors:
-            agent_response = agent_instance.device_registration(sensor.device_partial_id, sensor.api_key, deviceEntityType)
+            # Service Group Registration
+            agent_response = agent_instance.serviceGroupRegistration(sensor.device_partial_id, sensor.api_key, deviceEntityType)
             if agent_response is not None:
-                entitytype = "Device"
+                entitytype = "TrafficFlowObserved"
                 timezone = "Europe/Rome"
-                static_attribute = "urn:ngsi-ld:TrafficFlowObserved:{}".format(trafficLoop[i].name_identifier)
+                static_attribute = "urn:ngsi-ld:TrafficLoop:{}".format(trafficLoop[i].name_identifier)
                 if sensor.name == "TFO":
                     # if the devices has not been previously registered -> device measurement must be registered
-                    # TODO: change measurement_type
                     measurement_type = "intensity"
-                    measurement_response = agent_instance.measurement_registration(measurement_type, sensor.device_partial_id,
+                    measurement_response = agent_instance.measurementRegistration(measurement_type, sensor.device_partial_id,
                                                                                    entitytype, timezone,
                                                                                    static_attribute)
                 else:
@@ -83,18 +82,4 @@ def start_physicalsystem(trafficLoop: dict[int, PhysicalSystemConnector]):
     [trafficData, files] = reading_files(tlPath)
     for i, file in enumerate(files):
         trafficData[file].columns = tlColumnsNames
-    # Stop data from GTFS are needed to identify latitue and longitude NOT USEFUL
-    # stopdata = pd.read_csv(stopdata_path)
-
-    # Create and start a thread for each bus to simulate data processing
-    # threads = []
-    # for i, file in enumerate(files):
-    #     thread = threading.Thread(target=processingTlData, args=(trafficData[file], trafficLoop[i]))
-    #     threads.append(thread)
-    #     thread.start()
-    #
-    # # Wait for all threads to finish
-    # for thread in threads:
-    #     thread.join()
-
     processingTlData(trafficData,trafficLoop)

@@ -19,20 +19,37 @@ class Agent:
         self.fiware_service = fw_service
         self.fiware_service_path = fw_path
 
-    def is_device_registered(self, device_id):
+    def isServiceGroupRegistered(self, entity_type):
+        # Check if the device is already registered
+        url = "http://localhost:{}/iot/services".format(self.agent_northport_number)
+        header = CaseInsensitiveDict()
+        header["fiware-service"] = self.fiware_service
+        header["fiware-servicepath"] = self.fiware_service_path
+        response = requests.get(url, headers=header)
+        # this check is too raw for me
+        if entity_type in response.text:
+            print("Entity type found inside the body response")
+            return True
+        else:
+            return False
+    def isDeviceRegistered(self, device_id):
         # Check if the device is already registered
         url = "http://localhost:{}/iot/devices/{}".format(self.agent_northport_number, device_id)
         header = CaseInsensitiveDict()
         header["fiware-service"] = self.fiware_service
         header["fiware-servicepath"] = self.fiware_service_path
         response = requests.get(url, headers=header)
-        return response.status_code == 200
-
-    def device_registration(self, device_id, api_key, entity_type):
-        # register a device in the IoT Agent (JSON version)
-        if self.is_device_registered(device_id):
-            print("Device is already registered. Skipping registration.")
-            return
+        # this check is too raw for me
+        if response.status_code == 200:
+            print("Device found")
+            return True
+        else:
+            return False
+    def serviceGroupRegistration(self, device_id, api_key, entity_type):
+        # register a Service Group in the IoT Agent (JSON version)
+        if self.isServiceGroupRegistered(entity_type):
+            print("Service is already registered. Skipping registration.")
+            return True
 
         url_registration = "http://localhost:{}/iot/services".format(self.agent_northport_number)
         # print(url_registration)
@@ -59,7 +76,10 @@ class Agent:
         return reg_response
 
 # TODO: from here on, functions to be changed
-    def measurement_registration(self, measure_type, device_id, entity_type, timezone, controlled_asset):
+    def measurementRegistration(self, measure_type, device_id, entity_type, timezone, controlled_asset):
+        if self.isDeviceRegistered(device_id):
+            print("Device is already registered. Skipping registration.")
+            return True
         url_registration = "http://localhost:{}/iot/devices".format(self.agent_northport_number)
         # building packet header and payload
         header = CaseInsensitiveDict()
@@ -90,30 +110,17 @@ class Agent:
         reg_response = requests.post(url_registration, headers=header, data=json.dumps(payload))
         return reg_response
 
-    def retrieving_data(self, *data, device_id, device_key):
+    def retrievingData(self, *data, device_id, device_key):
         # --------- to be ADDED: CHECK IF DEVICE ID AND DEVICE KEY EXISTS OTHERWISE RAISE EXCEPTION
-        if isinstance(device_id,int):
-            flow = data[0][0]
-            coordinates = data[0][1]
-            direction = data[0][2]
-            self.sending_flow(flow, coordinates, direction, device_id=device_id, device_key=device_key)
-        else:
-            raise TypeError("Unkwown device type")
 
-    def sending_location(self, coordinates, timestamp, arrivaltime, device_id, device_key):
-        # coordinates = ast.literal_eval(coordinates)
-        self.measurement_sending(coordinates, timestamp, arrivaltime, measure_type="location",
-                                 device_key=device_key, device_id=device_id)
+        flow = data[0][0]
+        coordinates = data[0][1]
+        direction = data[0][2]
+        self.measurementSending(flow, coordinates, direction, measure_type="intensity", device_key=device_key, device_id=device_id)
 
-    def sending_occupancy(self, occupancy, timestamp, arrivaltime, device_id, device_key):
-        self.measurement_sending(occupancy, timestamp, arrivaltime, measure_type="occupancy",
-                                 device_key=device_key, device_id=device_id)
 
-    def sending_flow(self, flow, coordinates, direction, device_id, device_key):
-        self.measurement_sending(flow, coordinates, direction, measure_type="intensity",
-                                 device_key=device_key, device_id=device_id)
 
-    def measurement_sending(self, flow, coordinates, direction, measure_type, device_key, device_id):
+    def measurementSending(self, flow, coordinates, direction, measure_type, device_key, device_id):
         url_sending = "http://localhost:{}/iot/json?k={}&i={}".format(self.agent_southport_number,
                                                                       device_key, device_id)
         # print(url_sending)

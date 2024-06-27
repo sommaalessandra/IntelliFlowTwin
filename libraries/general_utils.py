@@ -38,24 +38,6 @@ def delay_calculation(actual_datetime, last_datetime):
 
     return delta, last_datetime
 
-# TODO: change/create new processing function for properly collect data from traffic loops
-# def processing_bus_data(busdata, stopdata, bus):
-#     last_datetime = -1
-#     for index, row in busdata.iterrows():
-#         latitude, longitude = find_lat_long(row, stopdata)
-#         coordinates = [latitude, longitude]
-#         timestamp = str(datetime.strptime(row["Time stamp"], "%Y-%m-%d %H:%M:%S"))
-#         occupancy = row["Occupancy"]
-#         # print(coordinates, occupancy)
-#         actual_datetime = datetime.strptime(row["Actual arrival time"], "%Y-%m-%d %H:%M:%S")
-#         for sensor in bus.sensors:
-#             if sensor.name == "GPS":
-#                 sensor.send_data(coordinates, timestamp, str(actual_datetime), device_id=sensor.device_id, device_key=sensor.api_key)
-#             elif sensor.name == "APC":
-#                 sensor.send_data(occupancy, timestamp, str(actual_datetime), device_id=sensor.device_id, device_key=sensor.api_key)
-#         delta, last_datetime = delay_calculation(actual_datetime, last_datetime)
-#         # print(delta)
-#         time.sleep(delta)
 
 # TODO: handle multiple hours time-slots in such a way that the sending of data is proportional
 #  to the time of the measurement
@@ -65,11 +47,11 @@ def processingTlData(trafficData, trafficLoop):
     # iterate through collected data
     for key, values in trafficData.items():
         # iterate through registered devices
-        for ind,device in trafficLoop.items():
+        for ind, device in trafficLoop.items():
             # look for sensor belonging to device (only one in the traffic loop case)
             for sensor in device.sensors:
                 if sensor.name == "TFO":
-                    tl = values.loc[values["ID_loop"] == sensor.device_partial_id]
+                    tl = values.loc[values["ID_loop"] == int(sensor.device_partial_id)]
                     flow = tl["00:00-01:00"].values[0]
                     coordinates = str(tl["geopoint"].values[0])
                     direction = str(tl["direction"].values[0])
