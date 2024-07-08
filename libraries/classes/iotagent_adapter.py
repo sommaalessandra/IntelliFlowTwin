@@ -45,6 +45,7 @@ class Agent:
             return True
         else:
             return False
+
     def serviceGroupRegistration(self, device_id, api_key, entity_type):
         # register a Service Group in the IoT Agent (JSON version)
         if self.isServiceGroupRegistered(entity_type):
@@ -119,12 +120,10 @@ class Agent:
         self.measurementSending(flow, coordinates, direction, measure_type="intensity", device_key=device_key, device_id=device_id)
 
 
-
     def measurementSending(self, flow, coordinates, direction, measure_type, device_key, device_id):
         url_sending = "http://localhost:{}/iot/json?k={}&i={}".format(self.agent_southport_number,
                                                                       device_key, device_id)
-        # print(url_sending)
-        # building packet header and payload
+       # building packet header and payload
         header = CaseInsensitiveDict()
         header["Content-Type"] = "application/json"
         header["fiware-service"] = "openiot"
@@ -140,7 +139,6 @@ class Agent:
                 },
                 "laneDirection": direction
             }
-        # print(payload)
         sending_response = requests.post(url_sending, headers=header, data=json.dumps(payload))
         # if sending_response == 200:
             # TODO: according to the IoT Agent guidelines (see the activity diagram) after retrieving the iot device from the database the IoT agent has to map the values to entities attributes and trigger the context update

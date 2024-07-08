@@ -42,17 +42,14 @@ def delay_calculation(actual_datetime, last_datetime):
 # TODO: handle multiple hours time-slots in such a way that the sending of data is proportional
 #  to the time of the measurement
 def processingTlData(trafficData, trafficLoop):
-    # for index, row in trafficData.iterrows():
-    #     direction = row["direzione"]
-    # iterate through collected data
-    for key, values in trafficData.items():
+    # for key, values in trafficData.items():
         # iterate through registered devices
         for ind, device in trafficLoop.items():
             # look for sensor belonging to device (only one in the traffic loop case)
             for sensor in device.sensors:
                 if sensor.name == "TFO":
-                    tl = values.loc[values["ID_loop"] == int(sensor.device_partial_id)]
-                    flow = tl["00:00-01:00"].values[0]
+                    tl = trafficData.loc[trafficData["ID_loop"] == int(sensor.device_partial_id)]
+                    flow = tl["flow"].values[0]
                     coordinates = str(tl["geopoint"].values[0])
                     direction = str(tl["direction"].values[0])
                     sensor.send_data(flow, coordinates, direction,device_id=sensor.device_partial_id, device_key=sensor.api_key)

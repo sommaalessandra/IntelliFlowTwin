@@ -12,15 +12,19 @@
 #          as required by physical_adapter.py. These are returned as a result_queue
 #          to allow multiprocessing and data sharing with other processes (main).
 #****************************************************
+import time
 
 from libraries.constants import *
 from libraries.classes.physical_adapter import *
 from libraries.classes.iotagent_adapter import Agent
 import threading
+import datetime
 
-# the time slot column reports the number of cars that passed through a traffic loop sensor during that time frame
+
 selectedTimeSlot = "00:00-01:00"
-tlColumnsNames = ["index", "ID_loop", selectedTimeSlot, "edge_id", "geopoint", "direction"]
+tempTimeSlot = str(datetime.time(0).strftime("%H:00"))+'-'+str(datetime.time(1).strftime("%H:00"))
+# tlColumnsNames = ["index", "ID_loop", selectedTimeSlot, "edge_id", "geopoint", "direction"]
+tlColumnsNames = ["index", "ID_loop",  "edge_id", "geopoint", "direction"]
 
 def setup_physicalsystem(agent_instance):
     trafficLoop = {}
@@ -31,6 +35,8 @@ def setup_physicalsystem(agent_instance):
     [trafficData, files] = reading_files(tlPath)
     # trafficdata = trafficdata[trafficdata['data'].str.contains('01/02/2024')]
     for i, file in enumerate(files):
+        # td = trafficData[file]
+        trafficData[file] = trafficData[file][["index", "ID_univoco_stazione_spira", "edge_id", "geopoint", "direzione"]]
         trafficData[file].columns = tlColumnsNames
     ind = 0
     for i, file in enumerate(files):
@@ -69,17 +75,25 @@ def setup_physicalsystem(agent_instance):
                                                                                    static_attribute)
                 else:
                     raise TypeError("Only Traffic Flow Observed type is allowed")
-    # result = bus
     return trafficLoop, files
 
 def start_physicalsystem(trafficLoop: dict[int, PhysicalSystemConnector]):
     """
-    Starts the simulation of data transmission for each bus using threading.
+    Starts the simulation of data transmission for each traffic loop.
 
-    :param bus: A dictionary of buses initialized in the setup_physicalsystem function.
+    :param trafficLoop: A dictionary of traffic loops initialized in the setup_physicalsystem function.
     """
     # STEP 3. DEVICE MEASUREMENTS TRANSMISSION SIMULATION
+
+
     [trafficData, files] = reading_files(tlPath)
     for i, file in enumerate(files):
-        trafficData[file].columns = tlColumnsNames
-    processingTlData(trafficData,trafficLoop)
+        tlColumnsNames = ["index", "ID_loop", "flow", "edge_id", "geopoint", "direction"]
+        for i in range(24):
+            # the time slot column reports the number of cars that passed through a traffic loop sensor during that time frame
+            tempTimeSlot = str(datetime.time(i).strftime("%H:00")) + '-' + str(datetime.time(i+1).strftime("%H:00"))
+            temp_data = trafficData[file][["index", "ID_univoco_stazione_spira", tempTimeSlot, "edge_id", "geopoint",
+                                          "direzione"]]
+            temp_data.columns = tlColumnsNames
+            processingTlData(temp_data,trafficLoop)
+            time.sleep(10)

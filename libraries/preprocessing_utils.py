@@ -128,8 +128,7 @@ def link_origin_destination(file_input, file_road_id):
     print("prova")
 
 #This method is used to filter the file before using it inside the DT platform
-def filter_day(input_file, output_file = 'day_flow.csv', date = "01/02/2024", time_slot = "00:00-01:00"):
+def filter_day(input_file, output_file = 'day_flow.csv', date = "01/02/2024"):
     df1 = pd.read_csv(input_file, sep=';')
     df1 = df1[df1['data'].str.contains(date)]
-    df1 = df1[["ID_univoco_stazione_spira",time_slot,"edge_id", "geopoint", "direzione"]]
     df1.to_csv(simulationPath + output_file, sep=',')
