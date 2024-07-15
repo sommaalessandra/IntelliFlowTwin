@@ -39,8 +39,7 @@ def delay_calculation(actual_datetime, last_datetime):
     return delta, last_datetime
 
 
-# TODO: handle multiple hours time-slots in such a way that the sending of data is proportional
-#  to the time of the measurement
+
 def processingTlData(trafficData, trafficLoop):
     # for key, values in trafficData.items():
         # iterate through registered devices

@@ -29,6 +29,7 @@ tlColumnsNames = ["index", "ID_loop",  "edge_id", "geopoint", "direction"]
 def setup_physicalsystem(agent_instance):
     trafficLoop = {}
     tfo = {}
+    new_traffic_loops = {}
     naturalNumber = 1
     keyLength = 26
 
@@ -38,11 +39,19 @@ def setup_physicalsystem(agent_instance):
         # td = trafficData[file]
         trafficData[file] = trafficData[file][["index", "ID_univoco_stazione_spira", "edge_id", "geopoint", "direzione"]]
         trafficData[file].columns = tlColumnsNames
+
     ind = 0
     for i, file in enumerate(files):
         # the key is generated here because it is the same for all devices of the same type
+        # for index, rows in trafficData[file].iterrows():
+        #     if not agent_instance.isDeviceRegistered(str(rows["ID_loop"])):
+        #         new_traffic_loops[ind] = rows
+        #         ind += 1
+        #     else:
+        #         print("Device already registered")
+        # ind = 0
         tfo_keys = generate_random_key(keyLength)
-        for index, rows in trafficData[file].iterrows():
+        for key, rows in trafficData[file].iterrows():
             if rows['edge_id'] not in trafficLoop.values():
                 traffic_loop_name = "T{}".format(naturalNumber)
                 trafficLoop[ind] = PhysicalSystemConnector(naturalNumber, traffic_loop_name)
@@ -53,7 +62,8 @@ def setup_physicalsystem(agent_instance):
                 tfo[ind].set_data_callback(agent_instance.retrievingData)
                 trafficLoop[ind].add_sensors(tfo[ind])
                 ### TODO: check to be added to avoid creating the same device inside the file
-                trafficLoop[ind].save_connected_device(outputPath)
+                if not agent_instance.isDeviceRegistered(str(rows["ID_loop"])):
+                    trafficLoop[ind].save_connected_device(outputPath)
                 ind +=1
                 naturalNumber += 1
 
@@ -61,20 +71,21 @@ def setup_physicalsystem(agent_instance):
     deviceEntityType = "TrafficFlowObserved"
     for i in trafficLoop:
         for sensor in trafficLoop[i].sensors:
-            # Service Group Registration
-            agent_response = agent_instance.serviceGroupRegistration(sensor.device_partial_id, sensor.api_key, deviceEntityType)
-            if agent_response is not None:
-                entitytype = "TrafficFlowObserved"
-                timezone = "Europe/Rome"
-                static_attribute = "urn:ngsi-ld:TrafficLoop:{}".format(trafficLoop[i].name_identifier)
-                if sensor.name == "TFO":
-                    # if the devices has not been previously registered -> device measurement must be registered
-                    measurement_type = "intensity"
-                    measurement_response = agent_instance.measurementRegistration(measurement_type, sensor.device_partial_id,
-                                                                                   entitytype, timezone,
-                                                                                   static_attribute)
-                else:
-                    raise TypeError("Only Traffic Flow Observed type is allowed")
+            if not agent_instance.isDeviceRegistered(str(sensor.device_partial_id)):
+                # Service Group Registration
+                agent_response = agent_instance.serviceGroupRegistration(sensor.device_partial_id, sensor.api_key, deviceEntityType)
+                if agent_response is not None:
+                    entitytype = "TrafficFlowObserved"
+                    timezone = "Europe/Rome"
+                    static_attribute = "urn:ngsi-ld:TrafficLoop:{}".format(trafficLoop[i].name_identifier)
+                    if sensor.name == "TFO":
+                        # if the devices has not been previously registered -> device measurement must be registered
+                        measurement_type = "intensity"
+                        agent_instance.measurementRegistration(measurement_type, sensor.device_partial_id,
+                                                                                       entitytype, timezone,
+                                                                                       static_attribute)
+                    else:
+                        raise TypeError("Only Traffic Flow Observed type is allowed")
     return trafficLoop, files
 
 def start_physicalsystem(trafficLoop: dict[int, PhysicalSystemConnector]):
@@ -83,17 +94,16 @@ def start_physicalsystem(trafficLoop: dict[int, PhysicalSystemConnector]):
 
     :param trafficLoop: A dictionary of traffic loops initialized in the setup_physicalsystem function.
     """
-    # STEP 3. DEVICE MEASUREMENTS TRANSMISSION SIMULATION
 
 
     [trafficData, files] = reading_files(tlPath)
     for i, file in enumerate(files):
         tlColumnsNames = ["index", "ID_loop", "flow", "edge_id", "geopoint", "direction"]
-        for i in range(24):
+        for i in range(23):
             # the time slot column reports the number of cars that passed through a traffic loop sensor during that time frame
             tempTimeSlot = str(datetime.time(i).strftime("%H:00")) + '-' + str(datetime.time(i+1).strftime("%H:00"))
             temp_data = trafficData[file][["index", "ID_univoco_stazione_spira", tempTimeSlot, "edge_id", "geopoint",
                                           "direzione"]]
             temp_data.columns = tlColumnsNames
-            processingTlData(temp_data,trafficLoop)
+            processingTlData(temp_data, trafficLoop)
             time.sleep(10)

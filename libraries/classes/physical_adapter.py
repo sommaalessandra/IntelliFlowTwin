@@ -248,6 +248,10 @@ class PhysicalSystemConnector:
         num_connected_devices = self.number_of_connected_devices()
         # if the file already exists --> check the data
         if os.path.exists(csv_filename):
+            # For now this if is deactivated with this return, not sure if will be useful to change file content
+            # if the file already exist
+            return
+
             existing_data = pd.read_csv(csv_filename, dtype={0: str})
             existing_data.columns = field_names
 
