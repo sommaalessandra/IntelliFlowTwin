@@ -11,11 +11,11 @@ As for road networks, configurations available in the [SUMO scenario repository]
 - **routesampled.rou.xml**: this file represents the set of vehicles and routes they will take within the simulation. This data is the result of a series of pre-processing operations which, starting from the traffic loop readings obtained from Open Data, generated vehicle routes that would comply with the data detected. Details on how these routes are generated are explained in the pre-processing section.
 - **joined_tls.add.xml** : the file includes the set of traffic lights and defines their operating logic
 - **joined_vtypes_add.xml** : The file includes the set of vehicle types passing through the simulation. Each vehicle is characterised by its size, the shape it takes in the simulation, acceleration and braking values
-- **tripinfos.xml**: output file #TODO
+- **tripinfos.xml**: output file showing the data collected from each vehicle, including departure and arrival times and speeds, the length of the route travelled and the time waiting in traffic.
 
 All files presented are used within the simulation thanks to the configuration file *.sumocfg*. Once the simulation has started, the user must wait for it to complete in order to collect the output data.
 
-The traffic data were taken from the [Open Data database of the municipality of Bologna ](https://opendata.comune.bologna.it/pages/home/). Among the various data made available by the database, those relating to the detection of the flow of vehicles through loops for the year 2024 and the accuracy of the loop measurement were taken. Since this data is constantly being updated, the tests performed only considered data from January to April 2024.
+The traffic data were taken from the [Open Data database of the municipality of Bologna ](https://opendata.comune.bologna.it/pages/home/). Among the various data made available by the database, those relating to the detection of the flow of vehicles through loops for the year 2024 and the accuracy of the loop measurement were taken. Since this data is constantly being updated, the tests performed only considered data from the 1st of January to the 30th of April 2024.
 - [**traffic_flow_2024.csv**](https://opendata.comune.bologna.it/explore/dataset/rilevazione-flusso-veicoli-tramite-spire-anno-2024/information/?disjunctive.codice_spira&disjunctive.tipologia&disjunctive.nome_via&disjunctive.stato&sort=data): this file contains readings of the traffic flow through the loops. The file shows the readings in separate time slots per column, as well as the geographic location of the loop, in the form of geopoint coordinates. In order to associate the accuracy of the loops contained in the other file, it is necessary to refer to the loop code, here present with the name "*codice_spira*". There are two other entries in addition to the coordinates to provide more detail on the location of the loop: the street name (named "*Nome via*") and the direction (named "*direzione*") of the lane on which the traffic was detected, placed in the form of a cardinal point (in Italian NSOE stands for NSWE).
 - [**accuratezza_spire_anno_2024.csv**](https://opendata.comune.bologna.it/explore/dataset/accuratezza-spire-anno-2024/information/?disjunctive.codice_spira_2): this file shows the percentage of accuracy of the traffic data detected by the loops. This dataset is to be cross-referenced with the first one by comparing the loop codes. The accuracy is reported for each time slot with a percentage value, where 100% indicates a correct detection of the data, 0% means that the loop did not detect the data, and intermediate values indicate partial detections within the reference time slot.
 
@@ -31,8 +31,14 @@ Subsequently, thanks to the accuracy data provided by Open Data, the data were f
 
 Starting from the constructed data roadnames.csv, through the function *link_roads_IDs*, the edge_id entries were added considering the direction of the road.
 
-The final step is to reshape the data according to the structure required to generate a traffic file that can be used by SUMO. For this purpose, the function *generete_edgedata_file* allows the creation of a file needed to construct the route file to be used for the simulation. 
+The final step is to reshape the data according to the structure required to generate a traffic file that can be used by SUMO. For this purpose, the function *generate_edgedata_file* allows the creation of a file needed to construct the route file to be used for the simulation. 
 
 ### Route File Generation
 
-The generation of a route from traffic surveys obtained from Open Data is carried out in two main steps
+The generation of a route from traffic measurements obtained from Open Data is done through the use of a python script provided by the SUMO library, called [*routeSampler*](https://sumo.dlr.de/docs/Tools/Turns.html#routesamplerpy). this script generates traffic from an initial route file and a traffic count file of roads (called edgeData).
+
+Instead, the generation of the initial route file was implemented through the use of another SUMO script, called [*randomTrips*](https://sumo.dlr.de/docs/Tools/Trip.html), which in turn accepts the network file (net.xml) as input and, defining appropriate parameters, generates a routing file (rou.xml) for that network. Among the various parameters that can be used for generation, *--fringe-factor* has been used for starting vehicle's trips at the fringe of the network, while *--random-routing-factor* has been configured to obtain different routes even for identical trips. The following is an example of a configuration of the randomTrips generation command:
+```
+python randomTrips.py -n .\joined_buslanes.net.xml -r sampleRoutes.rou.xml --fringe-factor 10 –random-routing-factor 2
+```
+Afterwards, the output generated by the randomTrips command was used together with the edgeData file generated by the previous preprocessing step to obtain a new route file respecting the crossing constraints.
