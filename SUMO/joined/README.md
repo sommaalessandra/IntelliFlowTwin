@@ -22,7 +22,13 @@ The traffic data were taken from the [Open Data database of the municipality of 
 Finally, there is one last file, manually constructed by comparing the road names in the *traffic_flow_2024.csv* file with the *joined_buslanes.net.xml* road network. This file, called **roadnames.csv** closely links these two data, reporting the edge ids associated with each road in the network used.
 ### Data pre-processing 
 
-[pre_processing_flow](https://github.com/user-attachments/assets/ec442b3d-fc97-4583-914e-de48b1700ecf)
+<figure align="center">
+  <img
+  src="https://github.com/user-attachments/assets/0be33d1e-c6f2-4fa9-bde1-a200f2984561"
+  alt="Pre-processing-flow">
+  <figcaption>Pre-processing Flow</figcaption>
+</figure>
+
 
 The data obtained from Open Data is clearly presented in a raw format, which is hardly usable by SUMO. In order to make use of the data, it is necessary to extrapolate the car count information for a given lane and associate it with the lane identifier in the road network file described above. all files processed in the pre-processing phase are saved in the data folder
 
