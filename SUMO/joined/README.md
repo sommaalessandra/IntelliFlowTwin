@@ -1,6 +1,6 @@
 # Urban Simulation with SUMO 
 
-This section summarises the activities carried out with the SUMO simulator, which consisted of running realistic traffic simulations in two districts of the city of Bologna. The activity involved an initial obtaining of data, subsequent processing and processing of these to make them usable by the simulator, and the execution of several simulations for the various time slots.
+This section summarises the activities carried out with the SUMO simulator, which consisted of running realistic traffic simulations in two districts of the city of Bologna. The activity involved an initial obtaining of data, subsequent pre-processing of these to make them usable by the simulator, and the execution of several simulations for the various time slots.
 
 ### Data Sourcing  
 In order to construct a plausible simulation scenario, it was necessary to obtain data for the construction of the road network in SUMO (consisting of roads, junctions, traffic lights, etc.) and the traffic data itself. 
