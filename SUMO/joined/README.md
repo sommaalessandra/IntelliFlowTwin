@@ -26,7 +26,6 @@ Finally, there is one last file, manually constructed by comparing the road name
   <img
   src="https://github.com/user-attachments/assets/0be33d1e-c6f2-4fa9-bde1-a200f2984561"
   alt="Pre-processing-flow">
-  <figcaption>Pre-processing Flow</figcaption>
 </figure>
 
 
