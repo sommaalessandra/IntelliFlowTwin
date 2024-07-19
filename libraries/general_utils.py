@@ -38,7 +38,9 @@ def delay_calculation(actual_datetime, last_datetime):
 
     return delta, last_datetime
 
-
+def convert_float(inp):
+    splitted_data = inp.split(",")
+    return float(splitted_data[-2]), float(splitted_data[-1])
 
 def processingTlData(trafficData, trafficLoop):
     # for key, values in trafficData.items():
@@ -49,7 +51,9 @@ def processingTlData(trafficData, trafficLoop):
                 if sensor.name == "TFO":
                     tl = trafficData.loc[trafficData["ID_loop"] == int(sensor.device_partial_id)]
                     flow = tl["flow"].values[0]
-                    coordinates = str(tl["geopoint"].values[0])
+                    coordinates = tl["geopoint"].values[0]
+                    # coordinates = list(map(float, coordinates))
+                    coordinates = convert_float(coordinates)
                     direction = str(tl["direction"].values[0])
-                    sensor.send_data(flow, coordinates, direction,device_id=sensor.device_partial_id, device_key=sensor.api_key)
+                    sensor.send_data(flow, coordinates, direction, device_id=sensor.device_partial_id, device_key=sensor.api_key)
 

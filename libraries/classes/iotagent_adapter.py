@@ -90,7 +90,7 @@ class Agent:
 
         payload = {}
         # TODO: check if this type is compliant to the one of the FIWARE SDM
-        if measure_type == "intensity":
+        if measure_type == "trafficFlow":
             payload = {
                 "devices": [
                     {
@@ -99,7 +99,8 @@ class Agent:
                         "entity_type": entity_type,
                         "timezone": timezone,
                         "attributes": [
-                            {"object_id": "intensity", "name": "intensity", "type": "Integer"},
+                            {"object_id": "location", "name": "location", "type": "geo:point"},
+                            {"object_id": "trafficFlow", "name": "trafficFlow", "type": "Integer"},
                             {"object_id": "timestamp", "name": "timestamp", "type": "DateTime"}
                         ],
                         "static_attributes": [
@@ -117,7 +118,7 @@ class Agent:
         flow = data[0][0]
         coordinates = data[0][1]
         direction = data[0][2]
-        self.measurementSending(flow, coordinates, direction, measure_type="intensity", device_key=device_key, device_id=device_id)
+        self.measurementSending(flow, coordinates, direction, measure_type="trafficFlow", device_key=device_key, device_id=device_id)
 
 
     def measurementSending(self, flow, coordinates, direction, measure_type, device_key, device_id):
@@ -130,9 +131,9 @@ class Agent:
         header["fiware-servicepath"] = "/"
 
         payload = {}
-        if measure_type == "intensity":
+        if measure_type == "trafficFlow":
             payload = {
-                "intensity": int(flow),
+                "trafficFlow": int(flow),
                 "location": {
                     "type": "Point",
                     "coordinates": coordinates

@@ -58,7 +58,7 @@ def setup_physicalsystem(agent_instance):
                 # tfo_id = "TFO{:03d}".format(naturalNumber)
                 # tfo_id = rows['edge_id']
                 tfo_id = str(rows["ID_loop"])
-                tfo[ind] = Sensor(tfo_id, devicekey=tfo_keys, name="TFO", sensortype="TrafficFlowObserved")
+                tfo[ind] = Sensor(tfo_id, devicekey=tfo_keys, name="TFO", sensortype="Traffic Loop Sensor")
                 tfo[ind].set_data_callback(agent_instance.retrievingData)
                 trafficLoop[ind].add_sensors(tfo[ind])
                 ### TODO: check to be added to avoid creating the same device inside the file
@@ -68,19 +68,19 @@ def setup_physicalsystem(agent_instance):
                 naturalNumber += 1
 
     # device and measurement registration
-    deviceEntityType = "TrafficFlowObserved"
+    deviceEntityType = "TrafficLoopDevices"
     for i in trafficLoop:
         for sensor in trafficLoop[i].sensors:
             if not agent_instance.isDeviceRegistered(str(sensor.device_partial_id)):
                 # Service Group Registration
                 agent_response = agent_instance.serviceGroupRegistration(sensor.device_partial_id, sensor.api_key, deviceEntityType)
                 if agent_response is not None:
-                    entitytype = "TrafficFlowObserved"
+                    entitytype = "Device"
                     timezone = "Europe/Rome"
                     static_attribute = "urn:ngsi-ld:TrafficLoop:{}".format(trafficLoop[i].name_identifier)
                     if sensor.name == "TFO":
                         # if the devices has not been previously registered -> device measurement must be registered
-                        measurement_type = "intensity"
+                        measurement_type = "trafficFlow"
                         agent_instance.measurementRegistration(measurement_type, sensor.device_partial_id,
                                                                                        entitytype, timezone,
                                                                                        static_attribute)
