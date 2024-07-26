@@ -1,5 +1,5 @@
 # UrbanDigitalTwin
-**UrbanDigitalTwin** is a platform created with the aim of integrating different functionalities belonging to the urban world into a single solution through the use of Digital Twin technology. This technology is mainly found in the adoption of the *Next Generation Service Interfaces* (**NGSI**) information model standard, in its version for supporting linked data, i.e. [**NGSI-LD**](https://www.etsi.org/deliver/etsi_gs/CIM/001_099/009/01.05.01_60/gs_CIM009v010501p.pdf).
+**UrbanDigitalTwin** is a platform created with the aim of integrating different functionalities belonging to the urban world into a single solution through the use of Digital Twin technology. This technology is mainly found in the adoption of the *Next Generation Service Interfaces* (**NGSI**) information model standard, in its version for supporting linked data, i.e. [**NG.SI-LD**](https://www.etsi.org/deliver/etsi_gs/CIM/001_099/009/01.05.01_60/gs_CIM009v010501p.pdf). The use of this standard not only unifies the information exchanged between the various components of the system, but also makes the latter aware of the meaning of the data and the interrelationships between them, increasing the level of semantic interoperability.
 
 ## Platform
 The platform, designed to be modular, consists of a main core for managing and interacting with Digital Twin instances. Modularity is ensured through the various interfaces provided by the core module and the python module developed specifically to guarantee greater interoperability.
@@ -11,7 +11,7 @@ The core module consists mainly of FIWARE components used for a variety of funct
 
 The python module in the repository is designed to be able to interact and coordinate these components. For the case study under analysis, this module was configured to simulate urban traffic loops. Using the developed libraries, the process of recording and communicating data is followed in a fully simulated manner.
 
-At present, an Eclipse SUMO module for traffic simulation has been integrated into the platform in such a way as to implement the specific case study described below. 
+At present, an [Eclipse SUMO](https://eclipse.dev/sumo/) module for traffic simulation has been integrated into the platform in such a way as to implement the specific case study described below. SUMO is a suite that provides support for the creation, execution and evaluation of traffic simulations. Among the various support tools are functions for network import and modification, algorithms for route calculation, emission map generators, etc.
 
 ## Case Study
 UrbanDigitalTwin was born from the study and development of a solution for a specific case study. This case concerns the traffic management of two neighbourhoods in the city of Bologna. Starting from the SUMO repository of simulation scenarios, the scenario of two neighbourhoods of Bologna was considered, named after the main streets that distinguish them, namely "via Costa" and "via Pasubio". These data, combined with real measurements of Bologna's traffic, give room for the construction of a Digital Twin model. 
