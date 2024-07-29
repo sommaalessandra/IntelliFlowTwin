@@ -50,7 +50,10 @@ def setup_physicalsystem(agent_instance):
         #     else:
         #         print("Device already registered")
         # ind = 0
-        tfo_keys = generate_random_key(keyLength)
+        if not agent_instance.isServiceGroupRegistered("TrafficLoopDevices"):
+            tfo_keys = generate_random_key(keyLength)
+        else:
+            tfo_keys = agent_instance.getServiceGroupKey("TrafficLoopDevices")
         for key, rows in trafficData[file].iterrows():
             if rows['edge_id'] not in trafficLoop.values():
                 traffic_loop_name = "T{}".format(naturalNumber)

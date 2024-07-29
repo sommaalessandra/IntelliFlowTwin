@@ -45,7 +45,25 @@ class Agent:
             return True
         else:
             return False
+    def getServiceGroupKey(self, entity_type):
+        servkey = None
+        # Check if the device is already registered
+        url = "http://localhost:{}/iot/services".format(self.agent_northport_number)
+        header = CaseInsensitiveDict()
+        header["fiware-service"] = self.fiware_service
+        header["fiware-servicepath"] = self.fiware_service_path
+        response = requests.get(url, headers=header)
+        # this check is too raw for me
+        if entity_type in response.text:
+            print("Entity type found inside the body response")
+            services = response.json()["services"]
+            for serv in services:
+                if serv["entity_type"] == entity_type:
+                    print("i found it!")
+                    servkey = serv["apikey"]
+                    break
 
+        return servkey
     def serviceGroupRegistration(self, device_id, api_key, entity_type):
         # register a Service Group in the IoT Agent (JSON version)
         if self.isServiceGroupRegistered(entity_type):
