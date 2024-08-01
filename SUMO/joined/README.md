@@ -9,8 +9,8 @@ As for road networks, configurations available in the [SUMO scenario repository]
 - **run.sumocfg**: simulations on SUMO are usually defined via the .sumocfg file, which specifies what the inputs and outputs of the simulation are. In addition, there are parameters that modify the execution of the simulation itself (e.g. microscopic or mesoscopic execution).
 - **joined_lanes.net.xml**: a SUMO network file that describes the traffic-related part of a map, the roads and intersections the simulated vehicles run along or across. The SUMO network contains every street (as a collection of lanes) including position, shape and speed limit of every lane, all the junctions and connections between lanes and junctions. 
 - **routesampled.rou.xml**: this file represents the set of vehicles and routes they will take within the simulation. This data is the result of a series of pre-processing operations which, starting from the traffic loop readings obtained from Open Data, generated vehicle routes that would comply with the data detected. Details on how these routes are generated are explained in the pre-processing section.
-- **joined_tls.add.xml** : the file includes the set of traffic lights and defines their operating logic
-- **joined_vtypes_add.xml** : The file includes the set of vehicle types passing through the simulation. Each vehicle is characterised by its size, the shape it takes in the simulation, acceleration and braking values
+- **joined_tls.add.xml** : the file includes the set of traffic lights and defines their operating logic.
+- **joined_vtypes_add.xml** : The file includes the set of vehicle types passing through the simulation. Each vehicle is characterised by its size, the shape it takes in the simulation, acceleration and braking values.
 - **tripinfos.xml**: output file showing the data collected from each vehicle, including departure and arrival times and speeds, the length of the route travelled and the time waiting in traffic.
 
 All files presented are used within the simulation thanks to the configuration file *.sumocfg*. Once the simulation has started, the user must wait for it to complete in order to collect the output data.
@@ -29,7 +29,7 @@ Finally, there is one last file, manually constructed by comparing the road name
 </figure>
 
 
-The data obtained from Open Data is clearly presented in a raw format, which is hardly usable by SUMO. In order to make use of the data, it is necessary to extrapolate the car count information for a given lane and associate it with the lane identifier in the road network file described above. all files processed in the pre-processing phase are saved in the data folder
+The data obtained from Open Data is clearly presented in a raw format, which is hardly usable by SUMO. In order to make use of the data, it is necessary to extrapolate the car count information for a given lane and associate it with the lane identifier in the road network file described above. All files processed in the pre-processing phase are saved in the data folder.
 
 Firstly, the data collected concerns the entire city of Bologna. It is therefore necessary to filter the data, taking into consideration only those relating to the districts identified by *via Costa* and *via Pasubio*. 
 For this type of operation, the *filter_roads* function in the platform's preprocessing utils allows filtering precisely by the name of the streets under examination. In order to match the roads in the measurement with the roads in the network, however, it is necessary to map the names of the roads with the edge ids of the network. This operation, carried out manually, resulted in the file *roadnames.csv*. The result of the *filter_roads* operation (saved in the *output.csv* file) selected around three thousand rows of the approximately one hundred thousand in the total dataset. 
