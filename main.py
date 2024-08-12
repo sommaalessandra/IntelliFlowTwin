@@ -31,16 +31,13 @@ if __name__ == "__main__":
 
     # After running the platform's containers, a client is instantiated to connect to Orion CB
 
-    envVar = load_env_var(containerEnvPath)
+    envVar = loadEnvVar(containerEnvPath)
     cbport = envVar.get("ORIONLD_PORT")
     iotanorth = envVar.get("IOTA_NORTH_PORT")
     iotasouth = envVar.get("IOTA_SOUTH_PORT")
-    orion = Client("localhost", 1026, tenant="openiot", overwrite=True)
+    orion = Client(hostname="localhost", port=1026, tenant="openiot", overwrite=True)
     IoTAgent = Agent(aid="01", cb_port=cbport, south_port=iotasouth, northport=iotanorth, fw_service="openiot",
                      fw_path="/")
 
-    trafficLoop, files = physical_system_startup.setup_physicalsystem(IoTAgent)
-
-    # process = multiprocessing.Process(target=start_physicalsystem, args=(tfo,))
-    # process.start()
-    start_physicalsystem(trafficLoop)
+    roads, files = setupPhysicalSystem(IoTAgent)
+    startPhysicalSystem(roads)

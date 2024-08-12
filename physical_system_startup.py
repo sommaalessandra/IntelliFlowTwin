@@ -1,112 +1,118 @@
 # ****************************************************
-# Module Purpose: Simulates the behavior of the real system
-#                 characterized by as traffic loops measurements. The traffic loop measures the number of passing cars
-#                 through a specific road. Each traffic loop is paired with a sensor referring to the
-#                 'TrafficFlowObserved' smart data model.
-#                 Each device has a device_id and a device key (casually generated).
+# Module Purpose: Simulates the behavior of the real City system (Bologna neighborhoods)
+#                 characterized by roads equipped with traffic flow sensors.
+#                 The traffic Loop sensors measure the number of passing cars
+#                 on a road during a given time slot. This simulation uses
+#                 real traffic data obtained from Bologna Open Data.
 #
-# Inputs:  agent_instance: the IoT Agent entity to which devices can
-#          register themselves, register and send their measurements.
+#                 Each device has a unique ID and an API key (alphanumeric string
+#                 randomly generated). These are required to register the device
+#                 to FIWARE IoT Agent, which is responsible for handling the
+#                 devices' registration and sending their measurements to
+#                 the Digital Twin system.
 #
-# Returns: The set of buses built as Physical System Connector class defined
-#          as required by physical_adapter.py. These are returned as a result_queue
-#          to allow multiprocessing and data sharing with other processes (main).
-#****************************************************
-import time
+# Inputs:   (function --setupPhysicalSystem--) agentInstance: The IoT Agent entity to
+#                      which devices will register, and through which they will send
+#                      their measurements.
+#           (function --startPhysicalSystem--) roads: The road dictionary, previously created
+#                     in the setupPhysicalSystem function, describing the real city as
+#                     roads, their sensors and actuators.
+#
+# Returns: (function --setupPhysicalSystem--) A dictionary of roads, each associated with one or
+#                    more traffic loop sensors. The roads and their associated devices
+#                    are initialized and returned along with the list of files processed,
+#                    allowing further processing or simulation of data transmission.
+# ****************************************************
+
 
 from libraries.constants import *
 from libraries.classes.physical_adapter import *
 from libraries.classes.iotagent_adapter import Agent
-import threading
 import datetime
 
 
 selectedTimeSlot = "00:00-01:00"
 tempTimeSlot = str(datetime.time(0).strftime("%H:00"))+'-'+str(datetime.time(1).strftime("%H:00"))
-# tlColumnsNames = ["index", "ID_loop", selectedTimeSlot, "edge_id", "geopoint", "direction"]
-tlColumnsNames = ["index", "ID_loop",  "edge_id", "geopoint", "direction"]
+tlColumnsNames = ["index", "road_name", "ID_loop",  "geopoint", "direction"]
 
-def setup_physicalsystem(agent_instance):
+
+def setupPhysicalSystem(agentInstance: Agent) -> tuple[dict,list]:
+    road = {}
+    roadSensorIndex = {}
     trafficLoop = {}
-    tfo = {}
-    new_traffic_loops = {}
     naturalNumber = 1
     keyLength = 26
 
-    [trafficData, files] = reading_files(tlPath)
-    # trafficdata = trafficdata[trafficdata['data'].str.contains('01/02/2024')]
+    [trafficData, files] = readingFiles(tlPath)
     for i, file in enumerate(files):
-        # td = trafficData[file]
-        trafficData[file] = trafficData[file][["index", "ID_univoco_stazione_spira", "edge_id", "geopoint", "direzione"]]
+        trafficData[file] = trafficData[file][["index", "Nome via", "ID_univoco_stazione_spira", "geopoint", "direzione"]]
         trafficData[file].columns = tlColumnsNames
 
-    ind = 0
+    # Initialization of Physical System entities (road) and attached devices (traffic loop sensors)
+    # TODO: traffic lights should be attached to the respective road as actuators.
     for i, file in enumerate(files):
-        # the key is generated here because it is the same for all devices of the same type
-        # for index, rows in trafficData[file].iterrows():
-        #     if not agent_instance.isDeviceRegistered(str(rows["ID_loop"])):
-        #         new_traffic_loops[ind] = rows
-        #         ind += 1
-        #     else:
-        #         print("Device already registered")
-        # ind = 0
-        if not agent_instance.isServiceGroupRegistered("TrafficLoopDevices"):
-            tfo_keys = generate_random_key(keyLength)
+        if not agentInstance.isServiceGroupRegistered("TrafficLoopDevices"):
+            trafficLoopKey = generate_random_key(keyLength)
         else:
-            tfo_keys = agent_instance.getServiceGroupKey("TrafficLoopDevices")
+            trafficLoopKey = agentInstance.getServiceGroupKey("TrafficLoopDevices")
+
         for key, rows in trafficData[file].iterrows():
-            if rows['edge_id'] not in trafficLoop.values():
-                traffic_loop_name = "T{}".format(naturalNumber)
-                trafficLoop[ind] = PhysicalSystemConnector(naturalNumber, traffic_loop_name)
-                # tfo_id = "TFO{:03d}".format(naturalNumber)
-                # tfo_id = rows['edge_id']
-                tfo_id = str(rows["ID_loop"])
-                tfo[ind] = Sensor(tfo_id, devicekey=tfo_keys, name="TFO", sensortype="Traffic Loop Sensor")
-                tfo[ind].set_data_callback(agent_instance.retrievingData)
-                trafficLoop[ind].add_sensors(tfo[ind])
-                ### TODO: check to be added to avoid creating the same device inside the file
-                if not agent_instance.isDeviceRegistered(str(rows["ID_loop"])):
-                    trafficLoop[ind].save_connected_device(outputPath)
-                ind +=1
+            roadName = rows['road_name']
+            if roadName not in road:
+                roadPartialIdentifier = "R{:03d}".format(naturalNumber)
+                road[roadName] = PhysicalSystemConnector(roadPartialIdentifier, roadName)
+                roadSensorIndex[roadName] = 0
                 naturalNumber += 1
+            # Attaching the sensor to the road, checking if it already exist.
+            trafficLoopID = str(rows['ID_loop'])
+            trafficLoopPartialIdentifier = "TL{}".format(trafficLoopID)
+            if not road[roadName].sensorExist(trafficLoopPartialIdentifier):
+                trafficLoop[roadSensorIndex[roadName]] = Sensor(device_partialid=trafficLoopPartialIdentifier,
+                                                                devicekey=trafficLoopKey, name="TL",
+                                                                sensortype="Traffic Loop")
+                trafficLoop[roadSensorIndex[roadName]].setDataCallback(agentInstance.retrievingData)
+                road[roadName].addSensor(trafficLoop[roadSensorIndex[roadName]])
+                roadSensorIndex[roadName] += 1
 
-    # device and measurement registration
+            if not agentInstance.isDeviceRegistered(trafficLoopPartialIdentifier):
+                road[roadName].saveConnectedDevice(outputPath)
+
+
+    # Device and Measurement Registration to the IoT Agent
     deviceEntityType = "TrafficLoopDevices"
-    for i in trafficLoop:
-        for sensor in trafficLoop[i].sensors:
-            if not agent_instance.isDeviceRegistered(str(sensor.device_partial_id)):
+    for i in road:
+        for sensor in road[i].sensors:
+            if not agentInstance.isDeviceRegistered(str(sensor.devicePartialID)):
                 # Service Group Registration
-                agent_response = agent_instance.serviceGroupRegistration(sensor.device_partial_id, sensor.api_key, deviceEntityType)
-                if agent_response is not None:
-                    entitytype = "Device"
+                agentResponse = agentInstance.serviceGroupRegistration(api_key=sensor.apiKey, entity_type=deviceEntityType)
+                if agentResponse is not None:
+                    entityType = "Device"
                     timezone = "Europe/Rome"
-                    static_attribute = "urn:ngsi-ld:TrafficLoop:{}".format(trafficLoop[i].name_identifier)
-                    if sensor.name == "TFO":
-                        # if the devices has not been previously registered -> device measurement must be registered
-                        measurement_type = "trafficFlow"
-                        agent_instance.measurementRegistration(measurement_type, sensor.device_partial_id,
-                                                                                       entitytype, timezone,
-                                                                                       static_attribute)
+                    staticAttribute = "urn:ngsi-ld:Road:{}".format(road[i].partialIdentifier)
+                    if sensor.name == "TL":
+                        measurementType = "trafficFlow"
+                        agentInstance.measurementRegistration(measure_type=measurementType,
+                                                              device_id=sensor.devicePartialID,
+                                                              entity_type=entityType, timezone=timezone,
+                                                              controlled_asset=staticAttribute)
                     else:
-                        raise TypeError("Only Traffic Flow Observed type is allowed")
-    return trafficLoop, files
+                        raise TypeError("Only Traffic Flow sensors are allowed")
+    return road, files
 
-def start_physicalsystem(trafficLoop: dict[int, PhysicalSystemConnector]):
+def startPhysicalSystem(roads: dict[int, PhysicalSystemConnector]):
     """
-    Starts the simulation of data transmission for each traffic loop.
+    Starts the simulation of data transmission for each Road containing one or more Traffic Loop sensors.
 
-    :param trafficLoop: A dictionary of traffic loops initialized in the setup_physicalsystem function.
+    :param roads: A dictionary of roads initialized in the setupPhysicalSystem function.
     """
 
-
-    [trafficData, files] = reading_files(tlPath)
+    [trafficData, files] = readingFiles(tlPath)
     for i, file in enumerate(files):
-        tlColumnsNames = ["index", "ID_loop", "flow", "edge_id", "geopoint", "direction"]
+        tlColumnsNames = ["index", "flow", "road_name", "ID_loop", "geopoint", "direction"]
         for i in range(23):
-            # the time slot column reports the number of cars that passed through a traffic loop sensor during that time frame
+            # the time slot column reports the number of cars that passed through a traffic loop sensor during that time frame (the traffic flow in that slot)
             tempTimeSlot = str(datetime.time(i).strftime("%H:00")) + '-' + str(datetime.time(i+1).strftime("%H:00"))
-            temp_data = trafficData[file][["index", "ID_univoco_stazione_spira", tempTimeSlot, "edge_id", "geopoint",
-                                          "direzione"]]
-            temp_data.columns = tlColumnsNames
-            processingTlData(temp_data, trafficLoop)
+            tempData = trafficData[file][["index", tempTimeSlot, "Nome via", "ID_univoco_stazione_spira", "geopoint", "direzione"]]
+            tempData.columns = tlColumnsNames
+            processingTlData(tempData, roads)
             time.sleep(10)

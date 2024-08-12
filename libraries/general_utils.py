@@ -2,9 +2,10 @@ import os
 import pandas as pd
 import string
 import secrets
+import time
 from datetime import datetime
 
-def reading_files(folder):
+def readingFiles(folder):
     files = os.listdir(folder)
     data = {}
     for i, file in enumerate(files):
@@ -19,7 +20,7 @@ def generate_random_key(length):
     alphabet = string.ascii_letters + string.digits
     return ''.join(secrets.choice(alphabet) for i in range(length))
 
-def load_env_var(file_path):
+def loadEnvVar(file_path):
     env_vars = {}
     with open(file_path, 'r') as file:
         for line in file:
@@ -30,18 +31,12 @@ def load_env_var(file_path):
     return env_vars
 
 # function to calculate difference between actual and previous date time of dataset entries to properly simulate devices
-def delay_calculation(actual_datetime, last_datetime):
-    if last_datetime == -1:
-        last_datetime = actual_datetime
-    delta = int((actual_datetime - last_datetime).total_seconds()) / 100000
-    last_datetime = actual_datetime
-
-    return delta, last_datetime
 
 def convert_float(inp):
     splitted_data = inp.split(",")
     return float(splitted_data[-2]), float(splitted_data[-1])
 
+''' PREVIOUS FUNCTION --> TO BE DELETED
 def processingTlData(trafficData, trafficLoop):
     # for key, values in trafficData.items():
         # iterate through registered devices
@@ -56,4 +51,23 @@ def processingTlData(trafficData, trafficLoop):
                     coordinates = convert_float(coordinates)
                     direction = str(tl["direction"].values[0])
                     sensor.send_data(flow, coordinates, direction, device_id=sensor.device_partial_id, device_key=sensor.api_key)
+'''
+
+def processingTlData(trafficData, roads: dict):
+    for index, row in trafficData.iterrows():
+        trafficFlow = row["flow"]
+        raw_coordinates = row["geopoint"]
+        latitude, longitude = map(float, raw_coordinates.split(','))
+        coordinates=[latitude,longitude]
+        direction = str(row["direction"])
+        roadName = row['road_name']
+        if roadName in roads:
+            trafficLoopIdentifier= "TL{}".format(str(row["ID_loop"]))
+            trafficLoopSensor = roads[roadName].getSensor(trafficLoopIdentifier)
+            if trafficLoopSensor is not None and trafficLoopSensor.name == "TL":
+                trafficLoopSensor.sendData(trafficFlow, coordinates, direction,
+                                           device_id=trafficLoopSensor.devicePartialID,
+                                           device_key=trafficLoopSensor.apiKey)
+        time.sleep(10) #simulating a sort of delay among entries
+
 
