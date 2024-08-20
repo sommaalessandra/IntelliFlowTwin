@@ -63,7 +63,7 @@ def setupPhysicalSystem(agentInstance: Agent) -> tuple[dict,list]:
                 road[roadName] = PhysicalSystemConnector(roadPartialIdentifier, roadName)
                 roadSensorIndex[roadName] = 0
                 naturalNumber += 1
-            # Attaching the sensor to the road, checking if it already exist.
+            # Attaching the sensor to the road, checking if it already exists.
             trafficLoopID = str(rows['ID_loop'])
             trafficLoopPartialIdentifier = "TL{}".format(trafficLoopID)
             if not road[roadName].sensorExist(trafficLoopPartialIdentifier):

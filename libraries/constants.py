@@ -2,7 +2,9 @@
 containerEnvPath = "./docker-files/fiware-dt-platform/.env"
 
 # path where the data used for simulation are stored
-simulationPath = "./SUMO/joined/data/"
+simulationDataPath = "./SUMO/joined/data/"
+
+simulationPath = "./SUMO/joined/"
 
 # folder where processed traffic loops measures are stored (tipically in a one-day length)
 tlPath = "./traffic_loop_dataset/"

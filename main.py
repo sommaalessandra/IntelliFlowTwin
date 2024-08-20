@@ -31,6 +31,8 @@ if __name__ == "__main__":
 
     # After running the platform's containers, a client is instantiated to connect to Orion CB
 
+
+
     envVar = loadEnvVar(containerEnvPath)
     cbport = envVar.get("ORIONLD_PORT")
     iotanorth = envVar.get("IOTA_NORTH_PORT")
@@ -41,3 +43,6 @@ if __name__ == "__main__":
 
     roads, files = setupPhysicalSystem(IoTAgent)
     startPhysicalSystem(roads)
+
+
+

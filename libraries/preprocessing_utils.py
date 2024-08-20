@@ -95,7 +95,7 @@ def link_roads_IDs(file_input, road_file_ids, output_file = 'final.csv' ,input_r
         else:
             matched_row = df2[df2[roadname_column].str.contains(roadname) & df2[direction_column].str.contains(direction)]
         df1.at[index, 'edge_id'] = matched_row['edge_id'].values
-    df1.to_csv(simulationPath + output_file, sep=';')
+    df1.to_csv(simulationDataPath + output_file, sep=';')
     print("Created Output file with Road IDs linked")
 
 def generate_edgedata_file(input_file, output_file = 'edgedata.xml' ,date = "01/02/2024", time_slot = "00:00-01:00",duration = '3600'):
@@ -121,7 +121,7 @@ def generate_edgedata_file(input_file, output_file = 'edgedata.xml' ,date = "01/
         edge = ET.SubElement(interval,'edge', id=edge_id, entered=count)
     tree = ET.ElementTree(root)
     ET.indent(tree, '  ')
-    tree.write(simulationPath + output_file, "UTF-8")
+    tree.write(simulationDataPath + output_file, "UTF-8")
 
 # TODO
 def link_origin_destination(file_input, file_road_id):
@@ -131,4 +131,4 @@ def link_origin_destination(file_input, file_road_id):
 def filter_day(input_file, output_file = 'day_flow.csv', date = "01/02/2024"):
     df1 = pd.read_csv(input_file, sep=';')
     df1 = df1[df1['data'].str.contains(date)]
-    df1.to_csv(simulationPath + output_file, sep=',')
+    df1.to_csv(simulationDataPath + output_file, sep=',')
