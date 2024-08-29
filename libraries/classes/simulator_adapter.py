@@ -48,7 +48,8 @@ class Simulator:
         step = 0
         while step < quantity and self.getRemainingVehicles() > 0:
             libtraci.simulationStep()
-            vehiclesSummary = self.getVehiclesSummary()
+            # vehiclesSummary = self.getVehiclesSummary()
+            inductionLoopSummary = self.getInductionLoopSummary()
             print(self.getRemainingVehicles())
             step += 1
 
@@ -77,7 +78,6 @@ class Simulator:
         vehiclesList = libtraci.vehicle.getIDList()
         summary = []
         if len(vehiclesList) > 1:
-            i = 0
             for vehicleID in vehiclesList:
                 element = {}
                 element["speed"] = libtraci.vehicle.getSpeed(vehicleID)
@@ -85,13 +85,13 @@ class Simulator:
                 element["distance"] = libtraci.vehicle.getDistance(vehicleID)
                 element["departDelay"] = libtraci.vehicle.getDepartDelay(vehicleID)
                 summary.append(element)
-                i += 1
 
             vehicleSummary["averageSpeed"] = mean(element["speed"] for element in summary)
             vehicleSummary["averageTimeLost"] = mean(element["timeLost"] for element in summary)
             vehicleSummary["averageDepartDelay"] = mean(element["departDelay"] for element in summary)
-            print("The Average Speed of Vehicles is: " + str(vehicleSummary["averageSpeed"]) + " m/s")
-            print("The Average Time lost is " + str(vehicleSummary["averageTimeLost"]) + " seconds")
+            print("The Average Speed of Vehicles is: " + str(vehicleSummary["averageSpeed"]) + " m/s.")
+            print("The Average Time lost is " + str(vehicleSummary["averageTimeLost"]) + " seconds.")
+            print("The Average depart delay is " + str(vehicleSummary["averageDepartDelay"]) + "seconds.")
             return vehicleSummary
         print("There are no vehicles ")
         return None
@@ -106,16 +106,31 @@ class Simulator:
     def getAverageOccupationTime(self):
         detectorList = self.getDetectorList()
         intervalOccupancies = []
-        i = 0
+
         for detector in detectorList:
             # Although the function for obtaining IDs returns values correctly,
             # once an id is entered for the search, it is not found
             # TODO: find the problem
-            intervalOccupancies[i] = libtraci.inductionloop.getIntervalOccupancy(detector)
-
-            i += 1
+            intervalOccupancies.append(libtraci.inductionloop.getIntervalOccupancy(detector))
         average = mean(intervalOccupancies)
         print(average)
+        return average
+
+    def getInductionLoopSummary(self):
+        detectorList = self.getDetectorList()
+        detectors = []
+        inductionLoopSummary = {}
+        for det in detectorList:
+            element = {}
+            element["intervalOccupancy"] = libtraci.inductionloop.getIntervalOccupancy(det)
+            element["meanSpeed"] = libtraci.inductionloop.getIntervalMeanSpeed(det)
+            element["vehicleNumber"] = libtraci.inductionloop.getIntervalVehicleNumber(det)
+            detectors.append(element)
+        inductionLoopSummary["averageIntervalOccupancy"] = mean(element["intervalOccupancy"] for element in detectors)
+        inductionLoopSummary["averageMeanSpeed"] = mean(element["meanSpeed"] for element in detectors)
+        inductionLoopSummary["averageVehicleNumber"] = mean(element["vehicleNumber"] for element in detectors)
+        return inductionLoopSummary
+
 
 
 class ValueListener(libtraci.StepListener):
