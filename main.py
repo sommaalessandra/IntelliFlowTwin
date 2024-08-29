@@ -4,7 +4,7 @@ import physical_system_startup
 from libraries.constants import *
 from libraries.general_utils import *
 from libraries.preprocessing_utils import *
-from libraries.classes.iotagent_adapter import *
+from libraries.classes.Agent import *
 from physical_system_startup import *
 
 if __name__ == "__main__":

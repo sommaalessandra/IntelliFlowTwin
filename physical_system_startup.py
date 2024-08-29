@@ -27,7 +27,7 @@
 
 from libraries.constants import *
 from libraries.classes.physical_adapter import *
-from libraries.classes.iotagent_adapter import Agent
+from libraries.classes.Agent import Agent
 import datetime
 
 

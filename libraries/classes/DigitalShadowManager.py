@@ -1,0 +1,3 @@
+
+class DigitalShadowManager:
+    shadowType: str

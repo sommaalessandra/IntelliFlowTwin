@@ -13,13 +13,15 @@
 #
 # ****************************************************
 
+import json
+
 import requests
 from requests.structures import CaseInsensitiveDict
-import json
 
 
 class Agent:
     agentID: str
+    hostname: str
     brokerPortNumber: int
     southPortNumber: int
     northPortNumber: int
@@ -36,28 +38,28 @@ class Agent:
 
     def isServiceGroupRegistered(self, entity_type: str):
         # Check if the device is already registered
-        url = "http://localhost:{}/iot/services".format(self.northPortNumber)
+        url = "http://{}:{}/iot/services".format(self.hostname,self.northPortNumber)
         header = CaseInsensitiveDict()
         header["fiware-service"] = self.fiwareService
         header["fiware-servicepath"] = self.fiwareServicePath
         response = requests.get(url, headers=header)
         # TODO: improve the type of check done to find the service group
         if entity_type in response.text:
-            #print("Entity type found inside the body response")
+            # print("Entity type found inside the body response")
             return True
         else:
             return False
 
     def isDeviceRegistered(self, device_id: str):
         # Check if the device is already registered
-        url = "http://localhost:{}/iot/devices/{}".format(self.northPortNumber, device_id)
+        url = "http://{}:{}/iot/devices/{}".format(self.hostname, self.northPortNumber, device_id)
         header = CaseInsensitiveDict()
         header["fiware-service"] = self.fiwareService
         header["fiware-servicepath"] = self.fiwareServicePath
         response = requests.get(url, headers=header)
         # TODO: improve the type of check done to find the device
         if response.status_code == 200:
-            #print("Device found")
+            # print("Device found")
             return True
         else:
             return False
@@ -66,18 +68,18 @@ class Agent:
         serviceKey = None
 
         # Check if the device is already registered
-        url = "http://localhost:{}/iot/services".format(self.northPortNumber)
+        url = "http://{}:{}/iot/services".format(self.hostname, self.northPortNumber)
         header = CaseInsensitiveDict()
         header["fiware-service"] = self.fiwareService
         header["fiware-servicepath"] = self.fiwareServicePath
         response = requests.get(url, headers=header)
         # TODO: improve the type of check done to find the key
         if entity_type in response.text:
-            #print("Entity type found inside the body response")
+            # print("Entity type found inside the body response")
             services = response.json()["services"]
             for serv in services:
                 if serv["entity_type"] == entity_type:
-                    #print("Found it!")
+                    # print("Found it!")
                     serviceKey = serv["apikey"]
                     break
         return serviceKey
@@ -88,7 +90,7 @@ class Agent:
             print("Service is already registered. Skipping registration.")
             return True
 
-        url_registration = "http://localhost:{}/iot/services".format(self.northPortNumber)
+        url_registration = "http://{}:{}/iot/services".format(self.hostname, self.northPortNumber)
         # building packet header and payload
         header = CaseInsensitiveDict()
         header["Content-Type"] = "application/json"
@@ -108,11 +110,12 @@ class Agent:
         reg_response = requests.post(url_registration, headers=header, data=json.dumps(payload))
         return reg_response
 
-    def measurementRegistration(self, measure_type: str, device_id: str, entity_type: str, timezone, controlled_asset: str):
+    def measurementRegistration(self, measure_type: str, device_id: str, entity_type: str, timezone,
+                                controlled_asset: str):
         if self.isDeviceRegistered(device_id):
             print("Device is already registered. Skipping registration.")
             return True
-        url_registration = "http://localhost:{}/iot/devices".format(self.northPortNumber)
+        url_registration = "http://{}:{}/iot/devices".format(self.hostname, self.northPortNumber)
         # building packet header and payload
         header = CaseInsensitiveDict()
         header["Content-Type"] = "application/json"
@@ -132,7 +135,7 @@ class Agent:
                             {"object_id": "trafficFlow", "name": "trafficFlow", "type": "Integer"},
                             {"object_id": "location", "name": "location", "type": "geo:point"},
                             {"object_id": "laneDirection", "name": "laneDirection", "type": "TextUnrestricted"}
-                            #{"object_id": "timestamp", "name": "timestamp", "type": "DateTime"}
+                            # {"object_id": "timestamp", "name": "timestamp", "type": "DateTime"}
                         ],
                         "static_attributes": [
                             {"name": "deviceCategory", "type": "Text", "value": "Sensor"},
@@ -150,13 +153,13 @@ class Agent:
         flow = data[0][0]
         coordinates = data[0][1]
         direction = data[0][2]
-        self.measurementSending(flow, coordinates, direction, measure_type="trafficFlow", device_key=device_key, device_id=device_id)
-
+        self.measurementSending(flow, coordinates, direction, measure_type="trafficFlow", device_key=device_key,
+                                device_id=device_id)
 
     def measurementSending(self, flow, coordinates, direction, measure_type, device_key, device_id):
-        url_sending = "http://localhost:{}/iot/json?k={}&i={}".format(self.southPortNumber,
+        url_sending = "http://{}:{}/iot/json?k={}&i={}".format(self.hostname, self.southPortNumber,
                                                                       device_key, device_id)
-       # building packet header and payload
+        # building packet header and payload
         header = CaseInsensitiveDict()
         header["Content-Type"] = "application/json"
         header["fiware-service"] = "openiot"
@@ -174,6 +177,6 @@ class Agent:
             }
         sending_response = requests.post(url_sending, headers=header, data=json.dumps(payload))
         # if sending_response == 200:
-            # TODO: according to the IoT Agent guidelines (see the activity diagram) after retrieving the iot device from the database the IoT agent has to map the values to entities attributes and trigger the context update
+        # TODO: according to the IoT Agent guidelines (see the activity diagram) after retrieving the iot device from the database the IoT agent has to map the values to entities attributes and trigger the context update
 
         return sending_response
