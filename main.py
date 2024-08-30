@@ -38,7 +38,7 @@ if __name__ == "__main__":
     iotanorth = envVar.get("IOTA_NORTH_PORT")
     iotasouth = envVar.get("IOTA_SOUTH_PORT")
     orion = Client(hostname="localhost", port=1026, tenant="openiot", overwrite=True)
-    IoTAgent = Agent(aid="01", cb_port=cbport, south_port=iotasouth, northport=iotanorth, fw_service="openiot",
+    IoTAgent = Agent(aid="01", hostname="localhost", cb_port=cbport, south_port=iotasouth, northport=iotanorth, fw_service="openiot",
                      fw_path="/")
 
     roads, files = setupPhysicalSystem(IoTAgent)

@@ -14,9 +14,9 @@
 # ****************************************************
 
 import json
-
 import requests
 from requests.structures import CaseInsensitiveDict
+from libraries.classes.Broker import *
 
 
 class Agent:
@@ -28,8 +28,9 @@ class Agent:
     fiwareService: str
     fiwareServicePath: str
 
-    def __init__(self, aid: str, cb_port: int, south_port: int, northport: int, fw_service: str, fw_path: str):
+    def __init__(self, aid: str, hostname: str, cb_port: int, south_port: int, northport: int, fw_service: str, fw_path: str):
         self.agentID = aid
+        self.hostname = hostname
         self.brokerPortNumber = cb_port
         self.southPortNumber = south_port
         self.northPortNumber = northport
@@ -134,7 +135,8 @@ class Agent:
                         "attributes": [
                             {"object_id": "trafficFlow", "name": "trafficFlow", "type": "Integer"},
                             {"object_id": "location", "name": "location", "type": "geo:point"},
-                            {"object_id": "laneDirection", "name": "laneDirection", "type": "TextUnrestricted"}
+                            {"object_id": "laneDirection", "name": "laneDirection", "type": "TextUnrestricted"},
+                            {"object_id": "timeSlot", "name": "timeSlot", "type": "TextUnrestricted"}
                             # {"object_id": "timestamp", "name": "timestamp", "type": "DateTime"}
                         ],
                         "static_attributes": [
@@ -149,14 +151,14 @@ class Agent:
     def retrievingData(self, *data, device_id, device_key):
         # TODO: befor even retrieving data we should check if there exist a device with
         #  that ID and if for that device the provided key is correct.
-
-        flow = data[0][0]
-        coordinates = data[0][1]
-        direction = data[0][2]
-        self.measurementSending(flow, coordinates, direction, measure_type="trafficFlow", device_key=device_key,
+        timeSlot = data[0][0]
+        flow = data[0][1]
+        coordinates = data[0][2]
+        direction = data[0][3]
+        self.measurementSending(timeSlot, flow, coordinates, direction, measure_type="trafficFlow", device_key=device_key,
                                 device_id=device_id)
 
-    def measurementSending(self, flow, coordinates, direction, measure_type, device_key, device_id):
+    def measurementSending(self, timeSlot: str, flow: int, coordinates, direction: str, measure_type: str, device_key, device_id):
         url_sending = "http://{}:{}/iot/json?k={}&i={}".format(self.hostname, self.southPortNumber,
                                                                       device_key, device_id)
         # building packet header and payload
@@ -173,10 +175,25 @@ class Agent:
                     "type": "Point",
                     "coordinates": coordinates
                 },
+                "timeSlot" : timeSlot,
                 "laneDirection": direction
             }
-        sending_response = requests.post(url_sending, headers=header, data=json.dumps(payload))
+        sendingResponse = requests.post(url_sending, headers=header, data=json.dumps(payload))
         # if sending_response == 200:
-        # TODO: according to the IoT Agent guidelines (see the activity diagram) after retrieving the iot device from the database the IoT agent has to map the values to entities attributes and trigger the context update
+        # TODO: according to the IoT Agent guidelines (see the activity diagram) after retrieving the iot device from the
+        #  database the IoT agent has to map the values to entities attributes and trigger the context update
 
-        return sending_response
+        ''' steps: 
+        - after sending the measurement; if the response is 200; trigger the update of the entity
+        - triggering the update requires to: 
+        1) connect to the Context Broker cb
+        2) send data to cb; the cb 
+     
+        if sendingResponse == 200:
+            cb = Broker(pn=self.brokerPortNumber, pnt=None, host=self.hostname, fiwareservice=self.fiwareService)
+            cb.updateContext(deviceid=device_id, timeSlot=timeSlot, trafficFlow=flow, coordinates=coordinates, laneDirection=direction)
+        '''
+
+
+
+        return sendingResponse

@@ -53,7 +53,7 @@ def processingTlData(trafficData, trafficLoop):
                     sensor.send_data(flow, coordinates, direction, device_id=sensor.device_partial_id, device_key=sensor.api_key)
 '''
 
-def processingTlData(trafficData, roads: dict):
+def processingTlData(timeSlot, trafficData, roads: dict):
     for index, row in trafficData.iterrows():
         trafficFlow = row["flow"]
         raw_coordinates = row["geopoint"]
@@ -65,7 +65,7 @@ def processingTlData(trafficData, roads: dict):
             trafficLoopIdentifier= "TL{}".format(str(row["ID_loop"]))
             trafficLoopSensor = roads[roadName].getSensor(trafficLoopIdentifier)
             if trafficLoopSensor is not None and trafficLoopSensor.name == "TL":
-                trafficLoopSensor.sendData(trafficFlow, coordinates, direction,
+                trafficLoopSensor.sendData(timeSlot, trafficFlow, coordinates, direction,
                                            device_id=trafficLoopSensor.devicePartialID,
                                            device_key=trafficLoopSensor.apiKey)
         time.sleep(10) #simulating a sort of delay among entries

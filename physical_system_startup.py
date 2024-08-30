@@ -114,5 +114,5 @@ def startPhysicalSystem(roads: dict[int, PhysicalSystemConnector]):
             tempTimeSlot = str(datetime.time(i).strftime("%H:00")) + '-' + str(datetime.time(i+1).strftime("%H:00"))
             tempData = trafficData[file][["index", tempTimeSlot, "Nome via", "ID_univoco_stazione_spira", "geopoint", "direzione"]]
             tempData.columns = tlColumnsNames
-            processingTlData(tempData, roads)
+            processingTlData(tempTimeSlot, tempData, roads)
             time.sleep(10)
