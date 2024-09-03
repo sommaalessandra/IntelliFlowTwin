@@ -45,6 +45,7 @@ def setupPhysicalSystem(agentInstance: Agent) -> tuple[dict,list]:
 
     [trafficData, files] = readingFiles(tlPath)
     for i, file in enumerate(files):
+        # TODO: ID_univoco_stazione_spira should not be read.
         trafficData[file] = trafficData[file][["index", "Nome via", "ID_univoco_stazione_spira", "geopoint", "direzione"]]
         trafficData[file].columns = tlColumnsNames
 

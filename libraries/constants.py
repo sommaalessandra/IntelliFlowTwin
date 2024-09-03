@@ -6,10 +6,15 @@ simulationDataPath = "./SUMO/joined/data/"
 
 simulationPath = "./SUMO/joined/"
 
-# folder where processed traffic loops measures are stored (tipically in a one-day length)
-tlPath = "./traffic_loop_dataset/"
+
+# folder where processed traffic loops measures are stored (typically in a one-day length)
+# TODO: this tlpath should be corrected to collect all the daily datasets
+#  that are in the folder. For now, we are taking only the real flow to check if it's working.
+tlPath = "./traffic_loop_dataset/real_dataset"
 # folder where registered devices are stored
 outputPath = "./registered_devices/"
+
+shadowPath = "./digital_shadows/coordinates_roads_edge.csv"
 
 schema = {
   "$schema": "http://json-schema.org/draft-04/schema#",

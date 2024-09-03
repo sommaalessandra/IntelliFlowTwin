@@ -15,7 +15,7 @@ At present, an [Eclipse SUMO](https://eclipse.dev/sumo/) module for traffic simu
 
 ## Case Study
 
-![BolognaOntology.png](..%2F..%2FOneDrive%20-%20Universit%E0%20di%20Napoli%20Federico%20II%2FDottorato-SommaAlessandra%2F2023-2024%2FMyPapers%2FIEEETransactions%2FBolognaOntology.png)
+![BolognaOntology.png](BolognaOntology.png)
 
 UrbanDigitalTwin was born from the analysis of a specific case study and the resulting development of a solution for it. This case concerns the traffic management of two neighbourhoods in the city of Bologna. Starting from the SUMO repository of simulation scenarios, the scenario of two neighbourhoods of Bologna was considered, named after the main streets that distinguish them, namely "via Costa" and "via Pasubio". These data, combined with real measurements of Bologna's traffic, give room for the construction of a Digital Twin model. 
 
