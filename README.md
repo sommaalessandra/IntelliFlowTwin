@@ -14,6 +14,9 @@ The python module in the repository is designed to be able to interact and coord
 At present, an [Eclipse SUMO](https://eclipse.dev/sumo/) module for traffic simulation has been integrated into the platform in such a way as to implement the specific case study described below. SUMO is a suite that provides support for the creation, execution and evaluation of traffic simulations. Among the various support tools are functions for network import and modification, algorithms for route calculation, emission map generators, etc.
 
 ## Case Study
+
+![BolognaOntology.png](..%2F..%2FOneDrive%20-%20Universit%E0%20di%20Napoli%20Federico%20II%2FDottorato-SommaAlessandra%2F2023-2024%2FMyPapers%2FIEEETransactions%2FBolognaOntology.png)
+
 UrbanDigitalTwin was born from the analysis of a specific case study and the resulting development of a solution for it. This case concerns the traffic management of two neighbourhoods in the city of Bologna. Starting from the SUMO repository of simulation scenarios, the scenario of two neighbourhoods of Bologna was considered, named after the main streets that distinguish them, namely "via Costa" and "via Pasubio". These data, combined with real measurements of Bologna's traffic, give room for the construction of a Digital Twin model. 
 
 In a nutshell, by interacting with the sensors in these neighbourhoods (which in the experimentation are simulated), a closed loop can be created in which the data collected is stored by the Digital Twin, which in turn, by means of calculations and exploiting the appropriate services, can make the traffic situation detected and predicted. With this feedback, it is possible to intervene on the simulation by modifying the traffic flow (e.g. through traffic lights).
