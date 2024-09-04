@@ -1,6 +1,6 @@
 from ngsildclient import Client
 from typing import Optional, List
-
+from libraries.classes.DigitalShadowManager import DigitalShadowManager
 
 class Broker:
     portNumber: int
@@ -26,10 +26,13 @@ class Broker:
             raise ConnectionError(f"Impossible to connect: {str(e)}")
 
 
-    def updateContext(self, deviceid, timeSlot: str, trafficFlow: int, coordinates: List, laneDirection: str):
-        # riceve il dato -> chiede allo shadow manager la shadow
-        # ottiene la shadow che descrive strada
-        # dalla strada posso cercare l'entity
+    def updateContext(self, deviceid, timeSlot: str, trafficFlow: int, coordinates: List[float], laneDirection: str):
+        shadowManager = DigitalShadowManager()
+        roadName = shadowManager.searchShadow(timeSlot=timeSlot, trafficFlow=trafficFlow, coordinates=coordinates, laneDirection=laneDirection)
+        # search entity
+        self.createConnection()
+
+
         return True
 
 
