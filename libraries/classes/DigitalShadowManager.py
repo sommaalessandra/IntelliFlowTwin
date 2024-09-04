@@ -32,12 +32,19 @@ class DataProcessor:
     def __init__(self, datapath):
         self.df = pd.read_csv(datapath)
 
-    def searchRoad(self, coordinates: typing.List[float], direction: str) -> str:
+    def searchRoad(self, coordinates, direction: str) -> str:
+        if self.df.empty:
+            raise ValueError("The DataFrame is empty or not loaded correctly.")
         # The +/- 0.001 buffer can be added to account for small variations in data (e.g., when we will receive real gps
         # data).
+        coordinates_str = f"{coordinates[0]}, {coordinates[1]}"
+
+        # Filter the DataFrame based on 'geopoint' and 'direzione'
         matching_row = self.df[
-            (self.df['latitudine'] == coordinates[0]) & (self.df['longitudine'] == coordinates[1]) &
-            (self.df['direzione'] == direction)]
+            (self.df['geopoint'] == coordinates_str) &
+            (self.df['direzione'].str.lower() == direction.lower())
+            ]
+
         if matching_row.empty:
             raise ValueError(
                 f"No matching rows found for the given coordinates {coordinates} and direction {direction}.")

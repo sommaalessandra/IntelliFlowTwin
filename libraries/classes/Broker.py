@@ -29,8 +29,9 @@ class Broker:
     def updateContext(self, deviceid, timeSlot: str, trafficFlow: int, coordinates: List[float], laneDirection: str):
         shadowManager = DigitalShadowManager()
         roadName = shadowManager.searchShadow(timeSlot=timeSlot, trafficFlow=trafficFlow, coordinates=coordinates, laneDirection=laneDirection)
+
         # search entity
-        self.createConnection()
+        cbConnection=self.createConnection()
 
 
         return True
