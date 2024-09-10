@@ -12,8 +12,7 @@ if __name__ == "__main__":
 
     ### PREPROCESSING PHASE
     # #csv file to be filtered
-    # inputFile = simulationDataPath + 'traffic_flow_2024.csv'
-    # filterFile = simulationDataPath + 'roadnames.csv'  # File CSV contenente l'insieme dei nomi di vie
+    # inputFile = simulationDataPath + 'trafzames.csv'  # File CSV contenente l'insieme dei nomi di vie
     # outputFile = simulationDataPath + 'output.csv'  # File CSV dove salvare il risultato filtrato
     # accuracyFile = simulationDataPath + 'accuratezza-spire-anno-2024.csv'  # File che rappresenta in percentuale l'accuratezza delle spire
     # accuracyOutputFile = simulationDataPath + 'accurate_output.csv'

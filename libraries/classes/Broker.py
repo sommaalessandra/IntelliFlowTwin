@@ -26,9 +26,10 @@ class Broker:
             raise ConnectionError(f"Impossible to connect: {str(e)}")
 
 
-    def updateContext(self, deviceid, timeSlot: str, trafficFlow: int, coordinates: List[float], laneDirection: str):
+    def updateContext(self, deviceID:str, timeSlot: str, trafficFlow: int, coordinates: List[float], laneDirection: str):
         shadowManager = DigitalShadowManager()
-        roadName = shadowManager.searchShadow(timeSlot=timeSlot, trafficFlow=trafficFlow, coordinates=coordinates, laneDirection=laneDirection)
+        roadName, edgeID = shadowManager.searchShadow(shadowType="road", timeSlot=timeSlot, trafficFlow=trafficFlow,
+                                                      coordinates=coordinates, laneDirection=laneDirection, deviceID=deviceID)
 
         # search entity
         cbConnection=self.createConnection()
@@ -37,6 +38,7 @@ class Broker:
         return True
 
 
-
+    def searchEntity(self, roadName: str) -> bool:
+        return True
 
 
