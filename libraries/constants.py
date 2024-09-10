@@ -14,7 +14,8 @@ tlPath = "./traffic_loop_dataset/real_dataset"
 # folder where registered devices are stored
 outputPath = "./registered_devices/"
 
-shadowPath = "./digital_shadows/coordinates_roads_edge.csv"
+shadowFilePath = "./digital_shadows/coordinates_roads_edge.csv"
+shadowPath = "./digital_shadows/"
 
 sumoToolsPath = r"C:\Program Files (x86)\Eclipse\Sumo\tools"
 
