@@ -16,6 +16,8 @@ outputPath = "./registered_devices/"
 
 shadowPath = "./digital_shadows/coordinates_roads_edge.csv"
 
+sumoToolsPath = r"C:\Program Files (x86)\Eclipse\Sumo\tools"
+
 schema = {
   "$schema": "http://json-schema.org/draft-04/schema#",
   "type": "object",
