@@ -32,12 +32,27 @@ class Simulator:
         libtraci.addStepListener(self.listener)
 
     def start(self):
+        if libtraci.simulation.isLoaded():
+            print("Warning: there was a previous simulation loaded. It will be overwritten")
         libtraci.start(["sumo", "-c", self.configurationPath + "run.sumocfg"], traceFile=self.logFile)
         print("Note that a simulation step is equivalent to " + str(libtraci.simulation.getDeltaT()) + " seconds")
         self.subscribeToInductionLoop("0.127_2.73_6_1__l0", "vehicleNumber")
-        # self.oneHourStep()
+        self.subscribeToInductionLoop("0.127_2.73_6_1__l1", "vehicleNumber")
+        self.subscribeToInductionLoop("0.127_2.73_6_1__l1", "intervalOccupancy")
         self.resume()
 
+    def startBasic(self):
+        if libtraci.simulation.isLoaded():
+            print("Warning: there was a previous simulation loaded. It will be overwritten")
+        libtraci.start(["sumo", "-c", self.configurationPath + "/basic/run.sumocfg"], traceFile=self.logFile)
+        self.resume()
+
+
+    def startCongestioned(self):
+        if libtraci.simulation.isLoaded():
+            print("Warning: there was a previous simulation loaded. It will be overwritten")
+        libtraci.start(["sumo", "-c", self.configurationPath + "/congestioned/run.sumocfg"], traceFile=self.logFile)
+        self.resume()
     def step(self, quantity=1):
         '''
         This function execute a defined quantity of steps in the simulation (by default only one). Usually one step correspond
@@ -46,10 +61,8 @@ class Simulator:
         step = 0
         while step < quantity and self.getRemainingVehicles() > 0:
             libtraci.simulationStep()
-            vehiclesSummary = self.getVehiclesSummary()
-            # inductionLoopSummary = self.getInductionLoopSummary()
-            self.findLinkedTLS("0.127_2.73_6_1__l0")
-            value = libtraci.inductionloop.getAllSubscriptionResults()
+            self.vehiclesSummary = self.getVehiclesSummary()
+            self.checkSubscription()
             # self.setTLSProgram("219", "utopia")
             print(self.getRemainingVehicles())
             step += 1
@@ -92,10 +105,10 @@ class Simulator:
             vehicleSummary["averageTimeLost"] = mean(element["timeLost"] for element in summary)
             vehicleSummary["averageDepartDelay"] = mean(element["departDelay"] for element in summary)
             vehicleSummary["averageWaitingTime"] = mean(element["totalWaitingTime"] for element in summary)
-            print("The Average Speed of Vehicles is: " + str(vehicleSummary["averageSpeed"]) + " m/s.")
-            print("The Average Time lost is " + str(vehicleSummary["averageTimeLost"]) + " seconds.")
-            print("The Average depart delay is " + str(vehicleSummary["averageDepartDelay"]) + " seconds.")
-            print("The Average time waited is " + str(vehicleSummary["averageWaitingTime"]) + " seconds.")
+            # print("The Average Speed of Vehicles is: " + str(vehicleSummary["averageSpeed"]) + " m/s.")
+            # print("The Average Time lost is " + str(vehicleSummary["averageTimeLost"]) + " seconds.")
+            # print("The Average depart delay is " + str(vehicleSummary["averageDepartDelay"]) + " seconds.")
+            # print("The Average time waited is " + str(vehicleSummary["averageWaitingTime"]) + " seconds.")
             return vehicleSummary
         print("There are no vehicles ")
         return None
@@ -153,6 +166,17 @@ class Simulator:
         elif value == "vehicleNumber":
             libtraci.inductionloop.subscribe(inductionLoopID, [libtraci.constants.VAR_INTERVAL_NUMBER])
 
+    def checkSubscription(self):
+        results = libtraci.inductionloop.getAllSubscriptionResults()
+        for key,value in results.items():
+            #checking if vehicle number is high
+            if libtraci.constants.VAR_INTERVAL_NUMBER in value and value[libtraci.constants.VAR_INTERVAL_NUMBER] > 10:
+                tlsIDs = self.findLinkedTLS(key)
+                for element in tlsIDs:
+                    self.setTLSProgram(element, "utopia")
+                    print("New program is " + str(libtraci.trafficlight.getProgram(element)))
+            if libtraci.constants.VAR_INTERVAL_OCCUPANCY in value and value[libtraci.constants.VAR_INTERVAL_OCCUPANCY] > 30:
+                print("value in excess")
 
 
 ### TLS FUNCTIONS
@@ -183,7 +207,7 @@ class Simulator:
 class ValueListener(libtraci.StepListener):
     def step(self, t=0):
         # do something after every call to simulationStep
-        print("ExampleListener called with parameter %s." % t)
+        # print("ExampleListener called with parameter %s." % t)
         # Here it is possible to get every kind of info required during onestep.
 
         # indicate that the step listener should stay active in the next step
