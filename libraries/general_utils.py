@@ -71,3 +71,6 @@ def processingTlData(timeSlot, trafficData, roads: dict):
         time.sleep(10) #simulating a sort of delay among entries
 
 
+#Function to convert geopoint format having a number without dots
+def convert_format(value):
+    return value.replace('.', '')  # Rimuovi solo il primo punto
