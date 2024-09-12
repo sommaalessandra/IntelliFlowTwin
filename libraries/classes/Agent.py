@@ -134,10 +134,10 @@ class Agent:
                         "timezone": timezone,
                         "attributes": [
                             {"object_id": "trafficFlow", "name": "trafficFlow", "type": "Integer"},
-                            {"object_id": "location", "name": "location", "type": "geo:point"},
+                            {"object_id": "location", "name": "location", "type": "GeoProperty"}, #geo:point
                             {"object_id": "laneDirection", "name": "laneDirection", "type": "TextUnrestricted"},
-                            {"object_id": "timeSlot", "name": "timeSlot", "type": "TextUnrestricted"}
-                            # {"object_id": "timestamp", "name": "timestamp", "type": "DateTime"}
+                            {"object_id": "timeSlot", "name": "timeSlot", "type": "TextUnrestricted"},
+                            {"object_id": "dateObserved", "name": "dateObserved", "type": "TextUnrestricted"}
                         ],
                         "static_attributes": [
                             {"name": "deviceCategory", "type": "Text", "value": "Sensor"},
@@ -151,14 +151,15 @@ class Agent:
     def retrievingData(self, *data, device_id, device_key):
         # TODO: befor even retrieving data we should check if there exist a device with
         #  that ID and if for that device the provided key is correct.
-        timeSlot = data[0][0]
-        flow = data[0][1]
-        coordinates = data[0][2]
-        direction = data[0][3]
-        self.measurementSending(timeSlot, flow, coordinates, direction, measure_type="trafficFlow", device_key=device_key,
+        date = data[0][0]
+        timeSlot = data[0][1]
+        flow = data[0][2]
+        coordinates = data[0][3]
+        direction = data[0][4]
+        self.measurementSending(date, timeSlot, flow, coordinates, direction, measure_type="trafficFlow", device_key=device_key,
                                 device_id=device_id)
 
-    def measurementSending(self, timeSlot: str, flow: int, coordinates, direction: str, measure_type: str, device_key, device_id):
+    def measurementSending(self, date: str, timeSlot: str, flow: int, coordinates, direction: str, measure_type: str, device_key, device_id):
         url_sending = "http://{}:{}/iot/json?k={}&i={}".format(self.hostname, self.southPortNumber,
                                                                       device_key, device_id)
         # building packet header and payload
@@ -176,7 +177,8 @@ class Agent:
                     "coordinates": coordinates
                 },
                 "timeSlot" : timeSlot,
-                "laneDirection": direction
+                "laneDirection": direction,
+                "dateObserved": date
             }
         sendingResponse = requests.post(url_sending, headers=header, data=json.dumps(payload))
         # if sending_response == 200:
@@ -191,7 +193,7 @@ class Agent:
      
         if sendingResponse == 200:
             cb = Broker(pn=self.brokerPortNumber, pnt=None, host=self.hostname, fiwareservice=self.fiwareService)
-            cb.updateContext(deviceid=device_id, timeSlot=timeSlot, trafficFlow=flow, coordinates=coordinates, laneDirection=direction)
+            cb.updateContext(deviceid=device_id, date=date, timeSlot=timeSlot, trafficFlow=flow, coordinates=coordinates, laneDirection=direction)
         '''
 
 

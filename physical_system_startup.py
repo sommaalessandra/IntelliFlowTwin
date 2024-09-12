@@ -109,11 +109,11 @@ def startPhysicalSystem(roads: dict[int, PhysicalSystemConnector]):
 
     [trafficData, files] = readingFiles(tlPath)
     for i, file in enumerate(files):
-        tlColumnsNames = ["index", "flow", "road_name", "ID_loop", "geopoint", "direction"]
+        tlColumnsNames = ["index", "date", "flow", "road_name", "ID_loop", "geopoint", "direction"]
         for i in range(23):
             # the time slot column reports the number of cars that passed through a traffic loop sensor during that time frame (the traffic flow in that slot)
             tempTimeSlot = str(datetime.time(i).strftime("%H:00")) + '-' + str(datetime.time(i+1).strftime("%H:00"))
-            tempData = trafficData[file][["index", tempTimeSlot, "Nome via", "ID_univoco_stazione_spira", "geopoint", "direzione"]]
+            tempData = trafficData[file][["index", "data", tempTimeSlot, "Nome via", "ID_univoco_stazione_spira", "geopoint", "direzione"]]
             tempData.columns = tlColumnsNames
             processingTlData(tempTimeSlot, tempData, roads)
             time.sleep(10)

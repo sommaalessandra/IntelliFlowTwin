@@ -57,15 +57,16 @@ def processingTlData(timeSlot, trafficData, roads: dict):
     for index, row in trafficData.iterrows():
         trafficFlow = row["flow"]
         raw_coordinates = row["geopoint"]
-        latitude, longitude = map(float, raw_coordinates.split(','))
-        coordinates=[latitude,longitude]
+        longitude, latitude = map(float, raw_coordinates.split(','))
+        coordinates=[longitude,latitude]
         direction = str(row["direction"])
         roadName = row['road_name']
+        date = row['date']
         if roadName in roads:
             trafficLoopIdentifier= "TL{}".format(str(row["ID_loop"]))
             trafficLoopSensor = roads[roadName].getSensor(trafficLoopIdentifier)
             if trafficLoopSensor is not None and trafficLoopSensor.name == "TL":
-                trafficLoopSensor.sendData(timeSlot, trafficFlow, coordinates, direction,
+                trafficLoopSensor.sendData(date, timeSlot, trafficFlow, coordinates, direction,
                                            device_id=trafficLoopSensor.devicePartialID,
                                            device_key=trafficLoopSensor.apiKey)
         time.sleep(10) #simulating a sort of delay among entries
