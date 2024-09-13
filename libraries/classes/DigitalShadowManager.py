@@ -2,6 +2,7 @@ import typing
 from libraries.constants import shadowPath, shadowFilePath
 import pandas as pd
 import os
+import shutil
 
 
 class Shadow:
@@ -32,18 +33,20 @@ class DataProcessor:
 
     def __init__(self, datapath):
         self.df = pd.read_csv(datapath)
+        self.df.columns = [
+            'StartingPoint', 'EndPoint', 'RoadName', 'Direction', 'Longitude',
+            'Latitude', 'Geopoint', 'TrafficLoopID', 'EdgeID', 'TrafficLoopCode',
+            'TrafficLoopLevel'
+        ]
 
-    def searchRoad(self, coordinates, direction: str) -> typing.Tuple[str, str]:
+    def searchRoad(self, coordinates, direction: str) -> typing.Tuple[str, str, str, str]:
         if self.df.empty:
             raise ValueError("The DataFrame is empty or not loaded correctly.")
-        # The +/- 0.001 buffer can be added to account for small variations in data (e.g., when we will receive real gps
-        # data).
-        coordinatestr = f"{coordinates[0]}, {coordinates[1]}"
 
-        # Filter the DataFrame based on 'geopoint' and 'direzione'
+        coordinatestr = f"{coordinates[0]}, {coordinates[1]}"
         matchingRow = self.df[
-            (self.df['geopoint'] == coordinatestr) &
-            (self.df['direzione'].str.lower() == direction.lower())
+            (self.df['Geopoint'] == coordinatestr) &
+            (self.df['Direction'].str.lower() == direction.lower())
             ]
 
         if matchingRow.empty:
@@ -51,26 +54,28 @@ class DataProcessor:
                 f"No matching rows found for the given coordinates {coordinates} and direction {direction}.")
         if len(matchingRow) > 1:
             raise ValueError("Multiple matching rows found; expected a single match.")
-        roadName = matchingRow.iloc[0]['Nome via']
-        edgeID = matchingRow.iloc[0]['edge_id']
-        return roadName, edgeID
+        roadName = matchingRow.iloc[0]['RoadName']
+        edgeID = matchingRow.iloc[0]['EdgeID']
+        startPoint = matchingRow.iloc[0]['StartingPoint']
+        endPoint = matchingRow.iloc[0]['EndPoint']
+        return roadName, edgeID, startPoint, endPoint
 
-    def searchTrafficLoop(self, deviceID: str, coordinates, direction: str) -> typing.Tuple[str, int] :
+    def searchTrafficLoop(self, deviceID: str, coordinates, direction: str) -> typing.Tuple[str, int]:
         if self.df.empty:
             raise ValueError("The DataFrame is empty or not loaded correctly.")
 
         coordinatestr = f"{coordinates[0]}, {coordinates[1]}"
         loopID = deviceID.split('TL')[-1]
 
-        self.df['geopoint'] = self.df['geopoint'].astype(str).str.strip()
-        self.df['ID_univoco_stazione_spira'] = self.df['ID_univoco_stazione_spira'].astype(str).str.strip()
-        self.df['direzione'] = self.df['direzione'].str.strip().str.lower()
+        self.df['Geopoint'] = self.df['Geopoint'].astype(str).str.strip()
+        self.df['TrafficLoopID'] = self.df['TrafficLoopID'].astype(str).str.strip()
+        self.df['Direction'] = self.df['Direction'].str.strip().str.lower()
 
-        # Filter based on coordinates, unique station ID, and direction
+        # Filter based on coordinates, unique ID, and direction
         matchingRow = self.df[
-            (self.df['geopoint'] == coordinatestr) &
-            (self.df['ID_univoco_stazione_spira'] == loopID) &
-            (self.df['direzione'] == direction.lower())
+            (self.df['Geopoint'] == coordinatestr) &
+            (self.df['TrafficLoopID'] == loopID) &
+            (self.df['Direction'] == direction.lower())
             ]
 
         if matchingRow.empty:
@@ -78,8 +83,8 @@ class DataProcessor:
                 f"No matching rows found for the given coordinates {coordinates}, direction {direction} and unique TL ID {loopID}.")
         if len(matchingRow) > 1:
             raise ValueError("Multiple matching rows found; expected a single match.")
-        loopCode = str(matchingRow.iloc[0]['codice_spira'])
-        loopLevel = int(matchingRow.iloc[0]['livello_spira'])
+        loopCode = str(matchingRow.iloc[0]['TrafficLoopCode'])
+        loopLevel = int(matchingRow.iloc[0]['TrafficLoopLevel'])
         return loopCode, loopLevel
 
 
@@ -87,18 +92,36 @@ class DataProcessor:
 class DigitalShadowManager:
 
     def __init__(self):
+        self.clearShadowData()
         self.shadowsByTypes: typing.Dict[str, typing.List[Shadow]] = {}
         self.dataProcessor = DataProcessor(shadowFilePath)
+
+    def clearShadowData(self):
+        """
+        Clears shadow data (directories and files) in the shadowPath, but preserves the shadowFilePath file.
+        """
+        if os.path.exists(shadowPath):
+            for item in os.listdir(shadowPath):
+                itemPath = os.path.join(shadowPath, item)
+                if itemPath == shadowFilePath:
+                    continue
+                if os.path.isdir(itemPath):
+                    shutil.rmtree(itemPath)
+                elif os.path.isfile(itemPath):
+                    os.remove(itemPath)
+            print(f"Cleared shadow data from {shadowPath}, preserving {shadowFilePath}.")
 
     def addShadow(self, shadowType: str, timeSlot: str, trafficFlow: int, coordinates: typing.List[float],direction: str, deviceID: str) -> Shadow:
         try:
             if shadowType == "road":
-                roadName, edgeID = self.dataProcessor.searchRoad(coordinates=coordinates, direction=direction)
+                roadName, edgeID, startPoint, endPoint = self.dataProcessor.searchRoad(coordinates=coordinates, direction=direction)
                 shadowAttributes = {
-                    "timeSlot": timeSlot,
-                    "trafficFlow": trafficFlow,
+                    "startPoint": startPoint,
+                    "endPoint": endPoint,
                     "coordinates": coordinates,
                     "direction": direction,
+                    "timeSlot": timeSlot,
+                    "trafficFlow": trafficFlow,
                     "edgeID": edgeID
                 }
 
@@ -112,7 +135,6 @@ class DigitalShadowManager:
             elif shadowType == "trafficLoop":
                 loopCode, loopLevel = self.dataProcessor.searchTrafficLoop(coordinates=coordinates,direction=direction,deviceID=deviceID)
                 shadowAttributes = {
-                    "deviceID": deviceID,
                     "coordinates": coordinates,
                     "timeSlot": timeSlot,
                     "trafficFlow": trafficFlow,
@@ -130,28 +152,28 @@ class DigitalShadowManager:
             print(f"Error occurred: {e}")
             raise RuntimeError(f"Failed to create shadow: {e}")
 
-    def searchShadow(self, shadowType: str, timeSlot: str, trafficFlow: int, coordinates: typing.List[float], laneDirection: str, deviceID: str) -> typing.Tuple[str,str]:
+    def searchShadow(self, shadowType: str, timeSlot: str, trafficFlow: int, coordinates: typing.List[float], laneDirection: str, deviceID: str) -> Shadow:
         if shadowType in self.shadowsByTypes and shadowType == "road":
             for shadow in self.shadowsByTypes[shadowType]:
                 if (shadow.get("coordinates") == coordinates and
                         shadow.get("direction") == laneDirection and
                         shadow.get("trafficFlow") == trafficFlow):
-                    return shadow.name, shadow.get("edgeID") # returns the roadName
+                    return shadow
         elif shadowType in self.shadowsByTypes and shadowType == "trafficLoop":
             for shadow in self.shadowsByTypes[shadowType]:
                 if (shadow.get("coordinates") == coordinates and
                         shadow.name == deviceID and
                         shadow.get("trafficFlow") == trafficFlow):
-                    return shadow.get("loopCode"), shadow.get("loopLevel")
+                    return shadow
 
         # if no matching shadow is found, it creates a new one
         try:
             if shadowType == "road":
                 newShadow = self.addShadow(shadowType, timeSlot=timeSlot, trafficFlow=trafficFlow,coordinates=coordinates, direction=laneDirection, deviceID=deviceID)
-                return newShadow.name, newShadow.get("edgeID")
+                return newShadow
             elif shadowType == "trafficLoop":
                 newShadow = self.addShadow(shadowType, timeSlot=timeSlot, trafficFlow=trafficFlow,coordinates=coordinates, direction=laneDirection, deviceID=deviceID)
-                return newShadow.get("loopCode"), newShadow.get("loopLevel")
+                return newShadow
 
         except RuntimeError as e:
             print(f"Error in searchShadow: {e}")
