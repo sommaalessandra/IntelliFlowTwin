@@ -1,12 +1,6 @@
 # environment variables file for the containers and their port
 containerEnvPath = "./docker-files/fiware-dt-platform/.env"
 
-# path where the data used for simulation are stored
-simulationDataPath = "./SUMO/joined/data/"
-
-simulationPath = "./SUMO/joined/"
-
-
 # folder where processed traffic loops measures are stored (typically in a one-day length)
 # TODO: this tlpath should be corrected to collect all the daily datasets
 #  that are in the folder. For now, we are taking only the real flow to check if it's working.
@@ -17,6 +11,16 @@ outputPath = "./registered_devices/"
 shadowFilePath = "./digital_shadows/coordinates_roads_edge.csv"
 shadowPath = "./digital_shadows/"
 
+
+### SMART DATA MODELS RELATED CONSTANTS
+transportationCTX="https://raw.githubusercontent.com/smart-data-models/dataModel.Transportation/4df15072b13da6c7bd7e86915df91fb28921aa7f/context.jsonld"
+deviceCTX="https://raw.githubusercontent.com/smart-data-models/dataModel.Device/master/context.jsonld"
+roadSegmentType="https://smartdatamodels.org/dataModel.Transportation/RoadSegment"
+
+### SUMO-RELATED CONSTANTS
+# path where the data used for simulation are stored
+simulationDataPath = "./SUMO/joined/data/"
+simulationPath = "./SUMO/joined/"
 sumoToolsPath = r"C:\Program Files (x86)\Eclipse\Sumo\tools"
 
 schema = {
