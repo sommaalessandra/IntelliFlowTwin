@@ -3,7 +3,8 @@ import pandas as pd
 import string
 import secrets
 import time
-from datetime import datetime
+from datetime import datetime, timedelta
+import random
 
 def readingFiles(folder):
     files = os.listdir(folder)
@@ -75,3 +76,24 @@ def processingTlData(timeSlot, trafficData, roads: dict):
 #Function to convert geopoint format having a number without dots
 def convert_format(value):
     return value.replace('.', '')  # Rimuovi solo il primo punto
+
+# Function to convert a date expressed as a string in ISO format
+def convertDate(date:str, timeslot: str):
+    day, month, year = map(int, date.split("/"))
+
+    # Step 2: Extract the end time from the time slot interval (24-hour format)
+    start_time, end_time = timeslot.split("-")  # Get both parts, e.g., "12:00" and "13:00"
+    start_hour_24 = int(start_time.split(":")[0])  # Extract the hour as an integer (12)
+    end_hour_24 = int(end_time.split(":")[0])  # Extract the hour as an integer (13 becomes 13)
+
+    # Step 3: Generate a random delay in minutes (between 0 and 10)
+    random_delay = random.randint(0, 10)
+
+    # Step 4: Combine date and time
+    # Create a datetime object for the end time of the time slot
+    base_time = datetime(year, month, day, end_hour_24, 0)
+
+    # Add the random delay in minutes to the base time
+    final_time = base_time + timedelta(minutes=random_delay)
+    d = final_time.strftime("%Y-%m-%dT%I:%M:%S") + "Z"
+    return d
