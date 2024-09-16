@@ -134,7 +134,7 @@ class Agent:
                         "timezone": timezone,
                         "attributes": [
                             {"object_id": "trafficFlow", "name": "trafficFlow", "type": "Integer"},
-                            {"object_id": "location", "name": "location", "type": "GeoProperty"}, #geo:point
+                            {"object_id": "location", "name": "location", "type": "GeoProperty"}, #GeoProperty is correct
                             {"object_id": "laneDirection", "name": "laneDirection", "type": "TextUnrestricted"},
                             {"object_id": "timeSlot", "name": "timeSlot", "type": "TextUnrestricted"},
                             {"object_id": "dateObserved", "name": "dateObserved", "type": "TextUnrestricted"}

@@ -42,7 +42,7 @@ if __name__ == "__main__":
                      fw_path="/")
 
     payload = SubscriptionBuilder("http://fiware-quantumleap:8668/v2/notify").description(
-        "Notify me of traffic Flow ").select_type("Device").watch(["trafficFlow"]).build()
+         "Notify me of traffic Flow ").select_type("Device").watch(["trafficFlow"]).build()
     print(payload)
     subscr_id = orion.subscriptions.create(payload)
 

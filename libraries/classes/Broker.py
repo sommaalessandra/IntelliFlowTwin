@@ -1,12 +1,15 @@
-from ngsildclient import Client
+from ngsildclient import Client, Entity
 from typing import Optional, List
 from libraries.classes.DigitalShadowManager import DigitalShadowManager
+from libraries.constants import roadSegmentType
+from libraries.general_utils import convertDate
 
 class Broker:
     portNumber: int
     portTemporal: Optional[int]
     fiwareService: str
     hostname: str
+    cityContext: bool
 
     def __init__(self, pn: int, pnt: Optional[int], host: str, fiwareservice: str):
         self.portNumber = pn
@@ -33,12 +36,24 @@ class Broker:
 
         # search entity
         cbConnection=self.createConnection()
+        e = self.searchRoadSegmentEntity(cbConnection=cbConnection,edgeID=edgeID)
+        if e is not None:
+            completeTimestamp = convertDate(date=date, timeslot=timeSlot)
+            self.updateFlow(newFlow=trafficFlow, date=completeTimestamp)
+            return True #update della prop
+        else:
+            return True # creo l'entity --> devo avere a disposizione anche tutte le entity ad essa collegate, oppure fare funzioni per update
+        #delle singole prop
 
+    def searchRoadSegmentEntity(self, cbConnection: Client, edgeID: str) -> Entity:
+        generator = cbConnection.query_generator(type=roadSegmentType)
+        e: Entity | None = next((e for e in generator if e["edgeID"].value == edgeID), None)
+        return e
 
+    def updateFlow(self, newFlow: int, date: str):
         return True
 
-
-    def searchEntity(self, roadName: str) -> bool:
+    def createRoadSegmentEntity(self):
         return True
 
 
