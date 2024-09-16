@@ -64,7 +64,7 @@ roadSegment.prop('endPoint', int(endPoint))
 roadSegment.gprop('location',(longitude,latitude))
 roadSegment.prop('direction', roadShadow.get('direction'))
 roadSegment.prop('edgeID', roadShadow.get('edgeID'))
-roadSegment.prop('trafficFlow', 0)
+#roadSegment.prop('trafficFlow', 0)
 roadSegment.prop('status', "open")
 
 
@@ -130,7 +130,8 @@ print(d)
 
 
 trafficFlowObs.tprop('DateTime',d)
-roadSegment.prop('trafficFlow', traffic_flow, observedat=d).rel(Rel.OBSERVED_BY, trafficLoop.id, nested=True)
+roadSegment.prop('trafficFlow', traffic_flow).rel(Rel.OBSERVED_BY, trafficLoop.id, nested=True)
+roadSegment.prop('DateTime', d)
 #road.pprint()
 #roadSegment.pprint()
 #trafficLoop.pprint()
@@ -157,8 +158,16 @@ e.pprint()
  #   e.pprint()
 
 
-e["trafficFlow"].value=20
-cbConnection.update(e)
+time_slot = "01:00-02:00"
+traffic_flow = 26 # Example traffic flow count
+date = "04/02/2024"
+datanuova=convertDate(date=date, timeslot=time_slot)
+
+e["trafficFlow"].value=traffic_flow
+e["DateTime"].value=datanuova
+response=cbConnection.update(e, overwrite=True)
+print(response)
+
 
 #e.prop("trafficFlow", 10, observedat=d).rel(Rel.OBSERVED_BY, "urn:ngsi-ld:Device:TL1", nested=True)
 #cbConnection.update(e)
