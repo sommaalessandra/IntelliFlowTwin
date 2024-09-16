@@ -1,11 +1,65 @@
+from libraries.classes import Agent
 import os
 import sys
 import psycopg2
 from libraries import constants, general_utils
-import Simulator
+from libraries.classes import Simulator
 import xml.etree.ElementTree as ET
 import pandas as pd
 import subprocess
+import datetime
+from tkinter import Tk     # from tkinter import Tk for Python 3.x
+from tkinter.filedialog import askopenfilename
+
+
+class ScenarioGenerator:
+    sumoConfiguration: str
+    routeFilePath = "basic/generatedRoutes.rou.xml"
+    sim: Simulator
+
+    def __init__(self, sumocfg: str, sim: Simulator):
+        self.sumoConfiguration = sumocfg
+        self.sim = sim
+
+    # Function to generate routes starting from an edgefile with counting vehicles
+    def generateRoutes(self, edgefile: str, totalVehicles: int, minLoops = 1):
+        if edgefile is None:
+            print("No edgefile was given")
+            return None
+        if totalVehicles is None:
+            print("The total number of vehicles was not defined")
+            return
+        if os.path.exists(constants.sumoToolsPath):
+            date = datetime.datetime.now().strftime('%Y-%m-%d_%H-%M-%S')
+            newpath = "../" + constants.simulationPath + date
+            if not os.path.exists(newpath):
+                os.makedirs(newpath)
+            script1 = constants.sumoToolsPath + "/randomTrips.py"
+            arg1 = constants.sumoToolsPath + "\\joined_lanes.net.xml"
+            subprocess.run(['python', script1, "-n", arg1, "-r", newpath +
+                            "sampleRoutes.rou.xml", "--fringe-factor", "10", "--random", "--min-distance",
+                            "100", "--random-factor", "200"])
+            script2 = constants.sumoToolsPath + "/routeSampler.py"
+            subprocess.run([sys.executable,  script2, "-r", newpath + "sampleRoutes.rou.xml",
+                            "--edgedata-files", edgefile, "-o", newpath +
+                            "generatedRoutes.rou.xml", "--total-count", str(totalVehicles), "--optimize",
+                            "full", "--min-count", str(minLoops)])
+            print("Routes Generated")
+            self.sim.changeRoutePath(newpath + "generatedRoutes.rou.xml")
+            # self.setScenario()
+
+
+    def setScenario(self, routeFilePath = None,manual = False):
+        if not manual and routeFilePath is not None:
+            self.sim.changeRoutePath(self.routeFilePath)
+        elif manual:
+            Tk().withdraw()
+            self.routeFilePath = askopenfilename(title= "Select a Route File", filetypes = (("route files","*.rou.xml"),("xml files","*.xml")))
+            if self.routeFilePath is None:
+                print("No route file was selected")
+                return
+            self.sim.changeRoutePath(self.routeFilePath)
+            print("The chosen file was " + self.routeFilePath)
 
 
 class Planner:
@@ -13,18 +67,23 @@ class Planner:
     cursor: None
     connection: None
     simulator: Simulator
+    agent: Agent
+    scenarioGenerator: ScenarioGenerator
 
-    def __init__(self, connectionString: str, sim: Simulator):
+    def __init__(self, connectionString: str, sim: Simulator, agent: Agent):
         self.connectionString = connectionString
         if self.connectionString is not None:
             self.connection, self.cursor = self.dbConnect(self.connectionString)
         self.simulator = sim
+        self.agent = agent
+        self.scenarioGenerator = ScenarioGenerator("run.sumocfg", sim=self.simulator)
 
-    def dbConnect(self, connectionString: str, host = "localhost", port="5432", dbname = "quantumleap", username = "postgres", password = "postgres"):
+    def dbConnect(self, connectionString: str, host="localhost", port="5432", dbname="quantumleap", username="postgres",
+                  password="postgres"):
         if connectionString is not None:
             connection = connectionString
         else:
-            connection = "postgres://" + username + ":" +password + "@" + host + ":" + port + "/" + dbname
+            connection = "postgres://" + username + ":" + password + "@" + host + ":" + port + "/" + dbname
         with psycopg2.connect(connection) as conn:
             cursor = conn.cursor()
             return conn, cursor
@@ -50,7 +109,7 @@ class Planner:
 
     #Function to get the edgeId starting from the geopoint
     #NOTE: this function is not precise because of the trimming of the coordinates. It's desirable to get edgeID in other ways
-    def getEdgeID(self, latitudine: float,longitudine: float ):
+    def getEdgeID(self, latitudine: float, longitudine: float):
         lat = general_utils.convert_format(str(latitudine))
         lon = general_utils.convert_format(str(longitudine))
         # Trimming because of the roundings
@@ -65,26 +124,3 @@ class Planner:
             return None
         return matches.iloc[0]["edge_id"]
 
-    #Function to generate routes starting from an edgefile with counting vehicles
-    def generateRoutes(self, edgefile: str, totalVehicles: int, minLoops = 1):
-        if edgefile is None:
-            print("No edgefile was given")
-            return None
-        if totalVehicles is None:
-            print("The total number of vehicles was not defined")
-            return
-        if os.path.exists(constants.sumoToolsPath):
-            newpath = "../" + constants.simulationPath + "/newSim/"
-            if not os.path.exists(newpath):
-                os.makedirs(newpath)
-            script1 = constants.sumoToolsPath + "/randomTrips.py"
-            arg1 = constants.sumoToolsPath + "\\joined_lanes.net.xml"
-            subprocess.run(['python', script1, "-n", arg1, "-r", newpath +
-                            "sampleRoutes.rou.xml", "--fringe-factor", "10", "--random", "--min-distance",
-                            "100", "--random-factor", "200"])
-            script2 = constants.sumoToolsPath + "/routeSampler.py"
-            subprocess.run([sys.executable,  script2, "-r", newpath + "sampleRoutes.rou.xml",
-                            "--edgedata-files", edgefile, "-o", newpath +
-                            "generatedRoutes.rou.xml", "--total-count", str(totalVehicles), "--optimize",
-                            "full", "--min-count", str(minLoops)])
-            print("Routes Generated")
