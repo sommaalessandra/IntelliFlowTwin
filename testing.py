@@ -131,7 +131,8 @@ print(d)
 
 trafficFlowObs.tprop('DateTime',d)
 roadSegment.prop('trafficFlow', traffic_flow).rel(Rel.OBSERVED_BY, trafficLoop.id, nested=True)
-roadSegment.prop('DateTime', d)
+roadSegment.prop('refTrafficFlowObs', trafficFlowObs.id)
+roadSegment.tprop('DateTime', d)
 #road.pprint()
 #roadSegment.pprint()
 #trafficLoop.pprint()
@@ -164,10 +165,12 @@ date = "04/02/2024"
 datanuova=convertDate(date=date, timeslot=time_slot)
 
 e["trafficFlow"].value=traffic_flow
-e["DateTime"].value=datanuova
+e.tprop("DateTime",datanuova)
 response=cbConnection.update(e, overwrite=True)
-print(response)
 
+flowObsid=e["refTrafficFlowObs"].value
+eTFO = cbConnection.get(flowObsid)
+eTFO.pprint()
 
 #e.prop("trafficFlow", 10, observedat=d).rel(Rel.OBSERVED_BY, "urn:ngsi-ld:Device:TL1", nested=True)
 #cbConnection.update(e)
