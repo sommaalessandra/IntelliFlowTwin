@@ -10,7 +10,7 @@
 
 from libraries.constants import *
 from statistics import mean
-
+import os
 # These libraries are quite the same. They include most of the commands available in the traci library, but the
 # time performance better. Libtraci addresses some limitation of the libsumo library, in particular the multiple client
 # communication with the simulation.
@@ -21,12 +21,14 @@ import traci.constants as tc
 
 class Simulator:
     configurationPath: str
+    routePath: str
     logFile: str
     listener: libtraci.StepListener
     vehicleSummary: {}
 
     def __init__(self,  configurationpath: str, logfile: str):
         self.configurationPath = configurationpath
+        self.routePath = configurationpath
         self.logFile = logfile
         self.listener = ValueListener()
         libtraci.addStepListener(self.listener)
@@ -36,9 +38,10 @@ class Simulator:
             print("Warning: there was a previous simulation loaded. It will be overwritten")
         libtraci.start(["sumo", "-c", self.configurationPath + "run.sumocfg"], traceFile=self.logFile)
         print("Note that a simulation step is equivalent to " + str(libtraci.simulation.getDeltaT()) + " seconds")
-        self.subscribeToInductionLoop("0.127_2.73_6_1__l0", "vehicleNumber")
-        self.subscribeToInductionLoop("0.127_2.73_6_1__l1", "vehicleNumber")
-        self.subscribeToInductionLoop("0.127_2.73_6_1__l1", "intervalOccupancy")
+        #SUBSCRIPTION EXAMPLE
+        # self.subscribeToInductionLoop("0.127_2.73_6_1__l0", "vehicleNumber")
+        # self.subscribeToInductionLoop("0.127_2.73_6_1__l1", "vehicleNumber")
+        # self.subscribeToInductionLoop("0.127_2.73_6_1__l1", "intervalOccupancy")
         self.resume()
 
     def startBasic(self):
@@ -85,6 +88,10 @@ class Simulator:
         # this function returns the vehicles inside the simulation plus the ones that are waiting to start
         return libtraci.simulation.getMinExpectedNumber()
 
+    def changeRoutePath(self, routePath: str):
+        self.routePath = routePath
+        os.environ["ROUTEFILENAME"] = routePath
+        print("The path was set to " + routePath)
 
 ### VEHICLE FUNCTIONS
     def getVehiclesSummary(self):
@@ -145,7 +152,6 @@ class Simulator:
         inductionLoopSummary["averageVehicleNumber"] = mean(element["vehicleNumber"] for element in detectors)
         return inductionLoopSummary
 
-
     def findLinkedTLS(self, detectorID: str):
         lane = libtraci.inductionloop.getLaneID(detectorID)
         tls = self.getTLSList()
@@ -156,7 +162,6 @@ class Simulator:
                 found.append(element)
 
         return found
-
 
     def subscribeToInductionLoop(self, inductionLoopID, value: str):
         if value == "intervalOccupancy":
@@ -178,7 +183,6 @@ class Simulator:
             if libtraci.constants.VAR_INTERVAL_OCCUPANCY in value and value[libtraci.constants.VAR_INTERVAL_OCCUPANCY] > 30:
                 print("value in excess")
 
-
 ### TLS FUNCTIONS
     def getTLSList(self):
         return libtraci.trafficlight_getIDList()
@@ -190,7 +194,6 @@ class Simulator:
         else:
             return False
 
-
     def setTLSProgram(self, trafficLightID : str, programID: str, all = False):
     ### NOTE: There is still no check of existence of specific program inside the additional file
         if all:
@@ -201,7 +204,6 @@ class Simulator:
         elif self.checkTLS(trafficLightID):
             libtraci.trafficlight.setProgram(trafficLightID, programID)
             print("The program of the TLS " + str(trafficLightID) + " is changed to " + str(programID))
-
 
 
 class ValueListener(libtraci.StepListener):
