@@ -31,13 +31,14 @@ pause
 powershell -Command "if ((Get-ExecutionPolicy) -ne 'RemoteSigned') { Set-ExecutionPolicy Bypass -Scope CurrentUser -Force }"
 
 :: Activating virtual environent using activate (CMD version)
-call .\.venv\Scripts\activate.bat
-
+if exist .\.venv\Scripts\ (call .\.venv\Scripts\activate.bat) else (if exist .\venv\Scripts\ (call .\venv\Scripts\activate.bat) else (echo path for activation not found))
 :: Verify if the environment was activated successfully
 if defined VIRTUAL_ENV (
     echo "Virtual environment activated successfully."
 ) else (
     echo "Fail on environent activation."
+    pause
+    exit
 )
 echo.
 echo Press a button to start python module
