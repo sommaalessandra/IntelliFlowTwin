@@ -19,10 +19,12 @@ if %errorlevel% neq 0 (
     echo container with "%container_name%" prefix does not exist.
 	cd docker-files/fiware-dt-platform
 	docker-compose up -d
+	cd ../..
 ) else (
     echo  container with "%container_name%" prefix found.
     cd docker-files/fiware-dt-platform
 	docker-compose up -d
+	cd ../..
 	
 )
 echo.
