@@ -21,6 +21,8 @@ if %errorlevel% neq 0 (
 	docker-compose up -d
 ) else (
     echo  container with "%container_name%" prefix found.
+    cd docker-files/fiware-dt-platform
+	docker-compose up -d
 	
 )
 echo.
