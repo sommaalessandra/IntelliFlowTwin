@@ -39,14 +39,21 @@ class DataProcessor:
             'TrafficLoopLevel'
         ]
 
-    def searchRoad(self, coordinates, direction: str) -> typing.Tuple[str, str, str, str]:
+    def searchRoad(self, coordinates, direction: str, deviceID: str) -> typing.Tuple[str, str, str, str]:
         if self.df.empty:
             raise ValueError("The DataFrame is empty or not loaded correctly.")
 
         coordinatestr = f"{coordinates[0]}, {coordinates[1]}"
+        loopID = deviceID.split('TL')[-1]
+
+        self.df['Geopoint'] = self.df['Geopoint'].astype(str).str.strip()
+        self.df['TrafficLoopID'] = self.df['TrafficLoopID'].astype(str).str.strip()
+        self.df['Direction'] = self.df['Direction'].str.strip().str.lower()
+
         matchingRow = self.df[
             (self.df['Geopoint'] == coordinatestr) &
-            (self.df['Direction'].str.lower() == direction.lower())
+            (self.df['TrafficLoopID'] == loopID) &
+            (self.df['Direction'] == direction.lower())
             ]
 
         if matchingRow.empty:
@@ -114,7 +121,7 @@ class DigitalShadowManager:
     def addShadow(self, shadowType: str, timeSlot: str, trafficFlow: int, coordinates: typing.List[float],direction: str, deviceID: str) -> Shadow:
         try:
             if shadowType == "road":
-                roadName, edgeID, startPoint, endPoint = self.dataProcessor.searchRoad(coordinates=coordinates, direction=direction)
+                roadName, edgeID, startPoint, endPoint = self.dataProcessor.searchRoad(coordinates=coordinates, direction=direction, deviceID=deviceID)
                 shadowAttributes = {
                     "startPoint": startPoint,
                     "endPoint": endPoint,

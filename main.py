@@ -7,6 +7,7 @@ from libraries.general_utils import *
 from libraries.preprocessing_utils import *
 from libraries.classes.Agent import *
 from physical_system_startup import *
+from libraries.constants import roadSegmentType
 
 if __name__ == "__main__":
 
@@ -42,7 +43,7 @@ if __name__ == "__main__":
                      fw_path="/")
 
     payload = SubscriptionBuilder("http://fiware-quantumleap:8668/v2/notify").description(
-         "Notify me of traffic Flow ").select_type("Device").watch(["trafficFlow"]).build()
+         "Notify me of traffic Flow ").select_type(roadSegmentType).watch(["trafficFlow"]).build()
     print(payload)
     subscr_id = orion.subscriptions.create(payload)
 

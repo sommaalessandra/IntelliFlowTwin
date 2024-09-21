@@ -16,6 +16,7 @@ shadowPath = "./digital_shadows/"
 transportationCTX="https://raw.githubusercontent.com/smart-data-models/dataModel.Transportation/4df15072b13da6c7bd7e86915df91fb28921aa7f/context.jsonld"
 deviceCTX="https://raw.githubusercontent.com/smart-data-models/dataModel.Device/master/context.jsonld"
 roadSegmentType="https://smartdatamodels.org/dataModel.Transportation/RoadSegment"
+roadType="https://smartdatamodels.org/dataModel.Transportation/Road"
 
 ### SUMO-RELATED CONSTANTS
 # path where the data used for simulation are stored

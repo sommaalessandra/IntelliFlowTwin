@@ -27,6 +27,8 @@ class Agent:
     northPortNumber: int
     fiwareService: str
     fiwareServicePath: str
+    cbReference: Optional['Broker']
+    cbConnection: Optional[Client]
 
     def __init__(self, aid: str, hostname: str, cb_port: int, south_port: int, northport: int, fw_service: str, fw_path: str):
         self.agentID = aid
@@ -36,6 +38,8 @@ class Agent:
         self.northPortNumber = northport
         self.fiwareService = fw_service
         self.fiwareServicePath = fw_path
+        self.cbReference = None
+        self.cbConnection = None
 
     def isServiceGroupRegistered(self, entity_type: str):
         # Check if the device is already registered
@@ -160,6 +164,23 @@ class Agent:
                                 device_id=device_id)
 
     def measurementSending(self, date: str, timeSlot: str, flow: int, coordinates, direction: str, measure_type: str, device_key, device_id):
+        """
+        Send a traffic flow measurement to the IoT Agent and update the Context Broker.
+
+        :param date: Date of the observation in day/month/year format
+        :param timeSlot: Time slot of the observation (e.g., "08:00-09:00") on 24h format.
+        :param flow: Measured traffic flow.
+        :param coordinates: GPS coordinates (longitude, latitude) of the traffic loop.
+        :param direction: Direction of the lane (e.g., "N", "S", "E", "W").
+        :param measure_type: Type of the measurement (e.g., "trafficFlow").
+        :param device_key: API key for the device.
+        :param device_id: ID of the device.
+
+        :returns: True if the measurement is sent and context is updated successfully, False otherwise.
+        :raises: Exception if any failure occurs during the process.
+        """
+
+
         url_sending = "http://{}:{}/iot/json?k={}&i={}".format(self.hostname, self.southPortNumber,
                                                                       device_key, device_id)
         # building packet header and payload
@@ -180,22 +201,27 @@ class Agent:
                 "laneDirection": direction,
                 "dateObserved": date
             }
-        sendingResponse = requests.post(url_sending, headers=header, data=json.dumps(payload))
-        # if sending_response == 200:
-        # TODO: according to the IoT Agent guidelines (see the activity diagram) after retrieving the iot device from the
-        #  database the IoT agent has to map the values to entities attributes and trigger the context update
 
-        ''' steps: 
-        - after sending the measurement; if the response is 200; trigger the update of the entity
-        - triggering the update requires to: 
-        1) connect to the Context Broker cb
-        2) send data to cb; the cb 
-     
-        if sendingResponse == 200:
-            cb = Broker(pn=self.brokerPortNumber, pnt=None, host=self.hostname, fiwareservice=self.fiwareService)
-            cb.updateContext(deviceid=device_id, date=date, timeSlot=timeSlot, trafficFlow=flow, coordinates=coordinates, laneDirection=direction)
-        '''
+        try:
+            sendingResponse = requests.post(url_sending, headers=header, data=json.dumps(payload))
+            sendingResponse.raise_for_status()  # Raise an error if the status code is not 2xx
+        except requests.RequestException as e:
+            raise Exception(f"Failed to send data to IoT Agent: {e}")
 
+        if sendingResponse.status_code == 200 or sendingResponse.status_code == 201:
+            try:
+                if self.cbReference is None:
+                    self.cbReference = Broker(pn=self.brokerPortNumber, pnt=None, host=self.hostname, fiwareservice=self.fiwareService)
+                if self.cbConnection is None:
+                    self.cbConnection = self.cbReference.createConnection()
+                cbResponse = self.cbReference.updateContext(deviceID=device_id, date=date, timeSlot=timeSlot, trafficFlow=flow,
+                                                  coordinates=coordinates,laneDirection=direction, cbConnection=self.cbConnection)
+                if cbResponse is True:
+                    return True
+                else:
+                    raise Exception(f"Context update failed for device {device_id}.")
 
-
-        return sendingResponse
+            except Exception as e:
+                raise Exception(f"Failed to update context broker: {e}")
+        else:
+            raise Exception(f"Failed to send measurement. HTTP status code: {sendingResponse.status_code}")
