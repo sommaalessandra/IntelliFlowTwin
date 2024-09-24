@@ -56,6 +56,7 @@ class Simulator:
             print("Warning: there was a previous simulation loaded. It will be overwritten")
         libtraci.start(["sumo", "-c", self.configurationPath + "/congestioned/run.sumocfg"], traceFile=self.logFile)
         self.resume()
+
     def step(self, quantity=1):
         '''
         This function execute a defined quantity of steps in the simulation (by default only one). Usually one step correspond
@@ -89,6 +90,9 @@ class Simulator:
         return libtraci.simulation.getMinExpectedNumber()
 
     def changeRoutePath(self, routePath: str):
+        if not os.path.exists(routePath):
+            print("Error: the given path does not exists")
+            return
         self.routePath = routePath
         os.environ["ROUTEFILENAME"] = routePath
         print("The path was set to " + routePath)
@@ -116,13 +120,14 @@ class Simulator:
             # print("The Average Time lost is " + str(vehicleSummary["averageTimeLost"]) + " seconds.")
             # print("The Average depart delay is " + str(vehicleSummary["averageDepartDelay"]) + " seconds.")
             # print("The Average time waited is " + str(vehicleSummary["averageWaitingTime"]) + " seconds.")
+            self.vehicleSummary = vehicleSummary
             return vehicleSummary
         print("There are no vehicles ")
         return None
 
-    def updateSummary(self):
-        # Not sure if it's useful include this data inside Simulator class
-        self.vehicleSummary = self.getVehiclesSummary()
+    # def updateSummary(self):
+    #     # Not sure if it's useful include this data inside Simulator class
+    #     self.vehicleSummary = self.getVehiclesSummary()
 
 ### INDUCTION LOOP FUNCTIONS
     def getDetectorList(self):
@@ -134,7 +139,7 @@ class Simulator:
         for detector in detectorList:
             intervalOccupancies.append(libtraci.inductionloop.getIntervalOccupancy(detector))
         average = mean(intervalOccupancies)
-        print(average)
+        # print(average)
         return average
 
     def getInductionLoopSummary(self):

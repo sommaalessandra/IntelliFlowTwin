@@ -20,7 +20,7 @@ roadSegmentType="https://smartdatamodels.org/dataModel.Transportation/RoadSegmen
 ### SUMO-RELATED CONSTANTS
 # path where the data used for simulation are stored
 simulationDataPath = "./SUMO/joined/data/"
-simulationPath = "./SUMO/joined/"
+simulationPath = "SUMO/joined/"
 sumoToolsPath = r"C:\Program Files (x86)\Eclipse\Sumo\tools"
 
 schema = {

@@ -71,7 +71,7 @@ def filter_with_accuracy(file_input, file_accuracy, date_column='data', sensor_i
     df.to_csv(output_file, sep=';')
     print("Output with filtered accuracy created. ")
 
-def link_roads_IDs(file_input, road_file_ids, output_file = 'final.csv' ,input_roadname_column = 'Nome via', direction_column = 'direzione', roadname_column = 'nome_via'):
+def link_roads_IDs(file_input, road_file_ids, output_file = 'final.csv' ,input_roadname_column = 'Nome via', direction_column = 'direzione', filter_direction_column = 'orientamento',roadname_column = 'nome_via'):
     """
     The function adds the road IDs based on the road file given as a new column in the input file. The entries in the
     input file must have a direction (expressed using direction_column) in order to be linked with the right lane ID of
@@ -91,9 +91,9 @@ def link_roads_IDs(file_input, road_file_ids, output_file = 'final.csv' ,input_r
         if len(direction) > 1:
             direction1 = direction[:1]
             direction2 = direction[1:]
-            matched_row = df2[df2[roadname_column].str.contains(roadname) & (df2[direction_column].str.contains(direction1) | df2[direction_column].str.contains(direction2))]
+            matched_row = df2[df2[roadname_column].str.contains(roadname) & (df2[filter_direction_column].str.contains(direction1) | df2[filter_direction_column].str.contains(direction2))]
         else:
-            matched_row = df2[df2[roadname_column].str.contains(roadname) & df2[direction_column].str.contains(direction)]
+            matched_row = df2[df2[roadname_column].str.contains(roadname) & df2[filter_direction_column].str.contains(direction)]
         df1.at[index, 'edge_id'] = matched_row['edge_id'].values
     df1.to_csv(simulationDataPath + output_file, sep=';')
     print("Created Output file with Road IDs linked")
