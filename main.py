@@ -6,6 +6,7 @@ from libraries.constants import *
 from libraries.general_utils import *
 from libraries.preprocessing_utils import *
 from libraries.classes.Agent import *
+from libraries.classes.Planner import *
 from physical_system_startup import *
 from libraries.constants import roadSegmentType
 
@@ -54,5 +55,14 @@ if __name__ == "__main__":
     # simulation.startBasic()
     # simulation.start()
 
+    simulator = Simulator(configurationpath="SUMO/joined/", logfile="./command_log.txt")
+    planner = Planner(connectionString="postgres://postgres:postgres@localhost:5432/quantumleap", sim=simulator, agent=IoTAgent)
 
+    filePath = planner.scenarioGenerator.generateRoutes("libraries/edgefile.xml", 3000, 3, congestioned=True)
+    planner.scenarioGenerator.setScenario(routeFilePath=filePath, manual=False)
+    # simulator.changeRoutePath("SUMO/joined/2024-09-23_15-05-52_congestioned/generatedRoutes.rou.xml")
+
+    # simulator = Simulator(configurationpath=simulationPath, logfile="./command_log.txt")
+    # simulator.startBasic()
+    simulator.start()
 
