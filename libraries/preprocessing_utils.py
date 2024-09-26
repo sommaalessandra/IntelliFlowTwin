@@ -132,3 +132,20 @@ def filter_day(input_file, output_file = 'day_flow.csv', date = "01/02/2024"):
     df1 = pd.read_csv(input_file, sep=';')
     df1 = df1[df1['data'].str.contains(date)]
     df1.to_csv(simulationDataPath + output_file, sep=',')
+
+
+# Function to map the existing traffic loop and generate an additional SUMO file containing the traffic detectors at
+# corresponding positions
+def generateDetectorFile(realDataFile: str, outputPath: str):
+    df = pd.read_csv(realDataFile)
+    trafficLoopRoads = df["edge_id"].unique()
+    print(len(trafficLoopRoads.shape))
+    root = ET.Element('additional')
+    for index, road in enumerate(trafficLoopRoads):
+        road = road.replace(" ", "")
+        ET.SubElement(root, 'inductionLoop', id = str(index)+'_0', lane=road+'_0', pos="-5", freq="1800", file="e1_real_output.xml")
+        # ET.SubElement(root, 'inductionLoop', id = str(index)+'_1', lane = road+'_1', pos = "5", freq = "1800", file = "e1_real_output.xml")
+    tree = ET.ElementTree(root)
+    ET.indent(tree, '  ')
+    tree.write(outputPath+"detectors.add.xml", "UTF-8")
+

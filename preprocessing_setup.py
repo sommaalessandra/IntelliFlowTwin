@@ -20,3 +20,5 @@ linked_roads = simulationDataPath + 'final.csv'
 generate_edgedata_file(linked_roads, 'edgedata.xml', '01/03/2024', '10:00-11:00')
 
 filter_day(linked_roads)
+
+generateDetectorFile("./traffic_loop_dataset/day_flow.csv", "./SUMO/joined/data/")
