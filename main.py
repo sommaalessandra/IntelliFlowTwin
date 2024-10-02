@@ -39,7 +39,7 @@ if __name__ == "__main__":
     simulator.getInductionLoopSummary()
     planner = Planner(connectionString="postgres://postgres:postgres@localhost:5432/quantumleap", sim=simulator, agent=IoTAgent)
 
-    planner.registerOneHourFlow(timeslot="01:00-02:00", date="2024/02/01", devicetype='roadsegment', timecolumn="datetime")
+    planner.recordFlow(timeslot="01:00-02:00", date="2024/02/01", devicetype='roadsegment', timecolumn="datetime")
 
     filePath = planner.scenarioGenerator.generateRoutes("libraries/edgefile.xml", 3000, 3, congestioned=True)
     planner.scenarioGenerator.setScenario(routeFilePath=filePath, manual=False)

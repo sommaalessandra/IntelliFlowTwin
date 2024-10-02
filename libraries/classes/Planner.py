@@ -118,7 +118,13 @@ class Planner:
             return conn, cursor
 
     #Function to create an edgefile with counting vehicles
-    def registerOneHourFlow(self, timeslot: str, date: str, devicetype: str, timecolumn = "datetime"):
+    def recordFlow(self, timeslot: str, date: str, devicetype: str, timecolumn = "datetime"):
+        """
+        The function reads the data stored in the historical database, transforming the traffic readings into an
+        edgefile useful for simulation. Traffic readings must refer to a specific time and day, indicated via the
+        variables :param timeslot and :param date. In addition, it should be specified from which entity the
+        measurements should be taken
+        """
         if (timeslot and date) is None:
             print("No full datetime was given!")
             return
@@ -127,14 +133,14 @@ class Planner:
             return
         root = ET.Element('data')
         interval = ET.SubElement(root, 'interval', begin='0', end='3600')
-        time = int(timeslot[0:2])
         if devicetype == "roadsegment":
             time1 = str(timeslot[0:5])
             time2 = str(timeslot[6:11])
             first = date + 'T' + time1 + ":00+00"
             second = date + 'T' + time2 + ":00+00"
-            query = 'SELECT entity_id, trafficflow, ST_X(location) as lat, ST_Y(location), edgeid as lon FROM "mtopeniot"."ethttps://smartdatamodels.org/datamodel.transportation/roadsegm"' + "  WHERE datetime BETWEEN %s::timestamptz AND %s::timestamptz;"
-            # query = 'SELECT entity_id, trafficflow, ST_X(location) as lat, ST_Y(location), edgeid as lon FROM mtopeniot.et' + devicetype
+            query = (('SELECT entity_id, trafficflow, ST_X(location) as lat, ST_Y(location),'
+                     ' edgeid as lon FROM "mtopeniot"."ethttps://smartdatamodels.org/datamodel.transportation/roadsegm"')
+                     + "  WHERE "+ timecolumn +" BETWEEN %s::timestamptz AND %s::timestamptz;")
             self.cursor.execute(query, (first, second))
             for row in self.cursor.fetchall():
                 edge_id = row[4]
@@ -144,7 +150,6 @@ class Planner:
             query = "SELECT entity_id, trafficflow, ST_X(location) as lat, ST_Y(location) as lon FROM mtopeniot.etdevice WHERE "+ timecolumn + " LIKE %s and dateobserved LIKE %s"
             self.cursor.execute(query,  (timeslot, date))
             for row in self.cursor.fetchall():
-
                 edge_id = self.getEdgeID(row[2], row[3])
                 if edge_id is not None:
                     edge = ET.SubElement(interval, 'edge', id=edge_id, entered=str(row[1]))
