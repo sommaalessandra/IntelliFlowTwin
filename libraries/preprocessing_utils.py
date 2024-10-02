@@ -136,7 +136,7 @@ def filter_day(input_file, output_file = 'day_flow.csv', date = "01/02/2024"):
 
 # Function to map the existing traffic loop and generate an additional SUMO file containing the traffic detectors at
 # corresponding positions
-def generateDetectorFile(realDataFile: str, outputPath: str):
+def generate_detector_file(realDataFile: str, outputPath: str):
     df = pd.read_csv(realDataFile)
     trafficLoopRoads = df["edge_id"].unique()
     print(len(trafficLoopRoads.shape))

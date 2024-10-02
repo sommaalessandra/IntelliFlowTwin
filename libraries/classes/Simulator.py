@@ -67,6 +67,7 @@ class Simulator:
             libtraci.simulationStep()
             self.vehiclesSummary = self.getVehiclesSummary()
             self.checkSubscription()
+            self.getInductionLoopSummary()
             # self.setTLSProgram("219", "utopia")
             print(self.getRemainingVehicles())
             step += 1

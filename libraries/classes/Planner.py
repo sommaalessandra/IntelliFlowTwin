@@ -118,20 +118,37 @@ class Planner:
             return conn, cursor
 
     #Function to create an edgefile with counting vehicles
-    def registerOneHourFlow(self, timeslot: str):
-        if timeslot is None:
-            print("no timeslot was given!")
-            return None
+    def registerOneHourFlow(self, timeslot: str, date: str, devicetype: str, timecolumn = "datetime"):
+        if (timeslot and date) is None:
+            print("No full datetime was given!")
+            return
+        if devicetype is None:
+            print("A device type must be specified")
+            return
         root = ET.Element('data')
         interval = ET.SubElement(root, 'interval', begin='0', end='3600')
-        query = "SELECT entity_id, trafficflow, ST_X(location) as lat, ST_Y(location) as lon FROM mtopeniot.etdevice WHERE timeslot LIKE %s;"
-        self.cursor.execute(query,  (timeslot,))
-        for row in self.cursor.fetchall():
-            print(row)
-            edge_id = self.getEdgeID(row[2], row[3])
-            if edge_id is not None:
-                edge = ET.SubElement(interval, 'edge', id=edge_id, entered=str(row[1]))
-            print(row)
+        time = int(timeslot[0:2])
+        if devicetype == "roadsegment":
+            time1 = str(timeslot[0:5])
+            time2 = str(timeslot[6:11])
+            first = date + 'T' + time1 + ":00+00"
+            second = date + 'T' + time2 + ":00+00"
+            query = 'SELECT entity_id, trafficflow, ST_X(location) as lat, ST_Y(location), edgeid as lon FROM "mtopeniot"."ethttps://smartdatamodels.org/datamodel.transportation/roadsegm"' + "  WHERE datetime BETWEEN %s::timestamptz AND %s::timestamptz;"
+            # query = 'SELECT entity_id, trafficflow, ST_X(location) as lat, ST_Y(location), edgeid as lon FROM mtopeniot.et' + devicetype
+            self.cursor.execute(query, (first, second))
+            for row in self.cursor.fetchall():
+                edge_id = row[4]
+                if edge_id is not None:
+                    edge = ET.SubElement(interval, 'edge', id=edge_id, entered=str(row[1]))
+        elif devicetype == "device":
+            query = "SELECT entity_id, trafficflow, ST_X(location) as lat, ST_Y(location) as lon FROM mtopeniot.etdevice WHERE "+ timecolumn + " LIKE %s and dateobserved LIKE %s"
+            self.cursor.execute(query,  (timeslot, date))
+            for row in self.cursor.fetchall():
+
+                edge_id = self.getEdgeID(row[2], row[3])
+                if edge_id is not None:
+                    edge = ET.SubElement(interval, 'edge', id=edge_id, entered=str(row[1]))
+                print(row)
         tree = ET.ElementTree(root)
         ET.indent(tree, '  ')
         tree.write("edgefile.xml", "UTF-8")
@@ -144,7 +161,7 @@ class Planner:
         # Trimming because of the roundings
         lat = lat[:-1]
         lon = lon[:-1]
-        df1 = pd.read_csv("../../traffic_loop_dataset/day_flow.csv", sep=',')
+        df1 = pd.read_csv("../traffic_loop_dataset/day_flow.csv", sep=',')
         df1["longitudine"] = df1["longitudine"].apply(general_utils.convert_format)
         df1["latitudine"] = df1["latitudine"].apply(general_utils.convert_format)
         matches = df1[df1['longitudine'].str.startswith(lon) & df1['latitudine'].str.startswith(lat)]
