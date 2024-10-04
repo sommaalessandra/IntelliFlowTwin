@@ -137,6 +137,7 @@ services:
       - "${GRAFANA_PORT}:${GRAFANA_PORT}"
     environment:
       - GF_INSTALL_PLUGINS=orchestracities-map-panel,grafana-clock-panel,grafana-worldmap-panel
+      - GF_SECURITY_ALLOW_EMBEDDING=true 
     volumes:
       - grafana:/var/lib/grafana
 

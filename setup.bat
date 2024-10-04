@@ -39,11 +39,17 @@ if exist .\.venv\Scripts\ (call .\.venv\Scripts\activate.bat) else (if exist .\v
 :: Verify if the environment was activated successfully
 if defined VIRTUAL_ENV (
     echo "Virtual environment activated successfully."
+	pause
 ) else (
     echo "Fail on environent activation."
     pause
     exit
 )
+echo.
+echo Press a button to start the web application
+pause
+start python udtBackEnd/manage.py runserver
+pause
 echo.
 echo Press a button to start python module
 pause
