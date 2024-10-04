@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<configuration xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://sumo.dlr.de/xsd/sumoConfiguration.xsd">
+
+    <input>
+        <net-file value="joined_lanes.net.xml"/>
+        <route-files value="generatedRoutes.rou.xml"/>
+        <additional-files value="detectors.add.xml,joined_vtypes.add.xml,joined_tls.add.xml"/>
+    </input>
+
+    <output>
+        <tripinfo-output value="tripinfos.xml"/>
+        <save-state.prefix value="state"/>
+		<fcd-output value="fcd.xml"/>
+		<vehroute-output value="vehroute.xml" />
+		<summary-output value="summary.xml" />
+		<queue-output value="queue.xml" />
+    </output>
+
+    <report>
+        <log value="sumo_log.txt"/>
+        <no-step-log value="true"/>
+    </report>
+
+    <emissions>
+        <phemlight-path value="./PHEMlight/"/>
+    </emissions>
+
+
+    <processing>  
+        <ignore-route-errors value="true"/> <!--  IGNORA PERCORSI CON ERRORI  -->
+        <time-to-teleport value="-1"/> <!-- DISABILITA TELETRASPORTO -->  
+		<ignore-junction-blocker value="1"/> <!-- NON ASPETTARE DI ENTRARE NELLA ROTONDA/INCROCIO SE LA STRADA è LIBERA --> 
+    </processing> 
+	
+  <!--  <mesoscopic>  
+		<mesosim value="true"/> ABILITA SIMULAZIONE MESOSCOPICA 
+		<meso-junction-control value="true"/>  
+		<meso-overtaking value="true"/>
+		<meso-lane-queue value="true"/>
+    </mesoscopic>  -->
+
+
+</configuration>
