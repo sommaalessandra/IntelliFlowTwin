@@ -191,7 +191,7 @@ class Simulator:
             print("Error: the given path does not exist.")
             return
         self.routePath = routePath
-        os.environ["ROUTEFILENAME"] = routePath
+        os.environ["SIMULATIONPATH"] = routePath
         print("The path was set to " + routePath)
 
     ### VEHICLE FUNCTIONS

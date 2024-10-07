@@ -12,12 +12,14 @@
 <body>
     {% load custom_filters %}
     <div class="container mt-5">
-        <button class="btn btn-secondary ms-auto" onclick="window.history.back()">Return</button>
+        <!-- This is not useful when using grafana dashboard inside, because it goes back inside the graphs
+        <button class="btn btn-secondary ms-auto" onclick="window.history.back()">Return</button>-->
+        <a class="btn btn-secondary ms-auto" href="{% url 'entityList' %}">Return</a>
         <div class="card">
             <div class="card-header bg-primary text-white d-flex align-items-center">
                 <h1 class="card-title">Device: {{ device|get_item:"_id"|get_item:"id" }}</h1>
                 <button class="btn btn-secondary ms-auto" onclick="window.history.back()">Command</button>
-<!--                <button class="btn btn-secondary ms-auto" onclick="window.history.back()">History</button>-->
+            <!--<button class="btn btn-secondary ms-auto" onclick="window.history.back()">History</button>-->
             </div>
             <div class="card-body">
                 <!-- Lista delle Attr Names in tabella -->
@@ -70,20 +72,19 @@
         </div>
     </div>
 
-<div style="display: none;" id="entity-type">{{ device|get_item:"_id"|get_item:"type"|extract_type }}</div>
-<script>
-    var itemType = document.getElementById("entity-type").innerText.trim();
+    <div style="display: none;" id="entity-type">{{ device|get_item:"_id"|get_item:"type"|extract_type }}</div>
+    <script>
+        var itemType = document.getElementById("entity-type").innerText.trim();
 
-    // Controlla se l'ultimo segmento è "Device" o "Road"
-    if (itemType === 'Device') {
-    // Nascondi il div
-    document.getElementById('dashboard').style.display = 'block';
-    } else {
-    // Mostra il div (o esegui altre azioni)
-    document.getElementById('dashboard').style.display = 'none';
-    }
-</script>
-
+        // Check if last segment (type) is "Device" or "Road"
+        if (itemType === 'Device') {
+        // Show the Grafana dashboard
+        document.getElementById('dashboard').style.display = 'block';
+        } else {
+        // Hide dashboard
+        document.getElementById('dashboard').style.display = 'none';
+        }
+    </script>
 
 </body>
 {% endblock content %}

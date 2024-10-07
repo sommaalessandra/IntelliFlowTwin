@@ -4,17 +4,17 @@
 
     <input>
         <net-file value="joined_lanes.net.xml"/>
-        <route-files value="${ROUTEFILENAME}"/>
+        <route-files value="${SIMULATIONPATH}/generatedRoutes.rou.xml"/>
         <additional-files value="detectors.add.xml,joined_vtypes.add.xml,joined_tls.add.xml"/>
     </input>
 
     <output>
-        <tripinfo-output value="tripinfos.xml"/>
+        <tripinfo-output value="${SIMULATIONPATH}/tripinfos.xml"/>
         <save-state.prefix value="state"/>
-		<fcd-output value="fcd.xml"/>
-		<vehroute-output value="vehroute.xml" />
-		<summary-output value="summary.xml" />
-		<queue-output value="queue.xml" />
+		<fcd-output value="${SIMULATIONPATH}/fcd.xml"/>
+		<vehroute-output value="${SIMULATIONPATH}/vehroute.xml" />
+		<summary-output value="${SIMULATIONPATH}/summary.xml" />
+		<queue-output value="${SIMULATIONPATH}/queue.xml" />
     </output>
 
     <report>

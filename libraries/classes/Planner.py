@@ -109,7 +109,7 @@ class ScenarioGenerator:
         print("Routes Generated")
         # self.sim.changeRoutePath(newpath + "generatedRoutes.rou.xml")
 
-        relativeRouteFile = folderPath + "generatedRoutes.rou.xml"
+        relativeRouteFile = folderPath # + "generatedRoutes.rou.xml"
         routeFilePath = os.path.abspath(relativeRouteFile)
         return routeFilePath
 

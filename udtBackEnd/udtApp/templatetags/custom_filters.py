@@ -23,3 +23,11 @@ def format_timestamp(value):
     if isinstance(value, (int, float)):
         return datetime.datetime.fromtimestamp(value).strftime('%Y-%m-%d %H:%M:%S')
     return value
+
+@register.filter
+def split_and_get_last(value, delimiter='/'):
+    """Divide a string by the delimiter and return the last element."""
+    try:
+        return value.split(delimiter)[-1]
+    except (AttributeError, TypeError):
+        return 'Error'
