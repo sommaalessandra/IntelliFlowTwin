@@ -1,114 +1,215 @@
-from libraries.classes import Agent
 import os
 import sys
 import psycopg2
-from libraries import constants, general_utils
-from libraries.classes import Simulator
+import typing
 import xml.etree.ElementTree as ET
 import pandas as pd
 import subprocess
-import datetime
+from datetime import datetime
 from tkinter import Tk     # from tkinter import Tk for Python 3.x
 from tkinter.filedialog import askopenfilename
 
+from libraries.classes.DataManager import *
+from libraries.classes import Agent
+from libraries import constants, general_utils
+from libraries.classes.SumoSimulator import Simulator
+import scipy
 
 class ScenarioGenerator:
     """
-    The ScenarioGenerator class handles scenarios as traffic routes, allowing them to be created and configured.
-    It also sets up these within the simulator.
+    The ScenarioGenerator class handles traffic route scenarios, allowing them to be created and configured
+    for SUMO simulations. It generates route files and sets up these routes within the simulator.
+
+    Class Attributes:
+    - sumoConfiguration (str): Path to the SUMO configuration file.
+    - sim (Simulator): An instance of the Simulator class.
+
+    Class Methods:
+    - __init__: Constructor to initialize a new instance of the ScenarioGenerator class.
+    - generateRoutes: Method to generate a route file for SUMO simulation from an edgefile.
+    - setScenario: Method to set the current scenario in the simulator using a generated or manual route file.
     """
     sumoConfiguration: str
     sim: Simulator
 
     def __init__(self, sumocfg: str, sim: Simulator):
+        """
+        Initializes the ScenarioGenerator with the SUMO configuration file and the simulator instance.
+
+        :param sumocfg: Path to the SUMO configuration file.
+        :param sim: An instance of the Simulator class.
+        """
         self.sumoConfiguration = sumocfg
         self.sim = sim
 
-    # Function to generate routes starting from an edgefile with counting vehicles
-    def generateRoutes(self, edgefile: str, totalVehicles: int, minLoops = 1, congestioned = False):
+
+    def defineScenarioFolder(self, congestioned: bool = False) -> str:
         """
-        Starting from an edgefile containing the traffic counts for the network edges, generate a new route file made
-        for SUMO simulation. The :param totalVehicles sets the total number of generated vehicles and
-        :param minLoops sets the minimum number of counting location covered by each vehicle route.
-        Using :param congestioned, the routefile generated is configured to generate some traffic congestion during
-        the simulation.
+        Defines and creates a folder for the scenario the planner wants to simulate.
+
+        :param congestioned: Boolean flag indicating if the scenario should be congested.
+        :return: The path to the folder created for the scenario.
         """
-        if edgefile is None:
-            print("No edgefile was given")
-            return None
+        date = datetime.now().strftime('%Y-%m-%d_%H-%M-%S')
+        scenarioFolder = "congestioned" if congestioned else "basic"
+        newPath = os.path.join(constants.scenarioCollectionPath, f"{date}_{scenarioFolder}/")
+        os.makedirs(newPath, exist_ok=True)
+        return newPath
+
+
+    def generateRoutes(self, edgefile: str, folderPath: str, totalVehicles: int, minLoops: int = 1, congestioned: bool= False) -> str:
+        """
+        Generates a route file for SUMO simulation starting from an edgefile that contains vehicle counts.
+
+        :param edgefile: The path to the edgefile containing traffic counts.
+        :param totalVehicles: The total number of vehicles to be generated in the route file.
+        :param minLoops: Minimum number of loops or counting locations covered by each vehicle route.
+        :param congestioned: Boolean flag to indicate whether the generated scenario should be congested.
+        :return: The absolute path to the generated route file.
+        :raises FileNotFoundError: If the SUMO tools path does not exist.
+        """
+        if not edgefile:
+            raise ValueError("No edgefile provided.")
         if totalVehicles is None:
-            print("The total number of vehicles was not defined")
-            return
-        if os.path.exists(constants.sumoToolsPath):
-            date = datetime.datetime.now().strftime('%Y-%m-%d_%H-%M-%S')
-            if congestioned:
-                newpath = constants.simulationPath + date + "_congestioned/"
-            else:
-                newpath = constants.simulationPath + date + "_basic/"
-            if not os.path.exists(newpath):
-                os.makedirs(newpath)
-            script1 = constants.sumoToolsPath + "/randomTrips.py"
-            arg1 = constants.sumoToolsPath + "\\joined_lanes.net.xml"
-            subprocess.run(['python', script1, "-n", arg1, "-r", newpath +
-                            "sampleRoutes.rou.xml", "--fringe-factor", "10", "--random", "--min-distance",
-                            "100", "--random-factor", "200"])
+            raise ValueError("The total number of vehicles was not defined.")
+
+        if not os.path.exists(constants.sumoToolsPath):
+            raise FileNotFoundError("SUMO tools path does not exist.")
 
 
-            script2 = constants.sumoToolsPath + "/routeSampler.py"
-            if congestioned:
-                #TODO: here some actions has to be taken in order to generate a congestioned scenario. Note that using
-                # the totalVehicles parameters and the minLoops can generate congestioned traffic even if this parameter
-                # is not set.
-                subprocess.run([sys.executable,  script2, "-r", newpath + "sampleRoutes.rou.xml",
-                            "--edgedata-files", edgefile, "-o", newpath +
-                            "generatedRoutes.rou.xml", "--total-count", str(totalVehicles), "--optimize",
-                            "full", "--min-count", str(minLoops)])
-            else:
-                subprocess.run([sys.executable,  script2, "-r", newpath + "sampleRoutes.rou.xml",
-                            "--edgedata-files", edgefile, "-o", newpath +
-                            "generatedRoutes.rou.xml", "--total-count", str(totalVehicles), "--optimize",
-                            "full", "--min-count", str(minLoops)])
-            print("Routes Generated")
-            # self.sim.changeRoutePath(newpath + "generatedRoutes.rou.xml")
+        script1 = constants.sumoToolsPath + "/randomTrips.py"
 
-            relativeRouteFile = newpath + "generatedRoutes.rou.xml"
-            routeFile = os.path.abspath(relativeRouteFile)
-            return routeFile
-            # self.setScenario()
+        arg1 = ""
+        if constants.simulationPath.startswith("./"):
+            arg1 = constants.simulationPath[2:]
+        else:
+            arg1 = constants.simulationPath
+        arg1 = os.path.join(arg1, "joined_lanes.net.xml")
+        arg1 = os.path.abspath(arg1)
+        print(arg1)
+        print(edgefile)
 
+        subprocess.run(['python', script1, "-n", arg1, "-r", folderPath + "sampleRoutes.rou.xml",
+                        "--fringe-factor", "10", "--random", "--min-distance", "100", "--random-factor", "200"])
 
-    def setScenario(self, routeFilePath = None,manual = False):
+        script2 = constants.sumoToolsPath + "/routeSampler.py"
+        if congestioned:
+            #TODO: here some actions has to be taken in order to generate a congestioned scenario. Note that using
+            # the totalVehicles parameters and the minLoops can generate congestioned traffic even if this parameter
+            # is not set.
+            subprocess.run([sys.executable,  script2, "-r", folderPath + "sampleRoutes.rou.xml",
+                        "--edgedata-files", edgefile, "-o", folderPath +
+                        "generatedRoutes.rou.xml", "--total-count", str(totalVehicles), "--optimize",
+                        "full", "--min-count", str(minLoops)])
+        else:
+            subprocess.run([sys.executable,  script2, "-r", folderPath + "sampleRoutes.rou.xml",
+                        "--edgedata-files", edgefile, "-o", folderPath +
+                        "generatedRoutes.rou.xml", "--total-count", str(totalVehicles), "--optimize",
+                        "full", "--min-count", str(minLoops)])
+        print("Routes Generated")
+        # self.sim.changeRoutePath(newpath + "generatedRoutes.rou.xml")
 
-        if not manual and (routeFilePath is not None):
-            self.sim.changeRoutePath(routeFilePath)
-        elif manual:
+        relativeRouteFile = folderPath + "generatedRoutes.rou.xml"
+        routeFilePath = os.path.abspath(relativeRouteFile)
+        return routeFilePath
+
+    def setScenario(self, routeFilePath=None, manual: bool = False, absolutePath: bool = False):
+        """
+        Sets the scenario in the simulator by selecting a route file.
+        A manual file can also be selected using a file dialog.
+
+        :param routeFilePath: The path to the route file (optional if manual=True).
+        :param manual: If True, opens a file dialog for manual route file selection.
+        :param absolutePath: Boolean indicating if the provided routeFilePath is an absolute path.
+        :raises FileNotFoundError: If the chosen route file does not exist.
+        """
+        if manual:
             Tk().withdraw()
-            routeFilePath = askopenfilename(title= "Select a Route File", filetypes = (("route files","*.rou.xml"),("xml files","*.xml")))
-            if routeFilePath is None:
-                print("No route file was selected")
+            routeFilePath = askopenfilename(title="Select a Route File",
+                                            filetypes=(("route files", "*.rou.xml"), ("xml files", "*.xml")))
+            if not routeFilePath:
+                print("No route file was selected.")
                 return
-            self.sim.changeRoutePath(routeFilePath)
             print("The chosen file was " + routeFilePath)
+
+        if routeFilePath:
+            if not absolutePath:
+                routeFilePath = os.path.abspath(routeFilePath)
+            if not os.path.exists(routeFilePath):
+                raise FileNotFoundError(f"The route file '{routeFilePath}' does not exist.")
+            self.sim.changeRoutePath(routePath=routeFilePath)
+        else:
+            print("No route file path was provided or selected.")
 
 
 class Planner:
-    connectionString: str
-    cursor: None
-    connection: None
+    """
+    The Planner class manages traffic simulations by interacting with the SUMO simulator and integrating it with a database.
+    It also manages the scenario generation based on collected data.
+
+    Class Attributes:
+    - simulator (Simulator): An instance of the Simulator class.
+    - scenarioGenerator (ScenarioGenerator): An instance of the ScenarioGenerator class.
+
+    Class Methods:
+    - __init__: Initializes a new instance of the Planner class.
+    - planBasicScenarioForOneHourSlot: Plans a one-hour traffic simulation scenario based on collected data.
+    """
     simulator: Simulator
-    agent: Agent
     scenarioGenerator: ScenarioGenerator
 
-    def __init__(self, connectionString: str, sim: Simulator, agent: Agent):
-        self.connectionString = connectionString
-        if self.connectionString is not None:
-            self.connection, self.cursor = self.dbConnect(self.connectionString)
-        self.simulator = sim
-        self.agent = agent
-        self.scenarioGenerator = ScenarioGenerator("run.sumocfg", sim=self.simulator)
+    def __init__(self, simulator: Simulator):
+        """
+        Initializes the Planner with the given simulator instance.
 
+        :param simulator: An instance of the Simulator class.
+        """
+        self.simulator = simulator
+        self.scenarioGenerator = ScenarioGenerator(sumocfg="run.sumocfg", sim=self.simulator)
+
+    def planBasicScenarioForOneHourSlot(self, collectedData: pd.DataFrame, entityType: str, totalVehicles: int,
+                                        minLoops: int, congestioned: bool, activeGui: bool=False):
+        """
+        Plans a basic traffic simulation scenario for a one-hour timeslot based on the collected data.
+
+        :param collectedData: A pandas DataFrame containing the collected traffic data with 'edgeid' and 'trafficflow' columns.
+        :param entityType: The type of entity (e.g., "roadsegment").
+        :param totalVehicles: The total number of vehicles to simulate.
+        :param minLoops: Minimum number of loops or counting locations covered by each vehicle route.
+        :param congestioned: Boolean flag to indicate whether the generated scenario should be congested.
+        :return: A path to the generated scenario folder.
+        :raises ValueError: If edge ID is missing or entity type is invalid.
+        """
+        if entityType.lower() not in ["road segment", "roadsegment"]:
+            raise ValueError(f"Invalid entity type: {entityType}. Simulation requires edge IDs to generate a scenario.")
+
+        root = ET.Element('data')
+        interval = ET.SubElement(root, 'interval', begin='0', end='3600')
+        scenarioFolder = self.scenarioGenerator.defineScenarioFolder(congestioned=congestioned)
+        for _, row in collectedData.iterrows():
+            edgeID = row.get('edgeid')
+            trafficFlow = row.get('trafficflow')
+            if edgeID is None:
+                raise ValueError("Edge ID is missing for one of the rows in the collected data.")
+            ET.SubElement(interval, 'edge', id=edgeID, entered=str(trafficFlow))
+
+
+        tree = ET.ElementTree(root)
+        ET.indent(tree, '  ')
+        edgeFilePath = os.path.join(scenarioFolder, "edgefile.xml")
+        tree.write(edgeFilePath, "UTF-8")
+        routeFilePath = self.scenarioGenerator.generateRoutes(edgefile=edgeFilePath, folderPath=scenarioFolder, totalVehicles=totalVehicles,
+                                                               minLoops=minLoops, congestioned=congestioned)
+        self.scenarioGenerator.setScenario(routeFilePath=routeFilePath, manual=False, absolutePath=True)
+        self.simulator.start(activeGui=activeGui)
+
+        return scenarioFolder
+
+
+"""   ## SI PUO' CANCELLARE
     def dbConnect(self, connectionString: str, host="localhost", port="5432", dbname="quantumleap", username="postgres",
                   password="postgres"):
+
         if connectionString is not None:
             connection = connectionString
         else:
@@ -117,23 +218,22 @@ class Planner:
             cursor = conn.cursor()
             return conn, cursor
 
+"""
+""" 
     #Function to create an edgefile with counting vehicles
-    def recordFlow(self, timeslot: str, date: str, devicetype: str, timecolumn = "datetime"):
-        """
-        The function reads the data stored in the historical database, transforming the traffic readings into an
-        edgefile useful for simulation. Traffic readings must refer to a specific time and day, indicated via the
-        variables :param timeslot and :param date. In addition, it should be specified from which entity the
-        measurements should be taken
-        """
+    def recordFlow(self, timeslot: str, date: str, entityType: str, timecolumn = "datetime"):
+      
         if (timeslot and date) is None:
-            print("No full datetime was given!")
+            print("No ull datetime was given.")
             return
-        if devicetype is None:
-            print("A device type must be specified")
+        if entityType is None:
+            print("An Entity Type must be specified.")
             return
         root = ET.Element('data')
         interval = ET.SubElement(root, 'interval', begin='0', end='3600')
-        if devicetype == "roadsegment":
+        if entityType == "roadsegment":
+         
+            PREVIOUS PART:            
             time1 = str(timeslot[0:5])
             time2 = str(timeslot[6:11])
             first = date + 'T' + time1 + ":00+00"
@@ -146,7 +246,10 @@ class Planner:
                 edge_id = row[4]
                 if edge_id is not None:
                     edge = ET.SubElement(interval, 'edge', id=edge_id, entered=str(row[1]))
-        elif devicetype == "device":
+                    
+         
+
+        elif entityType == "device":
             query = "SELECT entity_id, trafficflow, ST_X(location) as lat, ST_Y(location) as lon FROM mtopeniot.etdevice WHERE "+ timecolumn + " LIKE %s and dateobserved LIKE %s"
             self.cursor.execute(query,  (timeslot, date))
             for row in self.cursor.fetchall():
@@ -157,9 +260,8 @@ class Planner:
         tree = ET.ElementTree(root)
         ET.indent(tree, '  ')
         tree.write("edgefile.xml", "UTF-8")
-
-    #Function to get the edgeId starting from the geopoint
-    #NOTE: this function is not precise because of the trimming of the coordinates. It's desirable to get edgeID in other ways
+    """
+""" THIS CAN BE DELETED.
     def getEdgeID(self, latitudine: float, longitudine: float):
         lat = general_utils.convert_format(str(latitudine))
         lon = general_utils.convert_format(str(longitudine))
@@ -174,4 +276,4 @@ class Planner:
             print("Error, there are more roads at these coordinates")
             return None
         return matches.iloc[0]["edge_id"]
-
+"""

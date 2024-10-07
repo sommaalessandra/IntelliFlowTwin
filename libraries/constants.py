@@ -17,12 +17,16 @@ transportationCTX="https://raw.githubusercontent.com/smart-data-models/dataModel
 deviceCTX="https://raw.githubusercontent.com/smart-data-models/dataModel.Device/master/context.jsonld"
 roadSegmentType="https://smartdatamodels.org/dataModel.Transportation/RoadSegment"
 roadType="https://smartdatamodels.org/dataModel.Transportation/Road"
+trafficFlowObservedType = "https://smartdatamodels.org/dataModel.Transportation/TrafficFlowObserved"
 
 ### SUMO-RELATED CONSTANTS
 # path where the data used for simulation are stored
 simulationDataPath = "./SUMO/joined/data/"
 simulationPath = "SUMO/joined/"
 sumoToolsPath = r"C:\Program Files (x86)\Eclipse\Sumo\tools"
+
+# Path where data for simulating different SUMO scenario are collected.
+scenarioCollectionPath = "SUMO/joined/scenarioCollection"
 
 schema = {
   "$schema": "http://json-schema.org/draft-04/schema#",

@@ -4,7 +4,6 @@ import pandas as pd
 import os
 import shutil
 
-
 class Shadow:
     name: str
 
@@ -29,7 +28,12 @@ class Shadow:
         return self.__dict__
 
 
-class DataProcessor:
+class ShadowDataProcessor:
+    """
+    The ShadowDataProcessor class processes data related to traffic loops and roads using geographical coordinates.
+    It provides methods to search for roads and traffic loops based on coordinates, device IDs, and directions.
+
+    """
 
     def __init__(self, datapath):
         self.df = pd.read_csv(datapath)
@@ -101,7 +105,7 @@ class DigitalShadowManager:
     def __init__(self):
         self.clearShadowData()
         self.shadowsByTypes: typing.Dict[str, typing.List[Shadow]] = {}
-        self.dataProcessor = DataProcessor(shadowFilePath)
+        self.dataProcessor = ShadowDataProcessor(shadowFilePath)
 
     def clearShadowData(self):
         """
@@ -118,10 +122,13 @@ class DigitalShadowManager:
                     os.remove(itemPath)
             print(f"Cleared shadow data from {shadowPath}, preserving {shadowFilePath}.")
 
-    def addShadow(self, shadowType: str, timeSlot: str, trafficFlow: int, coordinates: typing.List[float],direction: str, deviceID: str) -> Shadow:
+    def addShadow(self, shadowType: str, timeSlot: str, trafficFlow: int, coordinates: typing.List[float],
+                  direction: str, deviceID: str) -> Shadow:
         try:
             if shadowType == "road":
-                roadName, edgeID, startPoint, endPoint = self.dataProcessor.searchRoad(coordinates=coordinates, direction=direction, deviceID=deviceID)
+                roadName, edgeID, startPoint, endPoint = self.dataProcessor.searchRoad(coordinates=coordinates,
+                                                                                       direction=direction,
+                                                                                       deviceID=deviceID)
                 shadowAttributes = {
                     "startPoint": startPoint,
                     "endPoint": endPoint,
@@ -140,7 +147,8 @@ class DigitalShadowManager:
                 self.saveShadowToCSV(shadowType=shadowType, shadow=newShadow)
                 return newShadow
             elif shadowType == "trafficLoop":
-                loopCode, loopLevel = self.dataProcessor.searchTrafficLoop(coordinates=coordinates,direction=direction,deviceID=deviceID)
+                loopCode, loopLevel = self.dataProcessor.searchTrafficLoop(coordinates=coordinates, direction=direction,
+                                                                           deviceID=deviceID)
                 shadowAttributes = {
                     "coordinates": coordinates,
                     "timeSlot": timeSlot,
@@ -159,7 +167,8 @@ class DigitalShadowManager:
             print(f"Error occurred: {e}")
             raise RuntimeError(f"Failed to create shadow: {e}")
 
-    def searchShadow(self, shadowType: str, timeSlot: str, trafficFlow: int, coordinates: typing.List[float], laneDirection: str, deviceID: str) -> Shadow:
+    def searchShadow(self, shadowType: str, timeSlot: str, trafficFlow: int, coordinates: typing.List[float],
+                     laneDirection: str, deviceID: str) -> Shadow:
         if shadowType in self.shadowsByTypes and shadowType == "road":
             for shadow in self.shadowsByTypes[shadowType]:
                 if (shadow.get("coordinates") == coordinates and
@@ -176,16 +185,17 @@ class DigitalShadowManager:
         # if no matching shadow is found, it creates a new one
         try:
             if shadowType == "road":
-                newShadow = self.addShadow(shadowType, timeSlot=timeSlot, trafficFlow=trafficFlow,coordinates=coordinates, direction=laneDirection, deviceID=deviceID)
+                newShadow = self.addShadow(shadowType, timeSlot=timeSlot, trafficFlow=trafficFlow,
+                                           coordinates=coordinates, direction=laneDirection, deviceID=deviceID)
                 return newShadow
             elif shadowType == "trafficLoop":
-                newShadow = self.addShadow(shadowType, timeSlot=timeSlot, trafficFlow=trafficFlow,coordinates=coordinates, direction=laneDirection, deviceID=deviceID)
+                newShadow = self.addShadow(shadowType, timeSlot=timeSlot, trafficFlow=trafficFlow,
+                                           coordinates=coordinates, direction=laneDirection, deviceID=deviceID)
                 return newShadow
 
         except RuntimeError as e:
             print(f"Error in searchShadow: {e}")
             raise ValueError("Unable to create or find the shadow.")
-
 
     def saveShadowToCSV(self, shadowType: str, shadow: Shadow):
         """
@@ -195,7 +205,6 @@ class DigitalShadowManager:
         os.makedirs(directoryPath, exist_ok=True)
         fileName = shadow.name.replace(" ", "_") + ".csv"
         filePath = os.path.join(directoryPath, fileName)
-
 
         shadowAttributes = shadow.getAllAttributes()
         coordinates = shadowAttributes.get("coordinates", [None, None])

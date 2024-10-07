@@ -7,3 +7,6 @@ psycopg2==2.9.9
 geojson~=2.5.0
 django~=4.1.13
 mongoengine==0.29.1
+pymongo~=4.10.1
+scipy~=1.14.1
+pytz~=2024.1

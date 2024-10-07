@@ -222,13 +222,13 @@ class Broker:
                 entityRoadSegment = self.searchEntity(cbConnection=cbConnection, dataSearch=edgeID, eType="RoadSegment")
                 if entityRoadSegment is not None:
                     if self.updateFlow(cbConnection=cbConnection, newFlow=trafficFlow, date=completeDate,
-                                       cEntity=entityRoadSegment, eType="RoadSegment"):
+                                       cEntity=entityRoadSegment, eType="RoadSegment", timeslot=timeSlot):
                         trafficFlowObsID = entityRoadSegment['refTrafficFlowObs'].value
                         trafficFlowObs = cbConnection.get(trafficFlowObsID)
                         if trafficFlowObs is not None:
                             if self.updateFlow(cbConnection=cbConnection, newFlow=trafficFlow,
                                                    date=completeDate, cEntity=trafficFlowObs,
-                                                   eType="TrafficFlowObserved"):
+                                                   eType="TrafficFlowObserved", timeslot=timeSlot):
                                 return True
                             else:
                                 raise TrafficFlowObservedError(f"Unable to update flow of Traffic Flow Observed entity for the retrieved ID: {trafficFlowObsID}",
@@ -243,10 +243,10 @@ class Broker:
                     tfoNumber=self.getProgressiveNumber("TrafficFlowObserved") + 1
                     entityRoadSegment=self.createRoadSegmentEntity(progressiveNumber=rsNumber,startPoint=startPoint, endPoint=endPoint,coordinates=coordinates,
                                                                    direction=laneDirection, edgeID=edgeID, trafficFlow=trafficFlow,
-                                                                   date=completeDate,trafficLoopID=deviceURN)
+                                                                   date=completeDate,trafficLoopID=deviceURN, timeslot=timeSlot)
                     entityTrafficFlowObs=self.createTrafficFlowObsEntity(progressiveNumber=tfoNumber, direction=laneDirection,
                                                                          date=completeDate, trafficFlow=trafficFlow,
-                                                                         trafficLoopID=deviceURN, roadSegmentID=entityRoadSegment.id)
+                                                                         trafficLoopID=deviceURN, roadSegmentID=entityRoadSegment.id, timeslot=timeSlot)
                     entityRoadSegment=self.updateRoadSegmentRelation(rsEntity=entityRoadSegment, roadID=entityRoad.id,
                                                    traffiFlowObsID=entityTrafficFlowObs.id)
                     entityRoad=self.updateRoadRelation(rEntity=entityRoad, roadSegmentID=entityRoadSegment.id)
@@ -270,12 +270,12 @@ class Broker:
                                                                  endPoint=endPoint, coordinates=coordinates,
                                                                  direction=laneDirection, edgeID=edgeID,
                                                                  trafficFlow=trafficFlow,
-                                                                 date=completeDate, trafficLoopID=deviceURN)
+                                                                 date=completeDate, trafficLoopID=deviceURN, timeslot=timeSlot)
                 entityTrafficFlowObs = self.createTrafficFlowObsEntity(progressiveNumber=tfoNumber,
                                                                        direction=laneDirection,
                                                                        date=completeDate, trafficFlow=trafficFlow,
                                                                        trafficLoopID=deviceURN,
-                                                                       roadSegmentID=entityRoadSegment.id)
+                                                                       roadSegmentID=entityRoadSegment.id, timeslot=timeSlot)
                 entityRoadSegment = self.updateRoadSegmentRelation(rsEntity=entityRoadSegment, roadID=entityRoad.id,
                                                                    traffiFlowObsID=entityTrafficFlowObs.id)
                 entityRoad = self.updateRoadRelation(rEntity=entityRoad, roadSegmentID=entityRoadSegment.id)
@@ -290,7 +290,7 @@ class Broker:
             return False
 
     def createRoadSegmentEntity(self, progressiveNumber: int, startPoint: int, endPoint: int, coordinates: List[float], direction: str,
-                                edgeID: str, trafficFlow: int, date: str, trafficLoopID: str) -> Entity:
+                                edgeID: str, trafficFlow: int, date: str, trafficLoopID: str, timeslot: str) -> Entity:
 
         roadSegmentID = 'RS{:03d}'.format(progressiveNumber)
         roadSegment = Entity("RoadSegment", roadSegmentID, ctx=transportationCTX)
@@ -308,6 +308,7 @@ class Broker:
         roadSegment.prop('edgeID', edgeID)
         roadSegment.prop('trafficFlow', trafficFlow).rel(Rel.OBSERVED_BY, trafficLoopID, nested=True)
         roadSegment.tprop('DateTime', date)
+        roadSegment.prop('timeslot', timeslot)
         return roadSegment
 
     def updateRoadSegmentRelation(self, rsEntity: Entity, roadID: str, traffiFlowObsID: str) -> Entity:
@@ -316,13 +317,14 @@ class Broker:
         return rsEntity
 
     def createTrafficFlowObsEntity(self, progressiveNumber: int, direction: str, trafficFlow: int, date: str,
-                                   trafficLoopID: str, roadSegmentID: str) -> Entity:
+                                   trafficLoopID: str, roadSegmentID: str, timeslot: str) -> Entity:
         trafficFlowID = 'TFO{:03d}'.format(progressiveNumber)
         trafficFlowObs = Entity("TrafficFlowObserved", trafficFlowID, ctx=transportationCTX)
         trafficFlowObs.prop('laneDirection', direction)
         trafficFlowObs.rel('refRoadSegment', roadSegmentID)
         trafficFlowObs.prop('trafficFlow', trafficFlow).rel(Rel.OBSERVED_BY, roadSegmentID, nested=True)
         trafficFlowObs.tprop('DateTime', date)
+        trafficFlowObs.prop('timeslot', timeslot)
         return trafficFlowObs
 
 
@@ -347,15 +349,17 @@ class Broker:
             e: Entity | None = next((e for e in generator if e["BolognaRoadName"].value == dataSearch), None)
             return e
 
-    def updateFlow(self, cbConnection: Client, newFlow: int, date: str, cEntity: Entity, eType: str) -> bool:
+    def updateFlow(self, cbConnection: Client, newFlow: int, date: str, cEntity: Entity, eType: str, timeslot: str) -> bool:
         if eType == "RoadSegment":
             cEntity["trafficFlow"].value = newFlow
             cEntity.tprop("DateTime",date)
+            cEntity.prop('timeslot', timeslot)
             response = cbConnection.update(cEntity, overwrite=True)
             return response
         elif eType=="TrafficFlowObserved":
             cEntity["trafficFlow"].value = newFlow
             cEntity.tprop('DateTime',date)
+            cEntity.prop('timeslot', timeslot)
             response = cbConnection.update(cEntity, overwrite=True)
             return response
         else:

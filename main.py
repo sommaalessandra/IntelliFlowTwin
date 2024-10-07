@@ -1,51 +1,70 @@
-import multiprocessing
-from ngsildclient import Client, SubscriptionBuilder
-import physical_system_startup
-from libraries.classes.Simulator import Simulator
+from physical_system_startup import *
 from libraries.constants import *
 from libraries.general_utils import *
 from libraries.preprocessing_utils import *
+from libraries.classes.DataManager import *
+from libraries.classes.Planner import Planner
+from libraries.classes.DigitalTwinManager import DigitalTwinManager
 from libraries.classes.Agent import *
-from libraries.classes.Planner import *
-from physical_system_startup import *
-from libraries.constants import roadSegmentType
+from libraries.classes.SumoSimulator import Simulator
+from libraries.classes.SubscriptionManager import SubscriptionManager
+from libraries.classes.Broker import Broker
+
 
 if __name__ == "__main__":
 
-    # After running the platform's containers, a client is instantiated to connect to Orion CB
+    # 1. Instantiate Orion CB, IoT Agent and create three types of subscriptions.
     envVar = loadEnvVar(containerEnvPath)
-    cbport = envVar.get("ORIONLD_PORT")
     iotanorth = envVar.get("IOTA_NORTH_PORT")
     iotasouth = envVar.get("IOTA_SOUTH_PORT")
-    orion = Client(hostname="localhost", port=1026, tenant="openiot", overwrite=True)
-    IoTAgent = Agent(aid="01", hostname="localhost", cb_port=cbport, south_port=iotasouth, northport=iotanorth, fw_service="openiot",
-                     fw_path="/")
+    cbport = envVar.get("ORIONLD_PORT")
+    timescalePort = envVar.get("TIMESCALE_DB_PORT")
+    quantumleapPort = envVar.get("QUANTUMLEAP_PORT")
+    contextBroker = Broker(pn=cbport, pnt=None, host="localhost", fiwareservice="openiot")
+    cbConnection = contextBroker.createConnection()
+    IoTAgent = Agent(aid="01", hostname="localhost", cb_port=cbport, south_port=iotasouth, northport=iotanorth,
+                     fw_service="openiot", fw_path="/")
+    subscriptionManager = SubscriptionManager(containerName="fiware-quantumleap", cbPort=cbport, quantumleapPort=quantumleapPort)
 
-    # payload = SubscriptionBuilder("http://fiware-quantumleap:8668/v2/notify").description(
-    #      "Notify me of traffic Flow ").select_type(roadSegmentType).watch(["trafficFlow"]).build()
-    payload = SubscriptionBuilder("http://fiware-quantumleap:8668/v2/notify").description(
-        "Notify me of traffic Flow ").select_type("Device").watch(["trafficFlow"]).build()
-    print(payload)
-    subscr_id = orion.subscriptions.create(payload)
+    subscriptionManager.createSubscription(cbConnection=cbConnection, entityType="Road Segment",
+                                           attribute="trafficFlow", description="Notify me of Traffic Flow")
+    subscriptionManager.createSubscription(cbConnection=cbConnection, entityType="trafficflowobserved",
+                                           attribute="trafficFlow", description="Notify me of Traffic Flow")
+    subscriptionManager.createSubscription(cbConnection=cbConnection, entityType="Device",
+                                           attribute="trafficFlow", description="Notify me of traffic Flow")
 
-    roads, files = setupPhysicalSystem(IoTAgent)
-    startPhysicalSystem(roads)
 
-    # simulation = Simulator(configurationpath=simulationPath, logfile="./command_log.txt")
-    # simulation.startBasic()
-    # simulation.start()
+    #### Comment/decomment these two code lines to run the physical system.
+    # TODO: thread-multiprocessing
+    #roads, files = setupPhysicalSystem(IoTAgent)
+    #startPhysicalSystem(roads)
 
-    simulator = Simulator(configurationpath="SUMO/joined/", logfile="./command_log.txt")
-    simulator.getInductionLoopSummary()
-    planner = Planner(connectionString="postgres://postgres:postgres@localhost:5432/quantumleap", sim=simulator, agent=IoTAgent)
+    # 2. The DigitalTwinManager needs i) a DataManager for accessing data; ii) a SumoSimulator for running simulations
+    #    iii) a Planner including a ScenarioGenerator for generating SUMO scenarios.
+    timescaleManager = TimescaleManager(
+        host="localhost",
+        port=timescalePort,
+        dbname="quantumleap",
+        username="postgres",
+        password="postgres"
+    )
+    dataManager = DataManager("TwinDataManager")
+    dataManager.addDBManager(timescaleManager)
 
-    planner.recordFlow(timeslot="01:00-02:00", date="2024/02/01", devicetype='roadsegment', timecolumn="datetime")
+    configurationPath = "./SUMO/joined/"
+    logFile = "./command_log.txt"
+    sumoSimulator = Simulator(configurationPath=configurationPath, logFile=logFile)
+    twinPlanner = Planner(simulator=sumoSimulator)
+    twinManager = DigitalTwinManager(dataManager, configurationPath, logFile)
 
-    filePath = planner.scenarioGenerator.generateRoutes("libraries/edgefile.xml", 3000, 3, congestioned=True)
-    planner.scenarioGenerator.setScenario(routeFilePath=filePath, manual=False)
-    # simulator.changeRoutePath("SUMO/joined/2024-09-23_15-05-52_congestioned/generatedRoutes.rou.xml")
+    # 3. Simulation of one hour slot scenario. The function will open sumo gui. The play button must be pressed to
+    # run the simulation. When simulation ends, the function returns the folder path in which SUMO files have been
+    # generated.
+    scenarioFolder = twinManager.simulateBasicScenarioForOneHourSlot(timeslot="00:00-01:00", date="2024/02/01",
+                                                                    entityType='Road Segment',
+                                                                    totalVehicles=100, minLoops=3, congestioned=False,
+                                                                    activeGui=True, timecolumn="timeslot")
+    print(scenarioFolder)
 
-    # simulator = Simulator(configurationpath=simulationPath, logfile="./command_log.txt")
-    # simulator.startBasic()
-    simulator.start()
+
 
