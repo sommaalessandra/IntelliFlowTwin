@@ -1,7 +1,14 @@
+import sys
+
 from libraries.classes.SumoSimulator import Simulator
 from libraries.classes.Planner import Planner
 from libraries.classes.DataManager import DataManager
 from typing import Optional
+from libraries import constants
+import os
+import subprocess
+from subprocess import Popen
+from PIL import Image
 import pytz
 from datetime import datetime
 
@@ -64,5 +71,65 @@ class DigitalTwinManager:
             return scenarioFolder
 
 
+    def generateGraphs(self, scenarioFolder: str):
+        """
+        Generate some graphs based on the simulation outcome. The generated graphs show some info about the trajectory
+        taken by the vehicles, the time spent in running/halted state and the depart delay time.
+        :param scenarioFolder: the folder where the simulated scenario output is stored
+        :return:
+        """
+        graphScript = constants.sumoToolsPath + '/visualization/plotXMLAttributes.py'
+        scenarioFolder = os.path.abspath(scenarioFolder)
 
+        trajectory_cmd = [sys.executable, graphScript, "-x", "x", "-y", "y", "-o", scenarioFolder + "/traj_out.png",
+                          scenarioFolder + "/fcd.xml", "--blind"]
+        running_halted_cmd = [sys.executable, graphScript, scenarioFolder + "/summary.xml", "-x", "time", "-y",
+                              "running,halting", "-o", scenarioFolder + "/plot_running.png", "--legend", "--blind"]
+
+        depart_delay_cmd = [sys.executable, graphScript, "-i", "id", "-x", "depart", "-y", "departDelay",
+                            "--scatterplot", "--xlabel", '"depart time [s]"', "--ylabel", '"depart delay [s]"',
+                            "--ylim", "0,40", "--xticks", "0,1200,200,10", "--yticks", "0,40,5,10", "--xgrid",
+                            "--ygrid", "--title", '"depart delay over depart time"', "--titlesize", "16",
+                            scenarioFolder + "/tripinfos.xml", "--blind", "-o", scenarioFolder + "/departDelay.png"]
+
+
+        commands = [trajectory_cmd, running_halted_cmd, depart_delay_cmd]
+        procs = [Popen(i) for i in commands]
+        for p in procs:
+            p.wait()
+
+
+    def showGraphs(self, scenarioFolder: str):
+        """
+        Shows the graphs previously generated and stored in the scenarioFolder
+        :param scenarioFolder: the folder where the simulated scenario output is stored
+        :return:
+        """
+        scenarioFolder = os.path.abspath(scenarioFolder)
+
+        # Graph list
+        images = [scenarioFolder + '/traj_out.png', scenarioFolder + '/plot_running.png',scenarioFolder + '/departDelay.png']
+        imgs = [Image.open(img) for img in images]
+
+        # Trova la larghezza e altezza massima
+        widths, heights = zip(*(i.size for i in imgs))
+
+        # Definisci la dimensione totale (ad esempio combinando in verticale)
+        total_width = sum(widths)  # Se vuoi concatenare orizzontalmente
+        max_height = max(heights)
+
+        # Crea una nuova immagine vuota per contenere tutte le immagini
+        new_image = Image.new('RGB', (total_width, max_height))
+
+        # Incolla le immagini una dopo l'altra
+        x_offset = 0
+        for img in imgs:
+            new_image.paste(img, (x_offset, 0))  # Incolla nella nuova immagine
+            x_offset += img.width
+
+        # Mostra la nuova immagine
+        new_image.show()
+
+        # Puoi salvare l'immagine combinata
+        new_image.save('combined_image.png')
 

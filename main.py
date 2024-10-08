@@ -36,8 +36,8 @@ if __name__ == "__main__":
 
     #### Comment/decomment these two code lines to run the physical system.
     # TODO: thread-multiprocessing
-    #roads, files = setupPhysicalSystem(IoTAgent)
-    #startPhysicalSystem(roads)
+    # roads, files = setupPhysicalSystem(IoTAgent)
+    # startPhysicalSystem(roads)
 
     # 2. The DigitalTwinManager needs i) a DataManager for accessing data; ii) a SumoSimulator for running simulations
     #    iii) a Planner including a ScenarioGenerator for generating SUMO scenarios.
@@ -65,6 +65,8 @@ if __name__ == "__main__":
                                                                     totalVehicles=100, minLoops=3, congestioned=False,
                                                                     activeGui=True, timecolumn="timeslot")
     print(scenarioFolder)
+    twinManager.generateGraphs(scenarioFolder)
+    twinManager.showGraphs(scenarioFolder)
 
 
 
