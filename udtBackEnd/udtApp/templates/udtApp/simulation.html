@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Simulation</title>
+</head>
+<body>
+{% extends 'udtApp/base.html' %}
+
+{% block content %}
+
+<div class="container mt-4">
+    <!-- Aggiungi una select box per filtrare tra 'basic' e 'congestioned' -->
+    <form method="get" action="{% url 'simulation' %}">
+        <div class="form-group">
+            <label for="type">Seleziona tipo:</label>
+            <select name="type" id="type" class="form-control" onchange="this.form.submit()">
+                <option value="basic" {% if selected_type == 'basic' %}selected{% endif %}>Basic</option>
+                <option value="congestioned" {% if selected_type == 'congestioned' %}selected{% endif %}>Congestioned</option>
+            </select>
+        </div>
+    </form>
+
+    <div class="row">
+        {% for folder in folders %}
+        <div class="col-md-4 mb-4">
+            <div class="card" style="width: 18rem;">
+                <img src="/path/to/placeholder.png" class="card-img-top" alt="Immagine della cartella">
+                <div class="card-body">
+                    <h5 class="card-title">{{ folder }}</h5>
+                    <a href="{% url 'serve_image' folder=folder %}?type={{ selected_type }}" class="btn btn-primary">Visualizza immagini</a>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+{% endblock %}
+</body>
+</html>

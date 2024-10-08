@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+{% extends 'udtApp/base.html' %}
+
+{% block content %}
+
+<div class="container mt-4">
+    <h2>Immagini dalla cartella: {{ folder }}</h2>
+
+    <!-- Link per tornare alla pagina simulator mantenendo il filtro attivo -->
+    <a href="{% url 'simulation' %}?type={{ selected_type }}" class="btn btn-secondary mb-3">Torna indietro</a>
+
+    <div class="row">
+        {% for image in images %}
+        <div class="col-md-4 mb-4">
+            <div class="card" style="width: 18rem;">
+                <img src="/scenarioCollection/{{ folder }}/{{ image }}" class="card-img-top" alt="Immagine">
+                <div class="card-body">
+                    <h5 class="card-title">{{ image }}</h5>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+{% endblock %}
+</body>
+</html>
