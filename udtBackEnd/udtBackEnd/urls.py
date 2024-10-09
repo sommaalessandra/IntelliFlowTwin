@@ -19,6 +19,8 @@ from django.urls import include, path
 from django.views.generic import RedirectView
 from django.conf import settings
 from django.conf.urls.static import static
+import os
+from pathlib import Path
 
 urlpatterns = [
     path('', RedirectView.as_view(url='/udtApp/index', permanent=False)),
@@ -27,4 +29,8 @@ urlpatterns = [
 ]
 
 if settings.DEBUG:
-    urlpatterns += static('/scenarioCollection/', document_root='C:/Users/manfr/PycharmProjects/UrbanDigitalTwin/SUMO/joined/scenarioCollection/')
+    current_dir = os.path.abspath(os.getcwd())
+    current_path = Path(current_dir).resolve()
+    project_root = current_path.parent
+    base_dir = project_root / 'SUMO' / 'joined' / 'scenarioCollection'
+    urlpatterns += static('/scenarioCollection/', document_root=base_dir)

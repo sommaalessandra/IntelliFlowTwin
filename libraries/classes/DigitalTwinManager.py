@@ -85,13 +85,11 @@ class DigitalTwinManager:
                           scenarioFolder + "/fcd.xml", "--blind"]
         running_halted_cmd = [sys.executable, graphScript, scenarioFolder + "/summary.xml", "-x", "time", "-y",
                               "running,halting", "-o", scenarioFolder + "/plot_running.png", "--legend", "--blind"]
-
         depart_delay_cmd = [sys.executable, graphScript, "-i", "id", "-x", "depart", "-y", "departDelay",
                             "--scatterplot", "--xlabel", '"depart time [s]"', "--ylabel", '"depart delay [s]"',
                             "--ylim", "0,40", "--xticks", "0,1200,200,10", "--yticks", "0,40,5,10", "--xgrid",
                             "--ygrid", "--title", '"depart delay over depart time"', "--titlesize", "16",
                             scenarioFolder + "/tripinfos.xml", "--blind", "-o", scenarioFolder + "/departDelay.png"]
-
 
         commands = [trajectory_cmd, running_halted_cmd, depart_delay_cmd]
         procs = [Popen(i) for i in commands]
@@ -99,9 +97,9 @@ class DigitalTwinManager:
             p.wait()
 
 
-    def showGraphs(self, scenarioFolder: str):
+    def showGraphs(self, scenarioFolder: str, save):
         """
-        Shows the graphs previously generated and stored in the scenarioFolder
+        Groups the graphs previously generated and stored in the scenarioFolder and show them in one figure
         :param scenarioFolder: the folder where the simulated scenario output is stored
         :return:
         """
@@ -111,25 +109,17 @@ class DigitalTwinManager:
         images = [scenarioFolder + '/traj_out.png', scenarioFolder + '/plot_running.png',scenarioFolder + '/departDelay.png']
         imgs = [Image.open(img) for img in images]
 
-        # Trova la larghezza e altezza massima
+        # Group figures in one image
         widths, heights = zip(*(i.size for i in imgs))
-
-        # Definisci la dimensione totale (ad esempio combinando in verticale)
-        total_width = sum(widths)  # Se vuoi concatenare orizzontalmente
+        total_width = sum(widths)  # For horizontal concat
         max_height = max(heights)
-
-        # Crea una nuova immagine vuota per contenere tutte le immagini
         new_image = Image.new('RGB', (total_width, max_height))
-
-        # Incolla le immagini una dopo l'altra
         x_offset = 0
         for img in imgs:
             new_image.paste(img, (x_offset, 0))  # Incolla nella nuova immagine
             x_offset += img.width
-
-        # Mostra la nuova immagine
+        # Show Grouped image
         new_image.show()
-
-        # Puoi salvare l'immagine combinata
-        new_image.save('combined_image.png')
+        # Save new image
+        new_image.save(scenarioFolder + '/combined_image.png')
 

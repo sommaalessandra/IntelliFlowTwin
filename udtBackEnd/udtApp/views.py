@@ -3,10 +3,9 @@ from django.core.paginator import Paginator
 from django.shortcuts import render
 from django.http import HttpResponse
 from .models import Device
-from django.template import loader
 import os
-from django.shortcuts import render
 from django.http import FileResponse, Http404
+from pathlib import Path
 
 def index(request):
     return render(request, 'udtApp/index.html', {'nbar': 'home'})
@@ -56,36 +55,47 @@ def entityList(request):
         return HttpResponse("There is no device inside the DB")
 
 def simulation(request):
-    # TODO: set base_dir to a dynamic path
-    base_dir = 'C:/Users/manfr/PycharmProjects/UrbanDigitalTwin/SUMO/joined/scenarioCollection'
 
-    # Ottieni il tipo selezionato dal parametro GET, default = 'basic'
+    # Getting the absolute path of the scenarioCollection folder
+    current_dir = os.path.abspath(os.getcwd())
+    current_path = Path(current_dir).resolve()
+    project_root = current_path.parent
+    base_dir = project_root / 'SUMO' / 'joined' / 'scenarioCollection'
+
+    # Get the selected type (in the page filter). Default is 'basic'
     selected_type = request.GET.get('type', 'basic')
 
-    # Elenco delle cartelle che contengono 'basic' o 'congestioned' nel nome
+    # List of folders containing 'basic' or 'congestioned' in the name
     folders = [f for f in os.listdir(base_dir) if selected_type in f and os.path.isdir(os.path.join(base_dir, f))]
 
     context = {
         'folders': folders,
-        'selected_type': selected_type,  # Passa il tipo selezionato al template
+        'selected_type': selected_type,
     }
     return render(request, 'udtApp/simulation.html', context)
 
 
 def serve_image(request, folder):
-    # TODO: set base_dir to a dynamic path
-    base_dir = 'C:/Users/manfr/PycharmProjects/UrbanDigitalTwin/SUMO/joined/scenarioCollection'
+
+    current_dir = os.path.abspath(os.getcwd())
+    current_path = Path(current_dir).resolve()
+    project_root = current_path.parent
+    base_dir = project_root / 'SUMO' / 'joined' / 'scenarioCollection'
     folder_path = os.path.join(base_dir, folder)
 
-    # Filtra solo i file immagine (in questo caso PNG)
+
+    # Filter only .png files
     images = [img for img in os.listdir(folder_path) if img.endswith(".png")]
 
-    # Ottieni il tipo selezionato per mantenere il filtro
+    # Get the selected type (in the page filter). Default is 'basic'
     selected_type = request.GET.get('type', 'basic')
 
     context = {
         'folder': folder,
         'images': images,
-        'selected_type': selected_type,  # Passa il filtro corrente al template
+        'selected_type': selected_type,
+        'base_dir': base_dir
     }
     return render(request, 'udtApp/simulationScenario.html', context)
+
+
