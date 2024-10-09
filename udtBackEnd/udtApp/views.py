@@ -6,6 +6,7 @@ from .models import Device
 import os
 from django.http import FileResponse, Http404
 from pathlib import Path
+from datetime import datetime
 
 def index(request):
     return render(request, 'udtApp/index.html', {'nbar': 'home'})
@@ -64,13 +65,48 @@ def simulation(request):
 
     # Get the selected type (in the page filter). Default is 'basic'
     selected_type = request.GET.get('type', 'basic')
+    selected_date = request.GET.get('date', '')
+
+    today = datetime.now().date()
+    default_date = today.strftime('%Y-%m-%d')
+
+    selected_time_range = request.GET.get('time_range', '')
+    # Selezione della fascia oraria: ottieni gli orari di inizio e fine dalla selezione
+    start_time = None
+    end_time = None
+    if selected_time_range:
+        start_time_str, end_time_str = selected_time_range.split('-')
+        start_time = datetime.strptime(start_time_str, '%H:%M').time()
+        end_time = datetime.strptime(end_time_str, '%H:%M').time()
 
     # List of folders containing 'basic' or 'congestioned' in the name
     folders = [f for f in os.listdir(base_dir) if selected_type in f and os.path.isdir(os.path.join(base_dir, f))]
+    filtered_folders = []
+    for folder in folders:
+        # Estrai la data e l'ora dal nome della cartella
+        folder_date_str = folder.split('_')[0]  # Es. 2024-10-08
+        folder_time_str = folder.split('_')[1]  # Es. 12-29-03
+        folder_date = datetime.strptime(folder_date_str, '%Y-%m-%d').date()
+        folder_time = datetime.strptime(folder_time_str, '%H-%M-%S').time()
+
+
+        # Filtra in base alla selezione dell'utente
+        if selected_date and folder_date != datetime.strptime(selected_date, '%Y-%m-%d').date():
+            continue
+
+        # Filtra in base alla fascia oraria monoraria
+        if start_time and end_time and not (start_time <= folder_time <= end_time):
+            continue
+
+        filtered_folders.append(folder)
+
 
     context = {
-        'folders': folders,
+        'folders': filtered_folders,
         'selected_type': selected_type,
+        'selected_date': selected_date,
+        'selected_time_range': selected_time_range,
+        'default_date': default_date,
     }
     return render(request, 'udtApp/simulation.html', context)
 

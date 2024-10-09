@@ -66,7 +66,7 @@ if __name__ == "__main__":
                                                                     activeGui=True, timecolumn="timeslot")
     print(scenarioFolder)
     twinManager.generateGraphs(scenarioFolder)
-    twinManager.showGraphs(scenarioFolder)
+    twinManager.showGraphs(scenarioFolder, saveSummary=False)
 
 
 

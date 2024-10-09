@@ -97,7 +97,7 @@ class DigitalTwinManager:
             p.wait()
 
 
-    def showGraphs(self, scenarioFolder: str, save):
+    def showGraphs(self, scenarioFolder: str, saveSummary = False):
         """
         Groups the graphs previously generated and stored in the scenarioFolder and show them in one figure
         :param scenarioFolder: the folder where the simulated scenario output is stored
@@ -121,5 +121,6 @@ class DigitalTwinManager:
         # Show Grouped image
         new_image.show()
         # Save new image
-        new_image.save(scenarioFolder + '/combined_image.png')
+        if saveSummary:
+            new_image.save(scenarioFolder + '/summary_image.png')
 
