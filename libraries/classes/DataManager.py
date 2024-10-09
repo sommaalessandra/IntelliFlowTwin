@@ -196,7 +196,7 @@ class TimescaleManager(DBManager):
                 return None
             query = (
                 f'SELECT entity_id, trafficflow, ST_X(location) as lat, ST_Y(location) as lon '
-                f'FROM mtopeniot.etdevice '
+                f'FROM mtopeniot.ettrafficloopdevices '
                 f'WHERE {timecolumn} LIKE %s AND dateobserved LIKE %s'
             )
             self.cursor.execute(query, (timeslot, queryDate))

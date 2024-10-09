@@ -1,9 +1,9 @@
 from ngsildclient import Client, SubscriptionBuilder
 import typing
-from libraries.constants import roadSegmentType, trafficFlowObservedType
+from libraries.constants import roadSegmentType, trafficFlowObservedType, deviceType
 
 
-class SubscriptionManager:
+class QuantumLeapManager:
     """
     A class to manage NGSI-LD subscriptions for monitoring and interacting with the context broker.
 
@@ -31,7 +31,7 @@ class SubscriptionManager:
         self.quantumleapPort = quantumleapPort
         self.activeSubscriptions = {}
 
-    def createSubscription(self, cbConnection: Client, entityType: str, attribute: str, description: str):
+    def createQuantumLeapSubscription(self, cbConnection: Client, entityType: str, attribute: str, description: str):
         """
         Creates a subscription in the context broker for a specific entity type and attribute.
 
@@ -49,6 +49,8 @@ class SubscriptionManager:
                 entityType = roadSegmentType
             elif entityType.lower() in ["trafficflowobserved", "traffic flow observed"]:
                 entityType = trafficFlowObservedType
+            elif entityType.lower() == "device":
+                entityType = deviceType
 
             subscriptionPayload = (
                 SubscriptionBuilder(notificationurl)

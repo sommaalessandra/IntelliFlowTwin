@@ -7,9 +7,9 @@ from libraries.classes.Planner import Planner
 from libraries.classes.DigitalTwinManager import DigitalTwinManager
 from libraries.classes.Agent import *
 from libraries.classes.SumoSimulator import Simulator
-from libraries.classes.SubscriptionManager import SubscriptionManager
+from libraries.classes.SubscriptionManager import QuantumLeapManager
 from libraries.classes.Broker import Broker
-
+import matplotlib
 
 if __name__ == "__main__":
 
@@ -24,14 +24,11 @@ if __name__ == "__main__":
     cbConnection = contextBroker.createConnection()
     IoTAgent = Agent(aid="01", hostname="localhost", cb_port=cbport, south_port=iotasouth, northport=iotanorth,
                      fw_service="openiot", fw_path="/")
-    subscriptionManager = SubscriptionManager(containerName="fiware-quantumleap", cbPort=cbport, quantumleapPort=quantumleapPort)
+    quantumLeapManager = QuantumLeapManager(containerName="fiware-quantumleap", cbPort=cbport, quantumleapPort=quantumleapPort)
 
-    subscriptionManager.createSubscription(cbConnection=cbConnection, entityType="Road Segment",
-                                           attribute="trafficFlow", description="Notify me of Traffic Flow")
-    subscriptionManager.createSubscription(cbConnection=cbConnection, entityType="trafficflowobserved",
-                                           attribute="trafficFlow", description="Notify me of Traffic Flow")
-    subscriptionManager.createSubscription(cbConnection=cbConnection, entityType="Device",
-                                           attribute="trafficFlow", description="Notify me of traffic Flow")
+    quantumLeapManager.createQuantumLeapSubscription(cbConnection=cbConnection, entityType="Road Segment", attribute="trafficFlow", description="Notify me of Traffic Flow")
+    quantumLeapManager.createQuantumLeapSubscription(cbConnection=cbConnection, entityType="trafficflowobserved", attribute="trafficFlow", description="Notify me of Traffic Flow")
+    quantumLeapManager.createQuantumLeapSubscription(cbConnection=cbConnection, entityType="Device", attribute="trafficFlow", description="Notify me of traffic Flow")
 
 
     #### Comment/decomment these two code lines to run the physical system.

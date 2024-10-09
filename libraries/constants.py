@@ -18,6 +18,7 @@ deviceCTX="https://raw.githubusercontent.com/smart-data-models/dataModel.Device/
 roadSegmentType="https://smartdatamodels.org/dataModel.Transportation/RoadSegment"
 roadType="https://smartdatamodels.org/dataModel.Transportation/Road"
 trafficFlowObservedType = "https://smartdatamodels.org/dataModel.Transportation/TrafficFlowObserved"
+deviceType = "https://uri.etsi.org/ngsi-ld/default-context/TrafficLoopDevices"
 
 ### SUMO-RELATED CONSTANTS
 # path where the data used for simulation are stored
