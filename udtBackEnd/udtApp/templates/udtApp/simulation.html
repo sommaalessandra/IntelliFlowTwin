@@ -13,43 +13,57 @@
 <div class="container mt-4">
     <!-- Aggiungi una select box per filtrare tra 'basic' e 'congestioned' -->
     <form method="get" action="{% url 'simulation' %}">
-        <label for="date">Seleziona la data:</label>
-        <input type="date" id="date" name="date" value="{{ selected_date|default:default_date }}">
-        <select name="time_range" id="time_range">
-        <option value="00:00-01:00" {% if selected_time_range == '00:00-01:00' %}selected{% endif %}>00:00 - 01:00</option>
-        <option value="01:00-02:00" {% if selected_time_range == '01:00-02:00' %}selected{% endif %}>01:00 - 02:00</option>
-        <option value="02:00-03:00" {% if selected_time_range == '02:00-03:00' %}selected{% endif %}>02:00 - 03:00</option>
-        <option value="03:00-04:00" {% if selected_time_range == '03:00-04:00' %}selected{% endif %}>03:00 - 04:00</option>
-        <option value="04:00-05:00" {% if selected_time_range == '04:00-05:00' %}selected{% endif %}>04:00 - 05:00</option>
-        <option value="05:00-06:00" {% if selected_time_range == '05:00-06:00' %}selected{% endif %}>05:00 - 06:00</option>
-        <option value="06:00-07:00" {% if selected_time_range == '06:00-07:00' %}selected{% endif %}>06:00 - 07:00</option>
-        <option value="07:00-08:00" {% if selected_time_range == '07:00-08:00' %}selected{% endif %}>07:00 - 08:00</option>
-        <option value="08:00-09:00" {% if selected_time_range == '08:00-09:00' %}selected{% endif %}>08:00 - 09:00</option>
-        <option value="09:00-10:00" {% if selected_time_range == '09:00-10:00' %}selected{% endif %}>09:00 - 10:00</option>
-        <option value="10:00-11:00" {% if selected_time_range == '10:00-11:00' %}selected{% endif %}>10:00 - 11:00</option>
-        <option value="11:00-12:00" {% if selected_time_range == '11:00-12:00' %}selected{% endif %}>11:00 - 12:00</option>
-        <option value="12:00-13:00" {% if selected_time_range == '12:00-13:00' %}selected{% endif %}>12:00 - 13:00</option>
-        <option value="13:00-14:00" {% if selected_time_range == '13:00-14:00' %}selected{% endif %}>13:00 - 14:00</option>
-        <option value="14:00-15:00" {% if selected_time_range == '14:00-15:00' %}selected{% endif %}>14:00 - 15:00</option>
-        <option value="15:00-16:00" {% if selected_time_range == '15:00-16:00' %}selected{% endif %}>15:00 - 16:00</option>
-        <option value="16:00-17:00" {% if selected_time_range == '16:00-17:00' %}selected{% endif %}>16:00 - 17:00</option>
-        <option value="17:00-18:00" {% if selected_time_range == '17:00-18:00' %}selected{% endif %}>17:00 - 18:00</option>
-        <option value="18:00-19:00" {% if selected_time_range == '18:00-19:00' %}selected{% endif %}>18:00 - 19:00</option>
-        <option value="19:00-20:00" {% if selected_time_range == '19:00-20:00' %}selected{% endif %}>19:00 - 20:00</option>
-        <option value="20:00-21:00" {% if selected_time_range == '20:00-21:00' %}selected{% endif %}>20:00 - 21:00</option>
-        <option value="21:00-22:00" {% if selected_time_range == '21:00-22:00' %}selected{% endif %}>21:00 - 22:00</option>
-        <option value="22:00-23:00" {% if selected_time_range == '22:00-23:00' %}selected{% endif %}>22:00 - 23:00</option>
-        <option value="23:00-00:00" {% if selected_time_range == '23:00-00:00' %}selected{% endif %}>23:00 - 00:00</option>
-        </select>
+        <label for="date">Select the date:</label>
+        <input type="date" id="date" name="date" value="{{ selected_date|default:default_date }}" onchange="this.form.submit()">
+
+    <label for="start_time">Select starting hour:</label>
+    <select name="start_time" id="start_time" onchange="checkTimes(); this.form.submit()">
+    {% for hour in hours %}
+        <option value="{{ hour }}"
+        {% if selected_start_time == hour %}selected{% endif %}>
+        {{ hour }}
+        </option>
+    {% endfor %}
+    </select>
+
+
+    <label for="end_time">Select ending hour:</label>
+    <select name="end_time" id="end_time" onchange="checkTimes(); this.form.submit()">
+    {% for hour in hours %}
+        <option value="{{ hour }}"
+            {% if selected_end_time == hour %}selected{% endif %}>
+            {{ hour }}
+        </option>
+    {% endfor %}
+    </select>
+
+    <p id="time-error" style="color: red;"></p>
+    <script>
+        function checkTimes() {
+            const startSelect = document.getElementById("start_time");
+            const endSelect = document.getElementById("end_time");
+            const errorElement = document.getElementById("time-error");
+
+            const startTime = startSelect.value;
+            const endTime = endSelect.value;
+
+            if (startTime > endTime) {
+                const startHour = parseInt(startTime.split(':')[0]);
+                const nextHour = (startHour + 1) % 24; // Take the next hour
+
+                endSelect.value = (nextHour < 10 ? '0' : '') + nextHour + ':00'; // Set enting hour
+
+                errorElement.textContent = "The end time was automatically updated.";
+            }
+        }
+    </script>
+
         <div class="form-group">
             <label for="type">Select scenario type:</label>
             <select name="type" id="type" class="form-control" onchange="this.form.submit()">
                 <option value="basic" {% if selected_type == 'basic' %}selected{% endif %}>Basic</option>
                 <option value="congestioned" {% if selected_type == 'congestioned' %}selected{% endif %}>Congestioned</option>
             </select>
-        </div>
-        <div class="col-md-2 d-flex align-items-end">
-            <button type="submit" class="btn btn-primary">Filter</button>
         </div>
     </form>
 
@@ -60,12 +74,12 @@
                 <img src="/path/to/placeholder.png" class="card-img-top" alt="Immagine della cartella">
                 <div class="card-body">
                     <h5 class="card-title">{{ folder }}</h5>
-                    <a href="{% url 'serve_image' folder=folder %}?type={{ selected_type }}" class="btn btn-primary">Visualizza immagini</a>
+                    <a href="{% url 'serve_image' folder=folder %}?type={{ selected_type }}" class="btn btn-primary">View graphs</a>
                 </div>
             </div>
         </div>
         {% empty %}
-        <p>Nessuna cartella trovata con i criteri selezionati.</p>
+        <p>No folder found with the selected criteria.</p>
         {% endfor %}
     </div>
 </div>

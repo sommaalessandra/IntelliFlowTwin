@@ -62,51 +62,46 @@ def simulation(request):
     current_path = Path(current_dir).resolve()
     project_root = current_path.parent
     base_dir = project_root / 'SUMO' / 'joined' / 'scenarioCollection'
+    if not os.path.exists(base_dir):
+        base_dir = project_root / 'UrbanDigitalTwin' / 'SUMO' / 'joined' / 'scenarioCollection'
 
     # Get the selected type (in the page filter). Default is 'basic'
     selected_type = request.GET.get('type', 'basic')
-    selected_date = request.GET.get('date', '')
+    selected_date = request.GET.get('date', '').strip()
+    if not selected_date:  # Se la data non è fornita, usa la data corrente
+        selected_date = datetime.now().strftime('%Y-%m-%d')
+    start_time = request.GET.get('start_time', '00:00').strip()  # rimuovere spazi bianchi
+    end_time = request.GET.get('end_time', '23:00').strip()
 
     today = datetime.now().date()
     default_date = today.strftime('%Y-%m-%d')
 
-    selected_time_range = request.GET.get('time_range', '')
-    # Selezione della fascia oraria: ottieni gli orari di inizio e fine dalla selezione
-    start_time = None
-    end_time = None
-    if selected_time_range:
-        start_time_str, end_time_str = selected_time_range.split('-')
-        start_time = datetime.strptime(start_time_str, '%H:%M').time()
-        end_time = datetime.strptime(end_time_str, '%H:%M').time()
+    selected_start_datetime = datetime.strptime(f"{selected_date} {start_time}", '%Y-%m-%d %H:%M')
+    selected_end_datetime = datetime.strptime(f"{selected_date} {end_time}", '%Y-%m-%d %H:%M')
 
     # List of folders containing 'basic' or 'congestioned' in the name
-    folders = [f for f in os.listdir(base_dir) if selected_type in f and os.path.isdir(os.path.join(base_dir, f))]
-    filtered_folders = []
-    for folder in folders:
-        # Estrai la data e l'ora dal nome della cartella
-        folder_date_str = folder.split('_')[0]  # Es. 2024-10-08
-        folder_time_str = folder.split('_')[1]  # Es. 12-29-03
-        folder_date = datetime.strptime(folder_date_str, '%Y-%m-%d').date()
-        folder_time = datetime.strptime(folder_time_str, '%H-%M-%S').time()
+    folders = []
+    for folder_name in os.listdir(base_dir):
+        try:
+            # La cartella ha una data nel formato YYYY-MM-DD_HH-MM-SS_tipo
+            folder_datetime_str, folder_type = folder_name.rsplit('_', 1)
+            folder_datetime = datetime.strptime(folder_datetime_str, '%Y-%m-%d_%H-%M-%S')
 
-
-        # Filtra in base alla selezione dell'utente
-        if selected_date and folder_date != datetime.strptime(selected_date, '%Y-%m-%d').date():
+            # Verifica se la cartella è del tipo selezionato e se rientra nell'intervallo orario
+            if (selected_type in folder_type) and (selected_start_datetime <= folder_datetime <= selected_end_datetime):
+                folders.append(folder_name)
+        except ValueError:
+            # Se la cartella non ha il formato atteso, ignorala
             continue
-
-        # Filtra in base alla fascia oraria monoraria
-        if start_time and end_time and not (start_time <= folder_time <= end_time):
-            continue
-
-        filtered_folders.append(folder)
-
 
     context = {
-        'folders': filtered_folders,
+        'folders': folders,
         'selected_type': selected_type,
         'selected_date': selected_date,
-        'selected_time_range': selected_time_range,
+        'selected_start_time': start_time,
+        'selected_end_time': end_time,
         'default_date': default_date,
+        'hours':  [f"{hour:02d}:00" for hour in range(24)],
     }
     return render(request, 'udtApp/simulation.html', context)
 

@@ -34,3 +34,5 @@ if settings.DEBUG:
     project_root = current_path.parent
     base_dir = project_root / 'SUMO' / 'joined' / 'scenarioCollection'
     urlpatterns += static('/scenarioCollection/', document_root=base_dir)
+    if not os.path.exists(base_dir):
+        base_dir = project_root / 'UrbanDigitalTwin' / 'SUMO' / 'joined' / 'scenarioCollection'
