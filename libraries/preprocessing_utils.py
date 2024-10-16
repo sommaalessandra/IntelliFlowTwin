@@ -43,11 +43,11 @@ def filter_roads(input_file, road_file, output_file = 'filtered_output.csv', inp
         print("Filtered output created. ")
 
     unmatched_roadnames = filter_roadnames - input_roadnames
-    # Print umatched roadnames
+    # Print unmatched roadnames
     print("Unused road names in the filter:")
     for voce in unmatched_roadnames:
         print(voce)
-    print("The numer of unmatched road names is: " + str(len(unmatched_roadnames)))
+    print("The number of unmatched road names is: " + str(len(unmatched_roadnames)))
 
 
 def filter_with_accuracy(file_input, file_accuracy, date_column='data', sensor_id_column='codice_spira', output_file='accurate_output.csv', accepted_percentage=90):
@@ -111,11 +111,16 @@ def generate_edgedata_file(input_file, output_file = 'edgedata.xml' ,date = "01/
         edge_id = str(row['edge_id'])
         first = int(time_slot[0:2])
         last = int(time_slot[6:8])
-        # check if time window is two hours long
+        # check if time window is longer than one hour
         if last - first > 1:
-            time_slot1 = str(datetime.time(first).strftime("%H:00"))+'-'+str(datetime.time(first+1).strftime("%H:00"))
-            time_slot2 = str(datetime.time(last-1).strftime("%H:00"))+'-'+str(datetime.time(last % 24).strftime("%H:00"))
-            count = str(row[time_slot1] + row[time_slot2])
+            time_slots = []
+            for hour in range(first, last):
+                time_slot1 = f"{hour:02d}:00-{(hour + 1) % 24:02d}:00"
+                time_slots.append(time_slot1)
+            total_count = 0
+            for time_slot1 in time_slots:
+                total_count += row[time_slot1]
+            count = str(total_count)
         else:
             count = str(row[time_slot])
         edge = ET.SubElement(interval,'edge', id=edge_id, entered=count)
