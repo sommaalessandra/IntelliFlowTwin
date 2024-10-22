@@ -1,3 +1,5 @@
+import os
+
 from libraries.constants import *
 from libraries.preprocessing_utils import *
 
@@ -8,9 +10,17 @@ outputFile = simulationDataPath + 'output.csv'  # File CSV dove salvare il risul
 accuracyFile = simulationDataPath + 'accuratezza-spire-anno-2024.csv'  # File che rappresenta in percentuale l'accuratezza delle spire
 accuracyOutputFile = simulationDataPath + 'accurate_output.csv'
 filterFile = simulationPath + 'roadnames.csv'
-#
+
+#NEW FUNCTIONS RUN
+path = os.path.abspath('./SUMO/bologna/full.net.xml')
+net = sumolib.net.readNet(path)
+generate_roadnames_file(inputFile=inputFile, sumoNet=net, outputFile='new_roadnames.csv')
+newroadnamesFile = os.path.abspath(simulationDataPath + 'new_roadnames.csv')
+fill_missing_edge_id(newroadnamesFile)
+link_edge_id(inputFile, newroadnamesFile)
+
 # # First the entries are filtered based on the accuracy value of measurement
-# filter_with_accuracy(inputFile, accuracyFile, date_column='data', sensor_id_column='codice_spira', output_file=accuracyOutputFile, accepted_percentage=95)
+filter_with_accuracy(inputFile, accuracyFile, date_column='data', sensor_id_column='codice_spira', output_file=accuracyOutputFile, accepted_percentage=95)
 # # call this function to filter road according to the filter file
 filter_roads(accuracyOutputFile, filterFile, outputFile)
 # # this function add a new column in the data, pointing which edge_id is linked with the referring roads

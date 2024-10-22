@@ -3,6 +3,8 @@ import csv
 import xml.etree.ElementTree as ET
 import datetime
 from libraries.constants import *
+import sumolib
+
 def filter_roads(input_file, road_file, output_file = 'filtered_output.csv', input_column = 'Nome via', filter_column = 'nome_via'):
     """
     The function filters a traffic input file based on the road names. The input_column and filter_column must be
@@ -136,7 +138,7 @@ def link_origin_destination(file_input, file_road_id):
 def filter_day(input_file, output_file = 'day_flow.csv', date = "01/02/2024"):
     df1 = pd.read_csv(input_file, sep=';')
     df1 = df1[df1['data'].str.contains(date)]
-    df1.to_csv(simulationDataPath + output_file, sep=',')
+    df1.to_csv(simulationDataPath + output_file, sep=';')
 
 
 # Function to map the existing traffic loop and generate an additional SUMO file containing the traffic detectors at
@@ -154,3 +156,66 @@ def generate_detector_file(realDataFile: str, outputPath: str):
     ET.indent(tree, '  ')
     tree.write(outputPath+"detectors.add.xml", "UTF-8")
 
+#NEW PRE-PROCESSING FUNCTIONS
+def generate_roadnames_file(inputFile, sumoNet, outputFile = 'new_roadnames.csv'):
+    """
+    Using the geopoint coordinates available in the input file, a roadnames file with edge_id linked to each
+    road is created. The edge_ids are found using a sumolib function to get edges near to the given coordinates.
+    :param inputFile: the file including every possible road to be mapped to an edge_id
+    :param sumoNet: a SUMO network instance including the same roads present in the input file
+    :param outputFile: the file name of the new roadnames generated
+    :return:
+    """
+    input_df = pd.read_csv(inputFile, sep=';')
+    df_unique = input_df[['Nome via', 'geopoint']].drop_duplicates()
+    # df_unique = input_df[['Nome via']].drop_duplicates()
+    for index, row in df_unique.iterrows():
+        coord = row['geopoint']
+        lat, lon = coord.split(',')
+        lat = float(lat)
+        lon = float(lon)
+        x, y = sumoNet.convertLonLat2XY(lon, lat)
+        print(f"SUMO reference coordinates (x,y): {x, y}")
+
+        candiates_edges = sumoNet.getNeighboringEdges(x, y, r=25)
+        # Sorting neighbors by distance
+        edges_and_dist = sorted(candiates_edges, key=lambda x: x[1])
+
+        if len(edges_and_dist) != 0:
+            closest_edge = edges_and_dist[0][0]
+        else:
+            continue
+        print(f"Name: {closest_edge.getName()}")
+        print(f"Edge ID: {closest_edge.getID()}")
+        df_unique.at[index, 'edge_id'] = closest_edge.getID()
+    df_unique.to_csv(simulationDataPath + outputFile, sep=';')
+
+def fill_missing_edge_id(roadnameFile):
+    """
+    Finds all entries without edge_id and adds the first edge_id it finds with the same road name
+    :param roadnameFile:
+    :return:
+    """
+    df = pd.read_csv(roadnameFile, sep=';')
+    for index, row in df.iterrows():
+        if pd.isnull(row['edge_id']):
+            same_street = df[(df['Nome via'] == row['Nome via']) & (df['edge_id'].notna())]
+            if not same_street.empty:
+                df.at[index, 'edge_id'] = same_street['edge_id'].values[0]
+    df.to_csv(roadnameFile, sep=';')
+
+def link_edge_id(inputFile, roadnameFile):
+    """
+    Using a roadnameFile with edge_ids (created with generate_roadname_files) edge_id is added for each entry in
+    the :param inputFile
+    :param inputFile:
+    :param roadnameFile:
+    :return:
+    """
+    df = pd.read_csv(inputFile, sep=';')
+    df_roadnames = pd.read_csv(roadnameFile, sep=';')
+
+    for index, row in df.iterrows():
+        edge = df_roadnames.loc[(df_roadnames['Nome via'] == row['Nome via']) & (df_roadnames['geopoint'] == row['geopoint']), 'edge_id']
+        df.at[index, 'edge_id'] = edge.values
+    df.to_csv(simulationDataPath + 'final.csv', sep=';')
