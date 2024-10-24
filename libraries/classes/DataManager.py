@@ -230,7 +230,7 @@ class TimescaleManager(DBManager):
             self.connection.commit()
             print(f"View '{viewName}' successfully created from table '{tableName}'!")
         except psycopg2.Error as e:
-            print(f"Errore during view creation: {e}")
+            print(f"Error during view creation: {e}")
 
 class MongoDBManager(DBManager):
     """
