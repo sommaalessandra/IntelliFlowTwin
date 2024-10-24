@@ -3,9 +3,9 @@
 <configuration xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://sumo.dlr.de/xsd/sumoConfiguration.xsd">
 
     <input>
-        <net-file value="joined_lanes.net.xml"/>
+        <net-file value="../static/joined_lanes.net.xml"/>
         <route-files value="generatedRoutes.rou.xml"/>
-        <additional-files value="joined_detectors.add.xml,joined_vtypes.add.xml,joined_tls.add.xml"/>
+        <additional-files value="../static/detectors.add.xml,../static/joined_vtypes.add.xml,../static/joined_tls.add.xml"/>
     </input>
 
     <output>
@@ -33,6 +33,12 @@
 		<ignore-junction-blocker value="1"/> <!-- NON ASPETTARE DI ENTRARE NELLA ROTONDA/INCROCIO SE LA STRADA è LIBERA --> 
     </processing> 
 	
+  <!--  <mesoscopic>  
+		<mesosim value="true"/> ABILITA SIMULAZIONE MESOSCOPICA 
+		<meso-junction-control value="true"/>  
+		<meso-overtaking value="true"/>
+		<meso-lane-queue value="true"/>
+    </mesoscopic>  -->
 
 
 </configuration>

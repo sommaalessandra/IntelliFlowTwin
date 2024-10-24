@@ -84,7 +84,7 @@ class ScenarioGenerator:
             arg1 = constants.simulationPath[2:]
         else:
             arg1 = constants.simulationPath
-        arg1 = os.path.join(arg1, "joined_lanes.net.xml")
+        arg1 = os.path.join(arg1, "static/joined_lanes.net.xml")
         arg1 = os.path.abspath(arg1)
         print(arg1)
         print(edgefile)

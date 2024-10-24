@@ -65,6 +65,12 @@ class Simulator:
         self.configurationPath = configurationPath
         # TODO: check if this routePath variable is needed.
         self.routePath = configurationPath
+        staticpath = os.path.abspath(self.configurationPath + "static")
+        if not os.path.exists(staticpath):
+            print("Error: the given path does not exist.")
+            return
+
+        os.environ["STATICPATH"] = staticpath
         self.logFile = logFile
         self.listener = ValueListener()
         libtraci.addStepListener(self.listener)
