@@ -213,6 +213,24 @@ class TimescaleManager(DBManager):
         columns = [desc[0] for desc in self.cursor.description]
         return pd.DataFrame(records, columns=columns)
 
+    def createView(self,tableName: str, viewName: str, schema="mtopeniot"):
+        """
+        Create a view from a specific table inside TimescaleDB. The view can be used to access tables with complex names
+        (like NGSI-LD types). The created view will be available in the public schema
+        :param tableName: name of the table from which to create the view
+        :param viewName: name of the view
+        :param schema: name of the schema in which the table is stored. By default, it's mtopeniot
+        :return:
+        """
+        query = f"""
+            CREATE VIEW {viewName} AS SELECT * FROM {schema}."{tableName}";
+            """
+        try:
+            self.cursor.execute(query)
+            self.connection.commit()
+            print(f"View '{viewName}' successfully created from table '{tableName}'!")
+        except psycopg2.Error as e:
+            print(f"Errore during view creation: {e}")
 
 class MongoDBManager(DBManager):
     """
