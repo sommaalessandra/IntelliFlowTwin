@@ -102,7 +102,7 @@ def link_roads_IDs(file_input, road_file_ids, output_file = 'final.csv' ,input_r
 
 def generate_edgedata_file(input_file, output_file = 'edgedata.xml' ,date = "01/02/2024", time_slot = "00:00-01:00",duration = '3600'):
     """
-    The function generate the XML edgedata file useful for the route sampler in Eclipse SUMO. Each row in the input file
+    The function generate the XML edgedata file useful for the route sampler in Eclipse sumoenv. Each row in the input file
     must have an edge id, a date and a time_slot in which the number of vehicles are reported.
     """
     root = ET.Element('data')
@@ -141,7 +141,7 @@ def filter_day(input_file, output_file = 'day_flow.csv', date = "01/02/2024"):
     df1.to_csv(simulationDataPath + output_file, sep=';')
 
 
-# Function to map the existing traffic loop and generate an additional SUMO file containing the traffic detectors at
+# Function to map the existing traffic loop and generate an additional sumoenv file containing the traffic detectors at
 # corresponding positions
 def generate_detector_file(realDataFile: str, outputPath: str):
     df = pd.read_csv(realDataFile)
@@ -162,7 +162,7 @@ def generate_roadnames_file(inputFile, sumoNet, outputFile = 'new_roadnames.csv'
     Using the geopoint coordinates available in the input file, a roadnames file with edge_id linked to each
     road is created. The edge_ids are found using a sumolib function to get edges near to the given coordinates.
     :param inputFile: the file including every possible road to be mapped to an edge_id
-    :param sumoNet: a SUMO network instance including the same roads present in the input file
+    :param sumoNet: a sumoenv network instance including the same roads present in the input file
     :param outputFile: the file name of the new roadnames generated
     :return:
     """
@@ -175,7 +175,7 @@ def generate_roadnames_file(inputFile, sumoNet, outputFile = 'new_roadnames.csv'
         lat = float(lat)
         lon = float(lon)
         x, y = sumoNet.convertLonLat2XY(lon, lat)
-        print(f"SUMO reference coordinates (x,y): {x, y}")
+        print(f"sumoenv reference coordinates (x,y): {x, y}")
 
         candiates_edges = sumoNet.getNeighboringEdges(x, y, r=25)
         # Sorting neighbors by distance

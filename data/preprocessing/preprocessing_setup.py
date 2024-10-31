@@ -1,7 +1,6 @@
 import os
 
-from libraries.constants import *
-from libraries.preprocessing_utils import *
+from libraries.utils.preprocessing_utils import *
 
 ### PREPROCESSING PHASE
 #csv file to be filtered
@@ -12,7 +11,7 @@ accuracyOutputFile = simulationDataPath + 'accurate_output.csv'
 filterFile = simulationPath + 'roadnames.csv'
 
 #NEW FUNCTIONS RUN
-path = os.path.abspath('./SUMO/bologna/full.net.xml')
+path = os.path.abspath('sumoenv/bologna/full.net.xml')
 net = sumolib.net.readNet(path)
 generate_roadnames_file(inputFile=inputFile, sumoNet=net, outputFile='new_roadnames.csv')
 newroadnamesFile = os.path.abspath(simulationDataPath + 'new_roadnames.csv')
@@ -31,4 +30,4 @@ generate_edgedata_file(linked_roads, 'edgedata.xml', '01/02/2024', '07:00-10:00'
 
 filter_day(linked_roads, date='01/02/2024')
 
-# generate_detector_file("./traffic_loop_dataset/day_flow.csv", "./SUMO/joined/data/")
+# generate_detector_file("./traffic_loop_dataset/day_flow.csv", "./sumoenv/joined/data/")

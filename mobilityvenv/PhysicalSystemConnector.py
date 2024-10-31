@@ -12,7 +12,7 @@
 #
 # ****************************************************
 
-from libraries.general_utils import *
+from libraries.utils.general_utils import *
 import inspect
 
 

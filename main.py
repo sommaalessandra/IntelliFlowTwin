@@ -1,7 +1,5 @@
-from physical_system_startup import *
-from libraries.constants import *
-from libraries.general_utils import *
-from libraries.preprocessing_utils import *
+from libraries.utils.general_utils import *
+from libraries.utils.preprocessing_utils import *
 from libraries.classes.DataManager import *
 from libraries.classes.Planner import Planner
 from libraries.classes.DigitalTwinManager import DigitalTwinManager
@@ -9,7 +7,7 @@ from libraries.classes.Agent import *
 from libraries.classes.SumoSimulator import Simulator
 from libraries.classes.SubscriptionManager import QuantumLeapManager
 from libraries.classes.Broker import Broker
-import matplotlib
+from mobilityvenv.MobilityVirtualEnvironment import setupPhysicalSystem, startPhysicalSystem
 
 if __name__ == "__main__":
 
@@ -33,11 +31,11 @@ if __name__ == "__main__":
 
     #### Comment/decomment these two code lines to run the physical system.
     # TODO: thread-multiprocessing
-    # roads, files = setupPhysicalSystem(IoTAgent)
-    # startPhysicalSystem(roads)
+    roads, files = setupPhysicalSystem(IoTAgent)
+    startPhysicalSystem(roads)
 
     # 2. The DigitalTwinManager needs i) a DataManager for accessing data; ii) a SumoSimulator for running simulations
-    #    iii) a Planner including a ScenarioGenerator for generating SUMO scenarios.
+    #    iii) a Planner including a ScenarioGenerator for generating sumoenv scenarios.
     timescaleManager = TimescaleManager(
         host="localhost",
         port=timescalePort,
@@ -48,14 +46,14 @@ if __name__ == "__main__":
     dataManager = DataManager("TwinDataManager")
     dataManager.addDBManager(timescaleManager)
 
-    configurationPath = "./SUMO/joined/"
+    configurationPath = "./sumoenv/joined/"
     logFile = "./command_log.txt"
     sumoSimulator = Simulator(configurationPath=configurationPath, logFile=logFile)
     twinPlanner = Planner(simulator=sumoSimulator)
     twinManager = DigitalTwinManager(dataManager, configurationPath, logFile)
 
     # 3. Simulation of one hour slot scenario. The function will open sumo gui. The play button must be pressed to
-    # run the simulation. When simulation ends, the function returns the folder path in which SUMO files have been
+    # run the simulation. When simulation ends, the function returns the folder path in which sumoenv files have been
     # generated.
     scenarioFolder = twinManager.simulateBasicScenarioForOneHourSlot(timeslot="00:00-01:00", date="2024/02/01",
                                                                     entityType='Road Segment',
