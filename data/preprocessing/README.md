@@ -1,11 +1,11 @@
 # Data Files
-This section describes the input and output files used within the preprocessing phase. Some files are the result of a preprocessing activity but are later used as input for other functions. Therefore, these files are reported in the Input/Output section
+This section describes the input and output files used within the preprocessing phase. Some files are the result of a preprocessing activity but are later used as input for other functions. Therefore, these files are reported in the Input/Output section.
 ## Input Files
 - **traffic_flow_2024.csv**: this file contains the traffic loop measurement data from January to April 2024. This data was taken from the [Bologna Open Data Repository - Traffic FLow](https://opendata.comune.bologna.it/explore/dataset/rilevazione-flusso-veicoli-tramite-spire-anno-2024). Used in:
 	- *filter_with_accuracy*: using this file with *accuratezza-spire-anno-2024.csv*, the function filters the file, keeping the entries that have at least an certain amount of accuracy in percentage (above 95% by default). The output file is *accurate_traffic_flow.csv*.
 	
 - **accuratezza-spire-anno-2024.csv**: this file reports the accuracy value, in percentage related to the measurement taken. This data was taken from the [Bologna Open Data Repository - Traffic Flow Accuracy](https://opendata.comune.bologna.it/explore/dataset/accuratezza-spire-anno-2024). Used in:
-	- *filter_with_accuracy*.
+	- *filter_with_accuracy*: description given above
 
 ## Output Files
 - **processed_traffic_flow.csv**: this file contains the accurate traffic loop measurement augmented with the road edge IDs coupled with the SUMO net. This is the outcome of an accuracy filtering and a linking function for edge_IDs.
@@ -17,4 +17,4 @@ This section describes the input and output files used within the preprocessing 
 	- *link_edge_id*: using this file and the *roadnames.csv* file created previously, this function add the edge id columns inside the file, creating *linked_traffic_flow.csv*, file that can be used for generating counting/flow data for SUMO simulation.
 - **roadnames.csv**: this file is the outcome of the *generate_roadname_file* function. It contains the name, the geopoint and the edge id for each road, linking the roads to the edges in the SUMO net. Used in:
 	- *fill_missing_edge_id*: the function finds entries that didn't find any match in the *generate_roadname_file* and add the first edge id found with the same road name.
-	- *link_edge_id*. 
+	- *link_edge_id*: description given above.
