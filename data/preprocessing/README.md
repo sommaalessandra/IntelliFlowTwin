@@ -1,5 +1,5 @@
 # Data Files
-This section describes the input and output files used within the preprocessing phase. Files that are processing results but are used as inputs for other functions are given in the Input/Output Files section
+This section describes the input and output files used within the preprocessing phase. Some files are the result of a preprocessing activity but are later used as input for other functions. Therefore, these files are reported in the Input/Output section
 ## Input Files
 - **traffic_flow_2024.csv**: this file contains the traffic loop measurement data from January to April 2024. This data was taken from the [Bologna Open Data Repository - Traffic FLow](https://opendata.comune.bologna.it/explore/dataset/rilevazione-flusso-veicoli-tramite-spire-anno-2024). Used in:
 	- *filter_with_accuracy*: using this file with *accuratezza-spire-anno-2024.csv*, the function filters the file, keeping the entries that have at least an certain amount of accuracy in percentage (above 95% by default). The output file is *accurate_traffic_flow.csv*.
