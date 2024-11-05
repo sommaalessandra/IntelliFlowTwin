@@ -29,7 +29,7 @@ trafficFlowObservedType = "https://smartdatamodels.org/dataModel.Transportation/
 
 ### sumoenv-RELATED CONSTANTS
 # path where the data used for simulation are stored
-simulationDataPath = projectPath + "./sumoenv/joined/data/"
+simulationDataPath = projectPath + "./data/preprocessing/data/"
 simulationPath = projectPath + "/sumoenv/joined/"
 sumoToolsPath = r"C:\Program Files (x86)\Eclipse\Sumo\tools"
 
