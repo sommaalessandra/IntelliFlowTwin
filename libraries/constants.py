@@ -1,3 +1,10 @@
+#Project Path
+import os.path
+from pathlib import Path
+path = Path((os.path.abspath(__file__)))
+projectPath = str(path.parent.parent.absolute())
+
+
 # environment variables file for the containers and their port
 containerEnvPath = "./fiwareenv/.env"
 
@@ -22,8 +29,8 @@ trafficFlowObservedType = "https://smartdatamodels.org/dataModel.Transportation/
 
 ### sumoenv-RELATED CONSTANTS
 # path where the data used for simulation are stored
-simulationDataPath = "./sumoenv/joined/data/"
-simulationPath = "sumoenv/joined/"
+simulationDataPath = projectPath + "./sumoenv/joined/data/"
+simulationPath = projectPath + "/sumoenv/joined/"
 sumoToolsPath = r"C:\Program Files (x86)\Eclipse\Sumo\tools"
 
 # Path where data for simulating different sumoenv scenario are collected.
