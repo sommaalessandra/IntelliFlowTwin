@@ -6,7 +6,7 @@ from libraries.constants import *
 import sumolib
 import os
 
-def filter_roads_legacy(input_file, road_file, output_file = 'filtered_output.csv', input_column = 'Nome via', filter_column = 'nome_via'):
+def filterRoadsLegacy(input_file, road_file, output_file ='filtered_output.csv', input_column ='Nome via', filter_column ='nome_via'):
     """
     The function filters a traffic input file based on the road names. The input_column and filter_column must be
     specified to match the values of the road names between the input file and the road_file. The result will be written
@@ -53,7 +53,7 @@ def filter_roads_legacy(input_file, road_file, output_file = 'filtered_output.cs
     print("The number of unmatched road names is: " + str(len(unmatched_roadnames)))
 
 
-def filter_with_accuracy(file_input, file_accuracy, date_column='data', sensor_id_column='codice_spira', output_file='accurate_output.csv', accepted_percentage=90):
+def filterWithAccuracy(file_input, file_accuracy, date_column='data', sensor_id_column='codice_spira', output_file='accurate_output.csv', accepted_percentage=90):
     """
     The function filters the traffic_loop_dataset using accuracy information. Both files must have the date and the ID of the sensor
     to be filtered properly. A threshold percentage can be provided to only accept the measurement above that value.
@@ -74,7 +74,7 @@ def filter_with_accuracy(file_input, file_accuracy, date_column='data', sensor_i
     df.to_csv(output_file, sep=';')
     print("Output with filtered accuracy created. ")
 
-def link_roads_IDs_legacy(file_input, road_file_ids, output_file = 'final.csv' ,input_roadname_column = 'Nome via', direction_column = 'direzione', filter_direction_column = 'orientamento',roadname_column = 'nome_via'):
+def linkRoadsIDsLegacy(file_input, road_file_ids, output_file ='final.csv', input_roadname_column ='Nome via', direction_column ='direzione', filter_direction_column ='orientamento', roadname_column ='nome_via'):
     """
     The function adds the road IDs based on the road file given as a new column in the input file. The entries in the
     input file must have a direction (expressed using direction_column) in order to be linked with the right lane ID of
@@ -101,7 +101,7 @@ def link_roads_IDs_legacy(file_input, road_file_ids, output_file = 'final.csv' ,
     df1.to_csv(simulationDataPath + output_file, sep=';')
     print("Created Output file with Road IDs linked")
 
-def generate_edgedata_file(input_file, output_file = 'edgedata.xml' ,date = "01/02/2024", time_slot = "00:00-01:00",duration = '3600'):
+def generateEdgedataFile(input_file, output_file ='edgedata.xml', date ="01/02/2024", time_slot ="00:00-01:00", duration ='3600'):
     """
     The function generate the XML edgedata file useful for the route sampler in Eclipse SUMO. Each row in the input file
     must have an edge id, a date and a time_slot in which the number of vehicles are reported.
@@ -131,12 +131,8 @@ def generate_edgedata_file(input_file, output_file = 'edgedata.xml' ,date = "01/
     ET.indent(tree, '  ')
     tree.write(simulationDataPath + output_file, "UTF-8")
 
-# TODO
-def link_origin_destination(file_input, file_road_id):
-    print("prova")
-
 #This method is used to filter the file before using it inside the DT platform
-def filter_day(input_file, output_file = 'day_flow.csv', date = "01/02/2024"):
+def filterDay(input_file, output_file ='day_flow.csv', date ="01/02/2024"):
     df1 = pd.read_csv(input_file, sep=';')
     df1 = df1[df1['data'].str.contains(date)]
     df1.to_csv(simulationDataPath + output_file, sep=';')
@@ -144,7 +140,7 @@ def filter_day(input_file, output_file = 'day_flow.csv', date = "01/02/2024"):
 
 # Function to map the existing traffic loop and generate an additional SUMO file containing the traffic detectors at
 # corresponding positions
-def generate_detector_file(realDataFile: str, outputPath: str):
+def generateDetectorFileLegacy(realDataFile: str, outputPath: str):
     df = pd.read_csv(realDataFile, sep=';')
     trafficLoopRoads = df["edge_id"].unique()
     print(len(trafficLoopRoads.shape))
@@ -159,7 +155,7 @@ def generate_detector_file(realDataFile: str, outputPath: str):
     tree.write(outputPath+"detectors.add.xml", "UTF-8")
 
 #NEW PRE-PROCESSING FUNCTIONS
-def generate_roadnames_file(inputFile, sumoNetFile, outputFile = 'new_roadnames.csv'):
+def generateRoadnamesFile(inputFile, sumoNetFile, outputFile ='new_roadnames.csv'):
     """
     Using the geopoint coordinates available in the input file, a roadnames file with edge_id linked to each
     road is created. The edge_ids are found using a sumolib function to get edges near to the given coordinates.
@@ -219,7 +215,7 @@ def generate_roadnames_file(inputFile, sumoNetFile, outputFile = 'new_roadnames.
     tree.write(simulationPath + "static/detectors.add.xml", "UTF-8")
     df_unique.to_csv(simulationDataPath + outputFile, sep=';')
 
-def fill_missing_edge_id(roadnameFile):
+def fillMissingEdgeId(roadnameFile):
     """
     Finds all entries without edge_id and adds the first edge_id it finds with the same road name
     :param roadnameFile:
@@ -237,7 +233,7 @@ def fill_missing_edge_id(roadnameFile):
     print("Road without edge id: " + str(empty))
     df.to_csv(roadnameFile, sep=';')
 
-def link_edge_id(inputFile, roadnameFile, outputFile: str):
+def linkEdgeId(inputFile, roadnameFile, outputFile: str):
     """
     Using a roadnameFile with edge_ids (created with generate_roadname_files) edge_id is added for each entry in
     the :param inputFile
@@ -257,7 +253,7 @@ def link_edge_id(inputFile, roadnameFile, outputFile: str):
     df.to_csv(outputFile, sep=';')
 
 
-def add_start_end(inputFile, roadnameFile, arcFile, nodeFile, sumoNetFile):
+def addStartEnd(inputFile, roadnameFile, arcFile, nodeFile, sumoNetFile):
     df = pd.read_csv(inputFile, sep=';')
     df_roadnames = pd.read_csv(roadnameFile, sep=';')
     df_arch = pd.read_csv(arcFile, sep=';')
@@ -334,7 +330,7 @@ def add_start_end(inputFile, roadnameFile, arcFile, nodeFile, sumoNetFile):
             print("Error, road not found!")
     df.to_csv(simulationDataPath+ "traffic_with_flow.csv", sep=';')
 
-def generate_flow(inputFile, time_slot="07:00-08:00"):
+def generateFlow(inputFile, time_slot="07:00-08:00"):
     df = pd.read_csv(inputFile, sep=';')
     root = ET.Element('routes')
     for index, row in df.iterrows():
@@ -359,7 +355,7 @@ def generate_flow(inputFile, time_slot="07:00-08:00"):
     ET.indent(tree, '  ')
     tree.write(simulationDataPath + "/flow.xml", "UTF-8")
 
-def generate_detector_csv(inputFile):
+def generateDetectorFile(inputFile):
     df = pd.read_csv(inputFile, sep=';')
     df_unique = df[['Nome via', 'geopoint']].drop_duplicates()
     # Creazione del file CSV
@@ -374,7 +370,7 @@ def generate_detector_csv(inputFile):
             lon = str(lon)
             writer.writerow([id,lat,lon])
 
-def filter_for_shadow_manager(inputFile):
+def filterForShadowManager(inputFile):
     df = pd.read_csv(inputFile, sep=';')
     df = df[['Nodo da', 'Nodo a', 'Nome via', 'direzione', 'longitudine', 'latitudine', 'geopoint',
              'ID_univoco_stazione_spira', 'edge_id', 'codice_spira', 'Livello']]
@@ -386,7 +382,7 @@ def filter_for_shadow_manager(inputFile):
         os.mkdir(projectPath + '/data/digitalshadow/')
     df.to_csv(projectPath + "/data/digitalshadow/filtered_traffic_flow.csv", sep=';')
 
-def generate_real_flow(inputFile):
+def generateRealFlow(inputFile):
     df = pd.read_csv(inputFile, sep=';')
     df = df[['data','codice_spira','00:00-01:00','01:00-02:00','02:00-03:00','03:00-04:00','04:00-05:00',
         '05:00-06:00','06:00-07:00','07:00-08:00','08:00-09:00','09:00-10:00','10:00-11:00','11:00-12:00','12:00-13:00',
