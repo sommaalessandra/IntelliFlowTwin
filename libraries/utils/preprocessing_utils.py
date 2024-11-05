@@ -382,4 +382,6 @@ def filter_for_shadow_manager(inputFile):
                   'TrafficLoopID', 'EdgeID', 'TrafficLoopCode', 'TrafficLoopLevel']
 
     df = df.drop_duplicates(['RoadName', 'TrafficLoopID'])
+    if not os.path.isdir(projectPath + '/data/digitalshadow/'):
+        os.mkdir(projectPath + '/data/digitalshadow/')
     df.to_csv(projectPath + "/data/digitalshadow/filtered_traffic_flow.csv", sep=';')
