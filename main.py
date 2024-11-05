@@ -8,8 +8,12 @@ from libraries.classes.SumoSimulator import Simulator
 from libraries.classes.SubscriptionManager import QuantumLeapManager
 from libraries.classes.Broker import Broker
 from mobilityvenv.MobilityVirtualEnvironment import setupPhysicalSystem, startPhysicalSystem
+from data.preprocessing import preprocessing_setup
 
 if __name__ == "__main__":
+
+
+    preprocessing_setup.run()
 
     # 1. Instantiate Orion CB, IoT Agent and create three types of subscriptions.
     envVar = loadEnvVar(containerEnvPath)
