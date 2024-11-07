@@ -63,7 +63,9 @@ def simulation(request):
     project_root = current_path.parent
     base_dir = project_root / 'sumoenv' / 'joined' / 'scenarioCollection'
     if not os.path.exists(base_dir):
-        base_dir = project_root / 'UrbanDigitalTwin' / 'sumoenv' / 'joined' / 'scenarioCollection'
+        base_dir = project_root / 'MOBIDT' / 'sumoenv' / 'joined' / 'scenarioCollection'
+        if not os.path.exists(base_dir):
+            return render(request, 'udtApp/emptyPage.html', {'item': 'Scenario folder'})
 
     # Get the selected type (in the page filter). Default is 'basic'
     selected_type = request.GET.get('type', 'basic')

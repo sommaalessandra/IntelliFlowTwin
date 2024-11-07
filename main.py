@@ -1,5 +1,5 @@
-from libraries.utils.general_utils import *
-from libraries.utils.preprocessing_utils import *
+from libraries.utils.generalUtils import *
+from libraries.utils.preprocessingUtils import *
 from libraries.classes.DataManager import *
 from libraries.classes.Planner import Planner
 from libraries.classes.DigitalTwinManager import DigitalTwinManager
@@ -8,8 +8,12 @@ from libraries.classes.SumoSimulator import Simulator
 from libraries.classes.SubscriptionManager import QuantumLeapManager
 from libraries.classes.Broker import Broker
 from mobilityvenv.MobilityVirtualEnvironment import setupPhysicalSystem, startPhysicalSystem
+from data.preprocessing import preprocessingSetup
 
 if __name__ == "__main__":
+
+
+    preprocessingSetup.run()
 
     # 1. Instantiate Orion CB, IoT Agent and create three types of subscriptions.
     envVar = loadEnvVar(containerEnvPath)
