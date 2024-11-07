@@ -70,7 +70,7 @@ def processingTlData(timeSlot, trafficData, roads: dict):
                 trafficLoopSensor.sendData(date, timeSlot, trafficFlow, coordinates, direction,
                                            device_id=trafficLoopSensor.devicePartialID,
                                            device_key=trafficLoopSensor.apiKey)
-        time.sleep(10) #simulating a sort of delay among entries
+        time.sleep(1) #simulating a sort of delay among entries
 
 
 #Function to convert geopoint format having a number without dots
