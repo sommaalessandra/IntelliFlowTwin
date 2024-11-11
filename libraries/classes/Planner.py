@@ -160,7 +160,7 @@ class Planner:
         :param simulator: An instance of the Simulator class.
         """
         self.simulator = simulator
-        self.scenarioGenerator = ScenarioGenerator(sumocfg="run.sumocfg", sim=self.simulator)
+        self.scenarioGenerator = ScenarioGenerator(sumocfg="run.sumocfg",sim=self.simulator)
 
     def planBasicScenarioForOneHourSlot(self, collectedData: pd.DataFrame, entityType: str, totalVehicles: int, minLoops: int, congestioned: bool, activeGui: bool=False):
         """
@@ -194,7 +194,7 @@ class Planner:
         tree.write(edgeFilePath, "UTF-8")
         routeFilePath = self.scenarioGenerator.generateRoutes(edgefile=edgeFilePath, folderPath=scenarioFolder, totalVehicles=totalVehicles, minLoops=minLoops, congestioned=congestioned)
         self.scenarioGenerator.setScenario(routeFilePath=routeFilePath, manual=False, absolutePath=True)
-        logFilePath =  os.path.join(scenarioFolder, "sumo_log.txt")
+        logFilePath = os.path.join(scenarioFolder, "sumo_log.txt")
         self.simulator.start(activeGui=activeGui,logFilePath=logFilePath)
 
         return scenarioFolder

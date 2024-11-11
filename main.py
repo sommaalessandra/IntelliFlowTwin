@@ -49,7 +49,7 @@ if __name__ == "__main__":
     dataManager = DataManager("TwinDataManager")
     dataManager.addDBManager(timescaleManager)
 
-    configurationPath = "./sumoenv/joined/"
+    configurationPath = SUMO_PATH
     logFile = "./command_log.txt"
     sumoSimulator = Simulator(configurationPath=configurationPath, logFile=logFile)
     twinPlanner = Planner(simulator=sumoSimulator)
