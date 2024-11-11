@@ -6,15 +6,28 @@ import time
 from datetime import datetime, timedelta
 import random
 
-def readingFiles(folder):
+def readingFiles(folder: str):
+    """
+    Read all CSV files in the specified folder, using the file names as dictionary keys.
+
+    Each CSV file is read with `;` as the separator, and the data is stored in a dictionary with
+    the file names (without extensions) as keys. It also returns a list of these file names.
+
+    :param folder: Path to the folder containing CSV files.
+    :return: Tuple of two elements:
+             - data (dict): Dictionary where each key is a file name (without extension), and each value is the data
+               from the corresponding CSV file as a DataFrame.
+             - files (list): List of file names (without extensions) for the loaded CSV files.
+    """
     files = os.listdir(folder)
     data = {}
+
     for i, file in enumerate(files):
         file_path = os.path.join(folder, file)
-        key = os.path.splitext(file)[
-            0]  # remove .csv extension to use file name as key value to access the data dictionary
-        data[key] = pd.read_csv(file_path)
-        files[i] = key
+        key = os.path.splitext(file)[0]  # Remove .csv extension to use file name as dictionary key
+        data[key] = pd.read_csv(file_path, sep=';')  # Read CSV with ; as the separator
+        files[i] = key  # Replace the original file name in `files` with the name without extension
+
     return data, files
 
 def generate_random_key(length):
@@ -78,22 +91,29 @@ def convert_format(value):
     return value.replace('.', '')  # Rimuovi solo il primo punto
 
 # Function to convert a date expressed as a string in ISO format
-def convertDate(date:str, timeslot: str):
-    day, month, year = map(int, date.split("/"))
+import random
+from datetime import datetime, timedelta
 
-    # Step 2: Extract the end time from the time slot interval (24-hour format)
-    start_time, end_time = timeslot.split("-")  # Get both parts, e.g., "12:00" and "13:00"
-    start_hour_24 = int(start_time.split(":")[0])  # Extract the hour as an integer (12)
-    end_hour_24 = int(end_time.split(":")[0])  # Extract the hour as an integer (13 becomes 13)
+def convertDate(date: str, timeslot: str):
+    """
+    Convert a date and timeslot into an ISO 8601 formatted datetime string with a random delay.
 
-    # Step 3: Generate a random delay in minutes (between 0 and 10)
+    :param date: Date in 'yyyy-mm-dd' format.
+    :param timeslot: Time slot in 'HH:MM-HH:MM' 24-hour format.
+    :return: ISO 8601 formatted datetime string with a random delay.
+    """
+    # Parse the date in 'yyyy-mm-dd' format
+    year, month, day = map(int, date.split("-"))
+    # Extract start and end times in 24-hour format
+    start_time, end_time = timeslot.split("-")
+    end_hour_24 = int(end_time.split(":")[0])
+    # Generate a random delay in minutes (between 0 and 10)
     random_delay = random.randint(0, 10)
-
-    # Step 4: Combine date and time
-    # Create a datetime object for the end time of the time slot
+    # Combine date and end time to create a datetime object for the end time of the timeslot
     base_time = datetime(year, month, day, end_hour_24, 0)
-
     # Add the random delay in minutes to the base time
     final_time = base_time + timedelta(minutes=random_delay)
-    d = final_time.strftime("%Y-%m-%dT%I:%M:%S") + "Z"
+    # Format as ISO 8601 with 24-hour time
+    d = final_time.strftime("%Y-%m-%dT%H:%M:%S") + "Z"
     return d
+

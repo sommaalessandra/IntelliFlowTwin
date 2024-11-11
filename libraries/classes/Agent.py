@@ -181,8 +181,7 @@ class Agent:
         """
 
 
-        url_sending = "http://{}:{}/iot/json?k={}&i={}".format(self.hostname, self.southPortNumber,
-                                                                      device_key, device_id)
+        url_sending = "http://{}:{}/iot/json?k={}&i={}".format(self.hostname, self.southPortNumber, device_key, device_id)
         # building packet header and payload
         header = CaseInsensitiveDict()
         header["Content-Type"] = "application/json"

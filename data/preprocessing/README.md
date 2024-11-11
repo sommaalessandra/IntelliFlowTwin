@@ -25,3 +25,7 @@ The following are in the execution order all the operations that were performed 
 - **generateRoadnamesFile**: the result of this filtering is used, together with the SUMO map (*joined_lanes.net.xml*), to generate *roadnames.csv*, a file that links each traffic loop to an edge of the network in SUMO. In addition, this function also generates the *detector.add.xml* file, which allows the traffic loops to be represented within the SUMO network.
 - **linkEdgeId**: using the accuracy-filtered file (*accurate_traffic_flow*), together with the roads file generated earlier (*roadnames*), through this function we augment the measurement data, associating each measurement with the edge Id of the map in SUMO. The result of this operation is saved in *processed_traffic_flow.csv*. Clearly the augmenting of the data is not direct, but passes through roadnames file for reasons of computational complexity reasons.
 - **generateEdgeDataFile**: the now-refined file can be used for generating the car count file, named *edgedata.xml* .  Through this function, a date and time slot is chosen, and the appropriate file is generated, which is used for route generation within the SUMO simulator (through routeSampler.py script, available in SUMO tools).
+
+WARNING:
+C:\Program Files (x86)\Eclipse\Sumo\tools\sumolib\net\__init__.py:312: UserWarning: Module 'rtree' not available. Using brute-force fallback.
+  warnings.warn("Module 'rtree' not available. Using brute-force fallback.")

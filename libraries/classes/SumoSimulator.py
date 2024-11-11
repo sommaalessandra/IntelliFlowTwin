@@ -17,6 +17,7 @@ import os
 # communication with the simulation.
 import libtraci
 import traci.constants as tc
+from typing import Optional
 
 
 class Simulator:
@@ -75,20 +76,32 @@ class Simulator:
         self.listener = ValueListener()
         libtraci.addStepListener(self.listener)
 
-    def start(self, activeGui=False):
+    def start(self, activeGui: bool = False, logFilePath: Optional[str] = None):
         """
-        Starts the sumoenv simulation with or without the graphical user interface (GUI) based on the activeGui parameter.
+        Start the SUMO environment simulation, with or without the GUI, based on the `activeGui` parameter.
         If a simulation is already loaded, it will be overwritten.
 
-        :param activeGui: If True, starts the simulation with the sumoenv GUI (sumo-gui).
-                         If False, starts the simulation without the GUI (sumo). Default is False.
-        :raises RuntimeError: If there is an issue starting the sumoenv simulation.
+        :param activeGui: If True, starts the simulation with the SUMO GUI (sumo-gui).
+                          If False, starts the simulation without the GUI (sumo). Default is False.
+        :param logFilePath: Optional path to a log file. If specified, the log file is used for the SUMO trace.
+        :raises RuntimeError: If there is an issue starting the SUMO simulation.
         """
+        # Check for any existing loaded simulation and warn if it exists
         if libtraci.simulation.isLoaded():
-            print("Warning: there was a previous simulation loaded. It will be overwritten")
-        command = ["sumo-gui" if activeGui else "sumo", "-c", self.configurationPath + "run.sumocfg"]
+            print("Warning: A previous simulation was loaded. It will be overwritten.")
+
+        # Construct the command for starting SUMO or SUMO-GUI
+        sumo_command = "sumo-gui" if activeGui else "sumo"
+        command = [sumo_command, "-c", os.path.join(self.configurationPath, "run.sumocfg")]
+
+        # Set the log file path if specified
+        self.logFile = logFilePath if logFilePath else self.logFile
+
+        # Start the simulation with the specified command and log file
         libtraci.start(command, traceFile=self.logFile)
-        print("Note that a simulation step is equivalent to " + str(libtraci.simulation.getDeltaT()) + " seconds")
+        print("Note: Each simulation step is equivalent to " + str(libtraci.simulation.getDeltaT()) + " seconds.")
+
+        # Resume the simulation
         self.resume()
 
     def startBasic(self, activeGui=False):
@@ -372,7 +385,6 @@ class Simulator:
         elif self.checkTLS(trafficLightID):
             libtraci.trafficlight.setProgram(trafficLightID, programID)
             print("The program of the TLS " + str(trafficLightID) + " is changed to " + str(programID))
-
 
 class ValueListener(libtraci.StepListener):
     """

@@ -33,7 +33,7 @@ import datetime
 
 selectedTimeSlot = "00:00-01:00"
 tempTimeSlot = str(datetime.time(0).strftime("%H:00"))+'-'+str(datetime.time(1).strftime("%H:00"))
-tlColumnsNames = ["index", "road_name", "ID_loop",  "geopoint", "direction"]
+tlColumnsNames = ["index", "road_name", "direction", "geopoint", "ID_loop"]
 
 
 def setupPhysicalSystem(agentInstance: Agent) -> tuple[dict,list]:
@@ -43,19 +43,18 @@ def setupPhysicalSystem(agentInstance: Agent) -> tuple[dict,list]:
     naturalNumber = 1
     keyLength = 26
 
-    [trafficData, files] = readingFiles(tlPath)
+    [trafficData, files] = readingFiles(REAL_TRAFFIC_FLOW_DATA_MVENV_PATH)
     for i, file in enumerate(files):
-        # TODO: ID_univoco_stazione_spira should not be read.
-        trafficData[file] = trafficData[file][["index", "Nome via", "ID_univoco_stazione_spira", "geopoint", "direzione"]]
+        trafficData[file] = trafficData[file][["index", "Nome via", "direzione", "geopoint","ID_univoco_stazione_spira"]]
         trafficData[file].columns = tlColumnsNames
 
     # Initialization of Physical System entities (road) and attached devices (traffic loop sensors)
     # TODO: traffic lights should be attached to the respective road as actuators.
     for i, file in enumerate(files):
-        if not agentInstance.isServiceGroupRegistered("TrafficLoopDevices"):
+        if not agentInstance.isServiceGroupRegistered("Device"):
             trafficLoopKey = generate_random_key(keyLength)
         else:
-            trafficLoopKey = agentInstance.getServiceGroupKey("TrafficLoopDevices")
+            trafficLoopKey = agentInstance.getServiceGroupKey("Device")
 
         for key, rows in trafficData[file].iterrows():
             roadName = rows['road_name']
@@ -76,7 +75,7 @@ def setupPhysicalSystem(agentInstance: Agent) -> tuple[dict,list]:
                 roadSensorIndex[roadName] += 1
 
             if not agentInstance.isDeviceRegistered(trafficLoopPartialIdentifier):
-                road[roadName].saveConnectedDevice(outputPath)
+                road[roadName].saveConnectedDevice(REGISTERED_DEVICES_PATH)
 
 
     # Device and Measurement Registration to the IoT Agent
@@ -107,7 +106,7 @@ def startPhysicalSystem(roads: dict[int, PhysicalSystemConnector]):
     :param roads: A dictionary of roads initialized in the setupPhysicalSystem function.
     """
 
-    [trafficData, files] = readingFiles(tlPath)
+    [trafficData, files] = readingFiles(REAL_TRAFFIC_FLOW_DATA_MVENV_PATH)
     for i, file in enumerate(files):
         tlColumnsNames = ["index", "date", "flow", "road_name", "ID_loop", "geopoint", "direction"]
         for i in range(23):

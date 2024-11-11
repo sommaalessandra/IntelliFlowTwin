@@ -1,6 +1,6 @@
 from ngsildclient import Client, SubscriptionBuilder
 import typing
-from libraries.constants import roadSegmentType, trafficFlowObservedType
+from libraries.constants import ROAD_SEGMENT_DATA_MODEL_TYPE, TRAFFIC_FLOW_OBSERVED_DATA_MODEL_TYPE
 
 
 class QuantumLeapManager:
@@ -46,9 +46,9 @@ class QuantumLeapManager:
             notificationurl = f"http://{self.containerName}:{self.quantumleapPort}/v2/notify"
 
             if entityType.lower() in ["road segment", "roadsegment"]:
-                entityType = roadSegmentType
+                entityType = ROAD_SEGMENT_DATA_MODEL_TYPE
             elif entityType.lower() in ["trafficflowobserved", "traffic flow observed"]:
-                entityType = trafficFlowObservedType
+                entityType = TRAFFIC_FLOW_OBSERVED_DATA_MODEL_TYPE
             elif entityType.lower() == "device":
                 entityType = "Device"
 

@@ -66,8 +66,7 @@ class DigitalTwinManager:
         if entityType.lower() in ["road segment", "roadsegment"]:
             timescaleManager = self.dtDataManager.getDBManagerByType("TimescaleDBManager")
             df = timescaleManager.retrieveHistoricalDataForTimeslot(timeslot=timeslot, date=date, entityType=entityType, timecolumn=timecolumn)
-            scenarioFolder = self.planner.planBasicScenarioForOneHourSlot(df, entityType=entityType, totalVehicles=totalVehicles,
-                                                                         minLoops=minLoops, congestioned=False, activeGui=activeGui)
+            scenarioFolder = self.planner.planBasicScenarioForOneHourSlot(df, entityType=entityType, totalVehicles=totalVehicles, minLoops=minLoops, congestioned=False, activeGui=activeGui)
             return scenarioFolder
 
 
@@ -78,7 +77,7 @@ class DigitalTwinManager:
         :param scenarioFolder: the folder where the simulated scenario output is stored
         :return:
         """
-        graphScript = constants.sumoToolsPath + '/visualization/plotXMLAttributes.py'
+        graphScript = constants.SUMO_TOOLS_PATH + '/visualization/plotXMLAttributes.py'
         scenarioFolder = os.path.abspath(scenarioFolder)
 
         trajectory_cmd = [sys.executable, graphScript, "-x", "x", "-y", "y", "-o", scenarioFolder + "/traj_out.png",

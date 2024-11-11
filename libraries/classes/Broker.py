@@ -15,7 +15,7 @@
 from ngsildclient import Client, Entity, Rel
 from typing import Optional, List, Tuple
 from libraries.classes.DigitalShadowManager import DigitalShadowManager
-from libraries.constants import transportationCTX, roadSegmentType, roadType
+from libraries.constants import TRANSPORTATION_DATA_MODEL_CTX, ROAD_SEGMENT_DATA_MODEL_TYPE, ROAD_DATA_MODEL_TYPE
 from libraries.utils.generalUtils import convertDate
 
 
@@ -204,8 +204,7 @@ class Broker:
         try:
             if self.shadowManagerReference is None:
                 self.shadowManagerReference = DigitalShadowManager()
-            roadShadow = self.shadowManagerReference.searchShadow(shadowType="road", timeSlot=timeSlot, trafficFlow=trafficFlow,
-                                                          coordinates=coordinates, laneDirection=laneDirection, deviceID=deviceID)
+            roadShadow = self.shadowManagerReference.searchShadow(shadowType="road", timeSlot=timeSlot, trafficFlow=trafficFlow, coordinates=coordinates, laneDirection=laneDirection, deviceID=deviceID)
             if not roadShadow:
                 raise RoadEntityError(f"No Road Shadow found for coordinates {coordinates} and direction {laneDirection}", coordinates=coordinates, laneDirection=laneDirection)
             roadName = roadShadow.name
@@ -241,14 +240,9 @@ class Broker:
                 else:
                     rsNumber=self.getProgressiveNumber("RoadSegment") + 1
                     tfoNumber=self.getProgressiveNumber("TrafficFlowObserved") + 1
-                    entityRoadSegment=self.createRoadSegmentEntity(progressiveNumber=rsNumber,startPoint=startPoint, endPoint=endPoint,coordinates=coordinates,
-                                                                   direction=laneDirection, edgeID=edgeID, trafficFlow=trafficFlow,
-                                                                   date=completeDate,trafficLoopID=deviceURN, timeslot=timeSlot)
-                    entityTrafficFlowObs=self.createTrafficFlowObsEntity(progressiveNumber=tfoNumber, direction=laneDirection,
-                                                                         date=completeDate, trafficFlow=trafficFlow,
-                                                                         trafficLoopID=deviceURN, roadSegmentID=entityRoadSegment.id, timeslot=timeSlot)
-                    entityRoadSegment=self.updateRoadSegmentRelation(rsEntity=entityRoadSegment, roadID=entityRoad.id,
-                                                   traffiFlowObsID=entityTrafficFlowObs.id)
+                    entityRoadSegment=self.createRoadSegmentEntity(progressiveNumber=rsNumber,startPoint=startPoint, endPoint=endPoint,coordinates=coordinates,direction=laneDirection, edgeID=edgeID, trafficFlow=trafficFlow, date=completeDate,trafficLoopID=deviceURN, timeslot=timeSlot)
+                    entityTrafficFlowObs=self.createTrafficFlowObsEntity(progressiveNumber=tfoNumber, direction=laneDirection, date=completeDate, trafficFlow=trafficFlow,trafficLoopID=deviceURN, roadSegmentID=entityRoadSegment.id, timeslot=timeSlot)
+                    entityRoadSegment=self.updateRoadSegmentRelation(rsEntity=entityRoadSegment, roadID=entityRoad.id,traffiFlowObsID=entityTrafficFlowObs.id)
                     entityRoad=self.updateRoadRelation(rEntity=entityRoad, roadSegmentID=entityRoadSegment.id)
                     created = cbConnection.create([entityRoadSegment, entityTrafficFlowObs])
                     updated = cbConnection.update(entityRoad)
@@ -259,25 +253,15 @@ class Broker:
                         print(self.getProgressiveNumber("RoadSegment"))
                         return True
                     else:
-                        raise ContextUpdateError("Failed to create or update context entities.",
-                                                 entityType=["RoadSegment", "TrafficFlowObserved"])
+                        raise ContextUpdateError("Failed to create or update context entities.", entityType=["RoadSegment", "TrafficFlowObserved"])
             else:
                 rNumber = self.getProgressiveNumber("Road") + 1
                 rsNumber = self.getProgressiveNumber("RoadSegment") + 1
                 tfoNumber = self.getProgressiveNumber("TrafficFlowObserved") + 1
                 entityRoad=self.createRoadEntity(progressiveNumber=rNumber, roadName=roadName)
-                entityRoadSegment = self.createRoadSegmentEntity(progressiveNumber=rsNumber, startPoint=startPoint,
-                                                                 endPoint=endPoint, coordinates=coordinates,
-                                                                 direction=laneDirection, edgeID=edgeID,
-                                                                 trafficFlow=trafficFlow,
-                                                                 date=completeDate, trafficLoopID=deviceURN, timeslot=timeSlot)
-                entityTrafficFlowObs = self.createTrafficFlowObsEntity(progressiveNumber=tfoNumber,
-                                                                       direction=laneDirection,
-                                                                       date=completeDate, trafficFlow=trafficFlow,
-                                                                       trafficLoopID=deviceURN,
-                                                                       roadSegmentID=entityRoadSegment.id, timeslot=timeSlot)
-                entityRoadSegment = self.updateRoadSegmentRelation(rsEntity=entityRoadSegment, roadID=entityRoad.id,
-                                                                   traffiFlowObsID=entityTrafficFlowObs.id)
+                entityRoadSegment = self.createRoadSegmentEntity(progressiveNumber=rsNumber, startPoint=startPoint,  endPoint=endPoint, coordinates=coordinates, direction=laneDirection, edgeID=edgeID,trafficFlow=trafficFlow, date=completeDate, trafficLoopID=deviceURN, timeslot=timeSlot)
+                entityTrafficFlowObs = self.createTrafficFlowObsEntity(progressiveNumber=tfoNumber, direction=laneDirection, date=completeDate, trafficFlow=trafficFlow,trafficLoopID=deviceURN, roadSegmentID=entityRoadSegment.id, timeslot=timeSlot)
+                entityRoadSegment = self.updateRoadSegmentRelation(rsEntity=entityRoadSegment, roadID=entityRoad.id,traffiFlowObsID=entityTrafficFlowObs.id)
                 entityRoad = self.updateRoadRelation(rEntity=entityRoad, roadSegmentID=entityRoadSegment.id)
                 cbConnection.create([entityRoad, entityRoadSegment, entityTrafficFlowObs])
                 self.updateProgressiveNumber("Road", rNumber)
@@ -293,7 +277,7 @@ class Broker:
                                 edgeID: str, trafficFlow: int, date: str, trafficLoopID: str, timeslot: str) -> Entity:
 
         roadSegmentID = 'RS{:03d}'.format(progressiveNumber)
-        roadSegment = Entity("RoadSegment", roadSegmentID, ctx=transportationCTX)
+        roadSegment = Entity("RoadSegment", roadSegmentID, ctx=TRANSPORTATION_DATA_MODEL_CTX)
         roadSegment.prop('startPoint', int(startPoint))
         roadSegment.prop('endPoint', int(endPoint))
         if len(coordinates) == 2:
@@ -319,7 +303,7 @@ class Broker:
     def createTrafficFlowObsEntity(self, progressiveNumber: int, direction: str, trafficFlow: int, date: str,
                                    trafficLoopID: str, roadSegmentID: str, timeslot: str) -> Entity:
         trafficFlowID = 'TFO{:03d}'.format(progressiveNumber)
-        trafficFlowObs = Entity("TrafficFlowObserved", trafficFlowID, ctx=transportationCTX)
+        trafficFlowObs = Entity("TrafficFlowObserved", trafficFlowID, ctx=TRANSPORTATION_DATA_MODEL_CTX)
         trafficFlowObs.prop('laneDirection', direction)
         trafficFlowObs.rel('refRoadSegment', roadSegmentID)
         trafficFlowObs.prop('trafficFlow', trafficFlow).rel(Rel.OBSERVED_BY, roadSegmentID, nested=True)
@@ -330,7 +314,7 @@ class Broker:
 
     def createRoadEntity(self,progressiveNumber: int, roadName: str) -> Entity:
         roadID = 'R{:03d}'.format(progressiveNumber)
-        road = Entity("Road", roadID, ctx=transportationCTX)
+        road = Entity("Road", roadID, ctx=TRANSPORTATION_DATA_MODEL_CTX)
         road.prop('BolognaRoadName', roadName)
         return road
 
@@ -341,11 +325,11 @@ class Broker:
     def searchEntity(self, cbConnection: Client, dataSearch: str, eType: str) -> Entity:
         # dataSearch = {roadName: str, edgeID: str}
         if eType == "RoadSegment":
-            generator = cbConnection.query_generator(type=roadSegmentType)
+            generator = cbConnection.query_generator(type=ROAD_SEGMENT_DATA_MODEL_TYPE)
             e: Entity | None = next((e for e in generator if e["edgeID"].value == dataSearch), None)
             return e
         elif eType == "Road":
-            generator = cbConnection.query_generator(type=roadType)
+            generator = cbConnection.query_generator(type=ROAD_DATA_MODEL_TYPE)
             e: Entity | None = next((e for e in generator if e["BolognaRoadName"].value == dataSearch), None)
             return e
 

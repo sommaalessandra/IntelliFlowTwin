@@ -1,5 +1,5 @@
 import typing
-from libraries.constants import shadowPath, shadowFilePath
+from libraries.constants import SHADOWS_PATH, SHADOW_TYPE_FILE_PATH
 import pandas as pd
 import os
 import shutil
@@ -36,7 +36,7 @@ class ShadowDataProcessor:
     """
 
     def __init__(self, datapath):
-        self.df = pd.read_csv(datapath)
+        self.df = pd.read_csv(datapath, sep=';')
         self.df.columns = [
             'StartingPoint', 'EndPoint', 'RoadName', 'Direction', 'Longitude',
             'Latitude', 'Geopoint', 'TrafficLoopID', 'EdgeID', 'TrafficLoopCode',
@@ -105,30 +105,27 @@ class DigitalShadowManager:
     def __init__(self):
         self.clearShadowData()
         self.shadowsByTypes: typing.Dict[str, typing.List[Shadow]] = {}
-        self.dataProcessor = ShadowDataProcessor(shadowFilePath)
+        self.dataProcessor = ShadowDataProcessor(SHADOW_TYPE_FILE_PATH)
 
     def clearShadowData(self):
         """
-        Clears shadow data (directories and files) in the shadowPath, but preserves the shadowFilePath file.
+        Clears shadow data (directories and files) in the SHADOWS_PATH, but preserves the shadowFilePath file.
         """
-        if os.path.exists(shadowPath):
-            for item in os.listdir(shadowPath):
-                itemPath = os.path.join(shadowPath, item)
-                if itemPath == shadowFilePath:
+        if os.path.exists(SHADOWS_PATH):
+            for item in os.listdir(SHADOWS_PATH):
+                itemPath = os.path.join(SHADOWS_PATH, item)
+                if itemPath == SHADOW_TYPE_FILE_PATH:
                     continue
                 if os.path.isdir(itemPath):
                     shutil.rmtree(itemPath)
                 elif os.path.isfile(itemPath):
                     os.remove(itemPath)
-            print(f"Cleared shadow data from {shadowPath}, preserving {shadowFilePath}.")
+            print(f"Cleared shadow data from {SHADOWS_PATH}, preserving {SHADOW_TYPE_FILE_PATH}.")
 
-    def addShadow(self, shadowType: str, timeSlot: str, trafficFlow: int, coordinates: typing.List[float],
-                  direction: str, deviceID: str) -> Shadow:
+    def addShadow(self, shadowType: str, timeSlot: str, trafficFlow: int, coordinates: typing.List[float], direction: str, deviceID: str) -> Shadow:
         try:
             if shadowType == "road":
-                roadName, edgeID, startPoint, endPoint = self.dataProcessor.searchRoad(coordinates=coordinates,
-                                                                                       direction=direction,
-                                                                                       deviceID=deviceID)
+                roadName, edgeID, startPoint, endPoint = self.dataProcessor.searchRoad(coordinates=coordinates,direction=direction, deviceID=deviceID)
                 shadowAttributes = {
                     "startPoint": startPoint,
                     "endPoint": endPoint,
@@ -197,26 +194,35 @@ class DigitalShadowManager:
             print(f"Error in searchShadow: {e}")
             raise ValueError("Unable to create or find the shadow.")
 
+
     def saveShadowToCSV(self, shadowType: str, shadow: Shadow):
         """
-        Save shadow data to the CSV file inside the folder digitalshadows/shadowType.
+        Save shadow data to a CSV file inside the folder SHADOWS_PATH+shadowType, using ';' as the separator.
+
+        :param shadowType: Type of the shadow, which determines the folder within SHADOWS_PATH.
+        :param shadow: Shadow object containing attributes and data to save.
         """
-        directoryPath = os.path.join(shadowPath, shadowType)
+        # Create the directory path
+        directoryPath = os.path.join(SHADOWS_PATH, shadowType)
         os.makedirs(directoryPath, exist_ok=True)
+
+        # Set the file path and name
         fileName = shadow.name.replace(" ", "_") + ".csv"
         filePath = os.path.join(directoryPath, fileName)
 
+        # Retrieve and prepare shadow attributes
         shadowAttributes = shadow.getAllAttributes()
         coordinates = shadowAttributes.get("coordinates", [None, None])
 
-        # Add latitude and longitude columns
+        # Add latitude and longitude columns from coordinates
         shadowAttributes["latitude"] = coordinates[0]
         shadowAttributes["longitude"] = coordinates[1]
 
-        # Create a DataFrame directly from the shadow attributes
+        # Create a DataFrame from shadow attributes
         shadowData = pd.DataFrame([shadowAttributes])
 
+        # Save to CSV with ';' as the separator
         if os.path.exists(filePath):
-            shadowData.to_csv(filePath, mode='a', header=False, index=False)
+            shadowData.to_csv(filePath, sep=';', mode='a', header=False, index=False)
         else:
-            shadowData.to_csv(filePath, mode='w', header=True, index=False)
+            shadowData.to_csv(filePath, sep=';', mode='w', header=True, index=False)
