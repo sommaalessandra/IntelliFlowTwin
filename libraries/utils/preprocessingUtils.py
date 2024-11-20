@@ -642,4 +642,20 @@ def filteringDataset(inputFilePath: str, start_date: str, end_date: str, outputF
     print(f"Filtered data from {start_date} to {end_date} saved at '{outputFilePath}'")
 
 
+def fillMissingDirections(inputFilePath: str, directionColumn = "direzione", defaultDirection = 'N'):
+    """
+    Fill missing direction in a traffic file. If a default direction is not set, North will be used.
+    Args:
+        inputFilePath: Path to the input CSV file.
+        directionColumn: column name where directions are defined.
+        defaultDirection: direction to use when a road w.o. direction is met.
 
+    Returns:
+        The function updates the CSV file in place.
+    """
+    # Load the dataset
+    df = pd.read_csv(inputFilePath, sep=';')
+    # Replace empty values in the direction column with 'N'.
+    df[directionColumn].fillna(defaultDirection, inplace=True)
+    # Save modified dataset
+    df.to_csv(inputFilePath, index=False, sep=';')

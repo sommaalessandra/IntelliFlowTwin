@@ -12,8 +12,8 @@ from data.preprocessing import preprocessingSetup
 
 if __name__ == "__main__":
 
-
-    #preprocessingSetup.run()
+    # 0. Pre-processing phase (to be run only once)
+    preprocessingSetup.run()
 
     # 1. Instantiate Orion CB, IoT Agent and create three types of subscriptions.
     envVar = loadEnvVar(CONTAINER_ENV_FILE_PATH)
@@ -34,8 +34,8 @@ if __name__ == "__main__":
 
     #### Comment/decomment these two code lines to run the physical system.
     # TODO: thread-multiprocessing
-    #roads, files = setupPhysicalSystem(IoTAgent)
-    #startPhysicalSystem(roads)
+    roads, files = setupPhysicalSystem(IoTAgent)
+    startPhysicalSystem(roads)
 
     # 2. The DigitalTwinManager needs i) a DataManager for accessing data; ii) a SumoSimulator for running simulations
     #    iii) a Planner including a ScenarioGenerator for generating sumoenv scenarios.
