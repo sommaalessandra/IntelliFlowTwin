@@ -3,9 +3,9 @@
 <configuration xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://sumo.dlr.de/xsd/sumoConfiguration.xsd">
 
     <input>
-        <net-file value="../static/joined_lanes.net.xml"/>
-        <route-files value="generatedRoutes.rou.xml"/>
-        <additional-files value="../static/detectors.add.xml,../static/joined_vtypes.add.xml,../static/joined_tls.add.xml"/>
+        <net-file value="../static/full.net.xml"/>
+        <route-files value="sampleRoutes.rou.xml"/>
+        <additional-files value="../static/detectors.add.xml,../static/joined_vtypes.add.xml"/>
     </input>
 
     <output>

@@ -1,7 +1,8 @@
 import pandas as pd
 import csv
 import xml.etree.ElementTree as ET
-#import datetime
+import sys
+import subprocess
 from datetime import datetime
 from libraries.constants import *
 import sumolib
@@ -84,7 +85,6 @@ def filterDay(input_file, output_file ='day_flow.csv', date ="01/02/2024"):
     df1 = pd.read_csv(input_file, sep=';')
     df1 = df1[df1['data'].str.contains(date)]
     df1.to_csv(PROCESSED_DATA_PATH + output_file, sep=';')
-
 
 # Function to map the existing traffic loop and generate an additional SUMO file containing the traffic detectors at
 # corresponding positions
@@ -201,21 +201,6 @@ def generateFlow(inputFile, time_slot="07:00-08:00"):
     tree = ET.ElementTree(root)
     ET.indent(tree, '  ')
     tree.write(PROCESSED_DATA_PATH + "/flow.xml", "UTF-8")
-def generateDetectorFile(inputFile):
-    df = pd.read_csv(inputFile, sep=';')
-    df_unique = df[['Nome via', 'geopoint']].drop_duplicates()
-    # Creazione del file CSV
-    with open('output.csv', mode='w', newline='', encoding='utf-8') as file:
-        writer = csv.writer(file, delimiter=';')
-        writer.writerow(['id', 'lat', 'lon'])  # Scrive l'intestazione
-        for index, row in df_unique.iterrows():
-            id = 'det' + str(index)
-            coord = row['geopoint']
-            lat, lon = coord.split(',')
-            lat = str(lat)
-            lon = str(lon)
-            writer.writerow([id,lat,lon])
-
 
 ########################################################
 ##### CORRECTED FROM HERE ....
@@ -271,25 +256,24 @@ def filterWithAccuracy(file_input: str, file_accuracy: str,date_column: str,sens
     # Save the filtered data to the specified output file
     filtered_df.to_csv(output_file, sep=';', index=False)
     print(f"Output with filtered accuracy created at '{output_file}'.")
-def generateRoadNamesFile(inputFile: str, sumoNetFile: str, detectorFilePath: str, roadNamesFilePath: str):
+
+def generateRoadNamesFile(inputFile: str, sumoNetFile: str, roadNamesFilePath: str):
     """
     Generate a road names file with edge IDs linked to each road based on geopoint coordinates.
 
     This function uses the coordinates provided in the input file to find the closest `edge_id` in the SUMO network.
     The `edge_id` is associated with each road name based on the provided coordinates. This information is saved in
-    a CSV file and an XML file containing induction loop definitions for SUMO simulations.
+    a CSV file.
 
     Args:
         inputFile (str): Path to the CSV file containing roads to map to an edge ID. This file should include
                          at least the columns 'Nome via' (road name) and 'geopoint' (latitude,longitude coordinates).
         sumoNetFile (str): Path to the SUMO network file (e.g., `net.xml`) that includes the road network.
-        detectorFilePath (str): Path for the output XML file containing induction loop definitions.
         roadNamesFilePath (str): Path for the output CSV file where the mapped road names and edge IDs will be saved.
 
     Returns:
         None: The function saves two files:
               - A CSV file (`roadNamesFilePath`) with the road name and its corresponding edge ID.
-              - An XML file (`detectorFilePath`) with induction loop definitions for SUMO.
     """
     # Load the SUMO network using sumolib
     net = sumolib.net.readNet(sumoNetFile)
@@ -297,9 +281,6 @@ def generateRoadNamesFile(inputFile: str, sumoNetFile: str, detectorFilePath: st
     # Load input data and filter unique road names and geopoints
     input_df = pd.read_csv(inputFile, sep=';')
     df_unique = input_df[['Nome via', 'geopoint']].drop_duplicates()
-
-    # Create the root element for the XML file
-    root = ET.Element('additional')
 
     for index, row in df_unique.iterrows():
         # Extract latitude and longitude from the geopoint
@@ -332,37 +313,123 @@ def generateRoadNamesFile(inputFile: str, sumoNetFile: str, detectorFilePath: st
                 closest_edge = next((edge for edge, dist in edges_and_dist if
                                      edge.getType() not in ["highway.pedestrian", "highway.track", "highway.footway",
                                                             "highway.path", "highway.cycleway", "highway.steps"]), None)
-
         if closest_edge:
             print(f"Name: {closest_edge.getName()}")
             print(f"Edge ID: {closest_edge.getID()}")
-
             # Assign the closest edge ID to the row in df_unique
             df_unique.at[index, 'edge_id'] = closest_edge.getID()
-
-            # Add an induction loop element to the XML structure
-            ET.SubElement(root, 'inductionLoop', id=f"{index}_0", lane=f"{closest_edge.getID()}_0", pos="-5",
-                          freq="1800", file="e1_real_output.xml")
         else:
             # Drop rows where no suitable edge is found within the network
             print(f"No suitable edge found for road '{row['Nome via']}' at coordinates ({lat}, {lon}).")
             df_unique.drop(index, inplace=True)
 
-    # Ensure the directory for the XML output file exists
-    os.makedirs(os.path.dirname(detectorFilePath), exist_ok=True)
-
-    # Save the XML tree with pretty formatting
-    tree = ET.ElementTree(root)
-    ET.indent(tree, '  ')
-    tree.write(detectorFilePath, encoding="UTF-8", xml_declaration=True)
-    print(f"XML file saved at '{detectorFilePath}'")
-
-    # Ensure the directory for the CSV output file exists
-    os.makedirs(os.path.dirname(roadNamesFilePath), exist_ok=True)
-
     # Save the updated DataFrame with edge IDs to the specified CSV file path
     df_unique.to_csv(roadNamesFilePath, sep=';', index=False)
     print(f"CSV file with road names and edge IDs saved at '{roadNamesFilePath}'")
+
+def generateDetectorsCoordinatesFile(inputFile: str, detectorCoordinatesPath: str):
+    """
+    Generate a detector.csv file  that includes coordinates for each traffic loop.
+    starting from the input file, all entries that have unique coordinates are extracted,
+    allowing to distinguish all the loops in the measurement file.
+    Args:
+        inputFile: Path to the CSV file containing traffic loop to be stored. This file should include
+                         at least the columns 'geopoint' (latitude, longitude coordinates).
+        detectorCoordinatesPath: Path for the output csv file containing induction loop coordinates.
+    Returns:
+        None:
+            the function saves a csv file (`detectorCoordinatesPath`) with induction loop definitions for SUMO.
+    """
+
+    # Load input data and filter unique road names and geopoints
+    input_df = pd.read_csv(inputFile, sep=';')
+    df_unique = input_df.drop_duplicates(['geopoint'])
+    temp = []
+    for index, row in df_unique.iterrows():
+        # Extract latitude and longitude from the geopoint
+        coord = row['geopoint']
+        lat, lon = map(float, coord.split(','))
+
+        temp.append({'id': index, 'lat': lat, 'lon': lon})
+
+    new_df = pd.DataFrame(temp, columns=['id', 'lat', 'lon'])
+    new_df.to_csv(detectorCoordinatesPath, sep=';', index=False)
+
+def mapDetectorsFromCoordinates(sumoNetFile: str, detectorCoordinatesPath: str, detectorFilePath: str):
+    """
+    Generates the additional detector xml file.
+    Through the script made available in SUMO, the coordinates of the traffic loops are mapped, enabling the creation of
+    the detector.add.xml file useful for detecting traffic conditions within the simulator. Once the loops are mapped to
+    the detectors, duplicate elements are removed (taking the unique values of the <lane, position> pair).
+    Args:
+        detectorCoordinatesPath: Path for the output csv file containing induction loop coordinates.
+        detectorFilePath (str): Path for the output XML file containing induction loop definitions.
+
+    Returns:
+        None:
+            the function saves an XML file (`detectorFilePath`) with induction loop definitions for SUMO.
+
+    """
+    script = SUMO_TOOLS_PATH + "/detector/mapDetectors.py"
+    command = [
+        sys.executable,
+        script,
+        "-n", sumoNetFile,
+        "-d", detectorCoordinatesPath,
+        "-o", detectorFilePath
+    ]
+
+    try:
+        result = subprocess.run(command, capture_output=True, text=True, check=True)
+        print("Script output:", result.stdout)
+    except subprocess.CalledProcessError as e:
+        print("Script error:", e.stderr)
+
+    # Dropping duplicates
+    # Loading generated detector
+    tree = ET.parse(detectorFilePath)
+    root = tree.getroot()
+    # Set for keeping seen detector
+    seen = set()
+    # loop for removing duplicates
+    for element in list(root):
+        # THIS IS SET FOR DETECTORS THAT EXCEED THE LENGTH OF THE ROAD ON WHICH THEY ARE ON.
+        element.set('friendlyPos', 'True')
+        key = (element.get('lane'), element.get('pos'))
+        if key in seen:
+            root.remove(element)
+        else:
+            seen.add(key)
+    # save modified xml file
+    tree.write(detectorFilePath, encoding='utf-8', xml_declaration=True)
+
+def generateInductionLoopFile(inputFile: str, inductionLoopPath: str):
+    """
+    Generate a inductionLoop.csv file  A file that includes the information of traffic loops. Specifically, we extract
+    the loops from the input file, detecting one loop for each unique <street name, loop id , coordinate> triplet.
+    Args:
+        inputFile: Path to the CSV file containing traffic loop to be stored. This file should include
+                         at least the columns 'geopoint' (latitude, longitude coordinates).
+        detectorCoordinatesPath: Path for the output csv file containing induction loop coordinates.
+    Returns:
+        None:
+            the function saves a csv file (`detectorCoordinatesPath`) with induction loop definitions for SUMO.
+    """
+
+    # Load input data and filter unique road names and geopoints
+    input_df = pd.read_csv(inputFile, sep=';')
+    df_unique = input_df.drop_duplicates(['Nome via', 'ID_univoco_stazione_spira', 'geopoint'])
+    temp = []
+    for index, row in df_unique.iterrows():
+        # Extract latitude and longitude from the geopoint
+        coord = row['geopoint']
+        lat, lon = map(float, coord.split(','))
+
+        temp.append({'id': row['ID_univoco_stazione_spira'], 'roadname': row['Nome via'],'lat': lat, 'lon': lon})
+
+    new_df = pd.DataFrame(temp, columns=['id', 'roadname', 'lat', 'lon'])
+    new_df.to_csv(inductionLoopPath, sep=';', index=False)
+
 def fillMissingEdgeId(roadnameFile: str):
     """
     Fill in missing edge IDs in the road names file.
@@ -407,6 +474,7 @@ def fillMissingEdgeId(roadnameFile: str):
     print("Roads without edge ID: " + str(empty))
     # Save the updated DataFrame back to the CSV file
     df.to_csv(roadnameFile, sep=';', index=False)
+
 def linkEdgeId(inputFile: str, roadnameFile: str, outputFile: str):
     """
     Link edge IDs from the road names file to each entry in the input file.
@@ -454,6 +522,7 @@ def linkEdgeId(inputFile: str, roadnameFile: str, outputFile: str):
     # Save the modified DataFrame to the output file
     df.to_csv(outputFile, sep=';', index=False)
     print(f"Updated file with linked edge IDs saved at '{outputFile}'")
+
 def filterForShadowManager(inputFile: str):
     """
     Filter and format data for the Shadow Manager.
@@ -491,6 +560,7 @@ def filterForShadowManager(inputFile: str):
 
     # Save the filtered DataFrame to a CSV file in the specified directory
     df.to_csv(os.path.join(SHADOW_TYPE_FILE_PATH), sep=';', index=False)
+
 def generateRealFlow(inputFile: str):
     """
     Generate a real traffic flow file with selected columns.
@@ -523,6 +593,7 @@ def generateRealFlow(inputFile: str):
     output_file = os.path.join(REAL_TRAFFIC_FLOW_DATA_MVENV_PATH, "real_traffic_flow.csv")
     df.to_csv(output_file, sep=';', index_label='index')
     print(f"Filtered real traffic flow data saved at '{output_file}'")
+
 def generateEdgeDataFile(input_file: str, date: str = "01/02/2024", time_slot: str = "00:00-01:00", duration: str = '3600'):
     """
     Generate an XML `edgedata` file for the route sampler in Eclipse SUMO.
@@ -569,6 +640,7 @@ def generateEdgeDataFile(input_file: str, date: str = "01/02/2024", time_slot: s
     ET.indent(tree, '  ')
     tree.write(EDGE_DATA_FILE_PATH, encoding="UTF-8", xml_declaration=True)
     print(f"Edge data XML saved at '{EDGE_DATA_FILE_PATH}'")
+
 def dailyFilter(inputFilePath: str, date: str):
     """
     Filter data by a specific date and save to a predefined daily traffic flow file.
@@ -640,7 +712,6 @@ def filteringDataset(inputFilePath: str, start_date: str, end_date: str, outputF
     # Save the filtered dataset
     filtered_df.to_csv(outputFilePath, sep=';', index=False)
     print(f"Filtered data from {start_date} to {end_date} saved at '{outputFilePath}'")
-
 
 def fillMissingDirections(inputFilePath: str, directionColumn = "direzione", defaultDirection = 'N'):
     """

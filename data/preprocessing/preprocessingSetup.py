@@ -27,18 +27,24 @@ def run():
     reorderDataset(TRAFFIC_FLOW_ACCURATE_FILE_PATH, TRAFFIC_FLOW_ACCURATE_FILE_PATH)
 
     #4. Generate correspondence between roadName and edge ID in SUMO net file and creating the SUMO detectors additional file for modeling real induction loop positions in SUMO net.
-    generateRoadNamesFile(inputFile=TRAFFIC_FLOW_ACCURATE_FILE_PATH, sumoNetFile=SUMO_NET_PATH,detectorFilePath=SUMO_DETECTORS_ADD_FILE_PATH, roadNamesFilePath=ROAD_NAMES_FILE_PATH)
+    # generateRoadNamesFile(inputFile=TRAFFIC_FLOW_ACCURATE_FILE_PATH, sumoNetFile=SUMO_NET_PATH, roadNamesFilePath=ROAD_NAMES_FILE_PATH)
 
 
-    #5. Fill missing edge IDs in the road names file.
+    #5. Generate detector addtional file for SUMO simulator
+    generateDetectorsCoordinatesFile(inputFile=TRAFFIC_FLOW_ACCURATE_FILE_PATH, detectorCoordinatesPath=EXTRACTED_DETECTOR_COORDINATES_FILE_PATH)
+    mapDetectorsFromCoordinates(sumoNetFile=SUMO_NET_PATH, detectorCoordinatesPath=EXTRACTED_DETECTOR_COORDINATES_FILE_PATH, detectorFilePath=SUMO_DETECTORS_ADD_FILE_PATH)
+    #5.1 Generate Induction Loop file for keeping traffic loop duplicates
+    generateInductionLoopFile(inputFile=TRAFFIC_FLOW_ACCURATE_FILE_PATH, inductionLoopPath=EXTRACTED_INDUCTION_LOOP_FILE_PATH)
+
+    #6. Fill missing edge IDs in the road names file.
     fillMissingEdgeId(ROAD_NAMES_FILE_PATH)
     linkEdgeId(inputFile=TRAFFIC_FLOW_ACCURATE_FILE_PATH, roadnameFile=ROAD_NAMES_FILE_PATH, outputFile=PROCESSED_TRAFFIC_FLOW_EDGE_FILE_PATH)
 
-    #6. Generate shadow types for creating road, traffic loop shadows within the DT.
+    #7. Generate shadow types for creating road, traffic loop shadows within the DT.
     filterForShadowManager(PROCESSED_TRAFFIC_FLOW_EDGE_FILE_PATH)
     generateRealFlow(PROCESSED_TRAFFIC_FLOW_EDGE_FILE_PATH)
 
-    #7. Generate example edgedata file to be used for route genaration
+    #8. Generate example edgedata file to be used for route genaration
     generateEdgeDataFile(PROCESSED_TRAFFIC_FLOW_EDGE_FILE_PATH, date='01/02/2024', time_slot='07:00-08:00')
     #dailyFilter(PROCESSED_TRAFFIC_FLOW_EDGE_FILE_PATH, date='01/02/2024')
 

@@ -1,61 +1,428 @@
-<?xml version='1.0' encoding='UTF-8'?>
-<additional>
-  <inductionLoop id="109_0" lane="b38[0]_0" pos="-5" freq="1800" file="e1_real_output.xml" />
-  <inductionLoop id="112_0" lane="b4[1][1][1]_0" pos="-5" freq="1800" file="e1_real_output.xml" />
-  <inductionLoop id="113_0" lane="b70_0" pos="-5" freq="1800" file="e1_real_output.xml" />
-  <inductionLoop id="114_0" lane="b55_0" pos="-5" freq="1800" file="e1_real_output.xml" />
-  <inductionLoop id="116_0" lane="b15_0" pos="-5" freq="1800" file="e1_real_output.xml" />
-  <inductionLoop id="134_0" lane="b3[1]_0" pos="-5" freq="1800" file="e1_real_output.xml" />
-  <inductionLoop id="135_0" lane="b8_0" pos="-5" freq="1800" file="e1_real_output.xml" />
-  <inductionLoop id="136_0" lane="b12_0" pos="-5" freq="1800" file="e1_real_output.xml" />
-  <inductionLoop id="137_0" lane="b12_0" pos="-5" freq="1800" file="e1_real_output.xml" />
-  <inductionLoop id="139_0" lane="b20+19a_0" pos="-5" freq="1800" file="e1_real_output.xml" />
-  <inductionLoop id="140_0" lane="b17[1]_0" pos="-5" freq="1800" file="e1_real_output.xml" />
-  <inductionLoop id="141_0" lane="a195_0" pos="-5" freq="1800" file="e1_real_output.xml" />
-  <inductionLoop id="142_0" lane="a195_0" pos="-5" freq="1800" file="e1_real_output.xml" />
-  <inductionLoop id="146_0" lane="a71_0" pos="-5" freq="1800" file="e1_real_output.xml" />
-  <inductionLoop id="147_0" lane="b2[0]_0" pos="-5" freq="1800" file="e1_real_output.xml" />
-  <inductionLoop id="148_0" lane="b38[0]a_0" pos="-5" freq="1800" file="e1_real_output.xml" />
-  <inductionLoop id="149_0" lane="b47_0" pos="-5" freq="1800" file="e1_real_output.xml" />
-  <inductionLoop id="166_0" lane="b2[1][0]_0" pos="-5" freq="1800" file="e1_real_output.xml" />
-  <inductionLoop id="167_0" lane="a67_0" pos="-5" freq="1800" file="e1_real_output.xml" />
-  <inductionLoop id="278_0" lane="a60_0" pos="-5" freq="1800" file="e1_real_output.xml" />
-  <inductionLoop id="280_0" lane="a43[0]_0" pos="-5" freq="1800" file="e1_real_output.xml" />
-  <inductionLoop id="281_0" lane="a201_0" pos="-5" freq="1800" file="e1_real_output.xml" />
-  <inductionLoop id="282_0" lane="b20+19a_0" pos="-5" freq="1800" file="e1_real_output.xml" />
-  <inductionLoop id="283_0" lane="b4[1][1][0]_0" pos="-5" freq="1800" file="e1_real_output.xml" />
-  <inductionLoop id="284_0" lane="b31_0" pos="-5" freq="1800" file="e1_real_output.xml" />
-  <inductionLoop id="302_0" lane="b2[1][1][1]b_0" pos="-5" freq="1800" file="e1_real_output.xml" />
-  <inductionLoop id="303_0" lane="b23_0" pos="-5" freq="1800" file="e1_real_output.xml" />
-  <inductionLoop id="304_0" lane="b38[0]_0" pos="-5" freq="1800" file="e1_real_output.xml" />
-  <inductionLoop id="305_0" lane="b2[1][0]_0" pos="-5" freq="1800" file="e1_real_output.xml" />
-  <inductionLoop id="306_0" lane="b38[1][0]_0" pos="-5" freq="1800" file="e1_real_output.xml" />
-  <inductionLoop id="308_0" lane="b4[1][1][1]_0" pos="-5" freq="1800" file="e1_real_output.xml" />
-  <inductionLoop id="309_0" lane="b10_0" pos="-5" freq="1800" file="e1_real_output.xml" />
-  <inductionLoop id="310_0" lane="b55_0" pos="-5" freq="1800" file="e1_real_output.xml" />
-  <inductionLoop id="311_0" lane="a124_0" pos="-5" freq="1800" file="e1_real_output.xml" />
-  <inductionLoop id="312_0" lane="a122_0" pos="-5" freq="1800" file="e1_real_output.xml" />
-  <inductionLoop id="313_0" lane="b37_0" pos="-5" freq="1800" file="e1_real_output.xml" />
-  <inductionLoop id="317_0" lane="a43[1]_0" pos="-5" freq="1800" file="e1_real_output.xml" />
-  <inductionLoop id="318_0" lane="a134_0" pos="-5" freq="1800" file="e1_real_output.xml" />
-  <inductionLoop id="365_0" lane="b2[1][0]_0" pos="-5" freq="1800" file="e1_real_output.xml" />
-  <inductionLoop id="370_0" lane="a201_0" pos="-5" freq="1800" file="e1_real_output.xml" />
-  <inductionLoop id="373_0" lane="a60_0" pos="-5" freq="1800" file="e1_real_output.xml" />
-  <inductionLoop id="385_0" lane="a201_0" pos="-5" freq="1800" file="e1_real_output.xml" />
-  <inductionLoop id="390_0" lane="b2[1][1][1]b_0" pos="-5" freq="1800" file="e1_real_output.xml" />
-  <inductionLoop id="392_0" lane="a117_0" pos="-5" freq="1800" file="e1_real_output.xml" />
-  <inductionLoop id="396_0" lane="b71_0" pos="-5" freq="1800" file="e1_real_output.xml" />
-  <inductionLoop id="407_0" lane="b53_0" pos="-5" freq="1800" file="e1_real_output.xml" />
-  <inductionLoop id="431_0" lane="a204a[0]_0" pos="-5" freq="1800" file="e1_real_output.xml" />
-  <inductionLoop id="482_0" lane="a204[1][1]_0" pos="-5" freq="1800" file="e1_real_output.xml" />
-  <inductionLoop id="483_0" lane="a203[0]_0" pos="-5" freq="1800" file="e1_real_output.xml" />
-  <inductionLoop id="487_0" lane="a204[1][1]_0" pos="-5" freq="1800" file="e1_real_output.xml" />
-  <inductionLoop id="488_0" lane="b53_0" pos="-5" freq="1800" file="e1_real_output.xml" />
-  <inductionLoop id="489_0" lane="b76_0" pos="-5" freq="1800" file="e1_real_output.xml" />
-  <inductionLoop id="496_0" lane="b12_0" pos="-5" freq="1800" file="e1_real_output.xml" />
-  <inductionLoop id="565_0" lane="a55_0" pos="-5" freq="1800" file="e1_real_output.xml" />
-  <inductionLoop id="567_0" lane="b17[1]_0" pos="-5" freq="1800" file="e1_real_output.xml" />
-  <inductionLoop id="649_0" lane="a11_0" pos="-5" freq="1800" file="e1_real_output.xml" />
-  <inductionLoop id="660_0" lane="a104_0" pos="-5" freq="1800" file="e1_real_output.xml" />
-  <inductionLoop id="731_0" lane="a55_0" pos="-5" freq="1800" file="e1_real_output.xml" />
+<?xml version='1.0' encoding='utf-8'?>
+<additional xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="http://sumo.dlr.de/xsd/additional_file.xsd">
+    <inductionLoop id="0" lane="23276104#1_0" pos="7.164592286721484" file="detector.out.xml" freq="3600" friendlyPos="True" />
+    <inductionLoop id="1" lane="540032812#2_1" pos="34.23736265276056" file="detector.out.xml" freq="3600" friendlyPos="True" />
+    <inductionLoop id="2" lane="210137936#7_0" pos="40.21724431516496" file="detector.out.xml" freq="3600" friendlyPos="True" />
+    <inductionLoop id="3" lane="217109091#1_0" pos="2.2665492861868968" file="detector.out.xml" freq="3600" friendlyPos="True" />
+    <inductionLoop id="4" lane="-32003370#0_0" pos="10.510870269798103" file="detector.out.xml" freq="3600" friendlyPos="True" />
+    <inductionLoop id="5" lane="23288767#1_1" pos="0.0" file="detector.out.xml" freq="3600" friendlyPos="True" />
+    <inductionLoop id="6" lane="957059981_0" pos="253.71310460374642" file="detector.out.xml" freq="3600" friendlyPos="True" />
+    <inductionLoop id="7" lane="-382207227#0_0" pos="143.1474214732136" file="detector.out.xml" freq="3600" friendlyPos="True" />
+    <inductionLoop id="8" lane="382207226#0_0" pos="17.239093218855476" file="detector.out.xml" freq="3600" friendlyPos="True" />
+    <inductionLoop id="9" lane="47222272#1_1" pos="30.383985082121974" file="detector.out.xml" freq="3600" friendlyPos="True" />
+    <inductionLoop id="11" lane="529153745#0_0" pos="0.0" file="detector.out.xml" freq="3600" friendlyPos="True" />
+    <inductionLoop id="12" lane="-97807588#9_0" pos="334.87991770601104" file="detector.out.xml" freq="3600" friendlyPos="True" />
+    <inductionLoop id="13" lane="-119742504#5_0" pos="25.753116382367587" file="detector.out.xml" freq="3600" friendlyPos="True" />
+    <inductionLoop id="14" lane="119742504#1_1" pos="120.56760989438712" file="detector.out.xml" freq="3600" friendlyPos="True" />
+    <inductionLoop id="15" lane="24148583#1_0" pos="12.299633319943956" file="detector.out.xml" freq="3600" friendlyPos="True" />
+    <inductionLoop id="16" lane="23275345#0_0" pos="13.395007502789557" file="detector.out.xml" freq="3600" friendlyPos="True" />
+    <inductionLoop id="18" lane="24260998_1" pos="15.744907502789173" file="detector.out.xml" freq="3600" friendlyPos="True" />
+    <inductionLoop id="19" lane="-71931337#1_0" pos="103.9680661494132" file="detector.out.xml" freq="3600" friendlyPos="True" />
+    <inductionLoop id="20" lane="26680022_0" pos="125.53238113917212" file="detector.out.xml" freq="3600" friendlyPos="True" />
+    <inductionLoop id="21" lane="500928317#0_2" pos="13.93907237169711" file="detector.out.xml" freq="3600" friendlyPos="True" />
+    <inductionLoop id="22" lane="31619992#11_0" pos="245.45388563951408" file="detector.out.xml" freq="3600" friendlyPos="True" />
+    <inductionLoop id="24" lane="31619992#1_0" pos="47.396407995966655" file="detector.out.xml" freq="3600" friendlyPos="True" />
+    <inductionLoop id="25" lane="26486429#4_0" pos="7.5152228147306275" file="detector.out.xml" freq="3600" friendlyPos="True" />
+    <inductionLoop id="26" lane="31759748#1_0" pos="3.5803440256579284" file="detector.out.xml" freq="3600" friendlyPos="True" />
+    <inductionLoop id="27" lane="808909664#1_0" pos="18.446648595458804" file="detector.out.xml" freq="3600" friendlyPos="True" />
+    <inductionLoop id="28" lane="204710690#2_0" pos="16.372017544145606" file="detector.out.xml" freq="3600" friendlyPos="True" />
+    <inductionLoop id="29" lane="204710322#1_0" pos="27.702224091555742" file="detector.out.xml" freq="3600" friendlyPos="True" />
+    <inductionLoop id="30" lane="460393011#5_0" pos="11.919114788082595" file="detector.out.xml" freq="3600" friendlyPos="True" />
+    <inductionLoop id="31" lane="460393012#0_0" pos="15.286391340685922" file="detector.out.xml" freq="3600" friendlyPos="True" />
+    <inductionLoop id="32" lane="1294567928#0_0" pos="0.0" file="detector.out.xml" freq="3600" friendlyPos="True" />
+    <inductionLoop id="33" lane="23184327#1_2" pos="20.887551177409833" file="detector.out.xml" freq="3600" friendlyPos="True" />
+    <inductionLoop id="34" lane="806941659_0" pos="0.0" file="detector.out.xml" freq="3600" friendlyPos="True" />
+    <inductionLoop id="35" lane="39673908#1_1" pos="0.0" file="detector.out.xml" freq="3600" friendlyPos="True" />
+    <inductionLoop id="36" lane="36774389#1_0" pos="26.074504268938178" file="detector.out.xml" freq="3600" friendlyPos="True" />
+    <inductionLoop id="37" lane="455561985#1_1" pos="1.4656693043306819" file="detector.out.xml" freq="3600" friendlyPos="True" />
+    <inductionLoop id="38" lane="34395064#4_0" pos="39.53883142684847" file="detector.out.xml" freq="3600" friendlyPos="True" />
+    <inductionLoop id="39" lane="204658616#0_0" pos="80.21610712331173" file="detector.out.xml" freq="3600" friendlyPos="True" />
+    <inductionLoop id="40" lane="-149916584#0_0" pos="2.9833774790936016" file="detector.out.xml" freq="3600" friendlyPos="True" />
+    <inductionLoop id="41" lane="71925755_0" pos="113.48795238328516" file="detector.out.xml" freq="3600" friendlyPos="True" />
+    <inductionLoop id="42" lane="575161854#1_0" pos="10.671660917147161" file="detector.out.xml" freq="3600" friendlyPos="True" />
+    <inductionLoop id="43" lane="135982523#2_0" pos="209.9524179854525" file="detector.out.xml" freq="3600" friendlyPos="True" />
+    <inductionLoop id="44" lane="-71931342_0" pos="81.43560900445537" file="detector.out.xml" freq="3600" friendlyPos="True" />
+    <inductionLoop id="45" lane="-71931337#0_0" pos="0.0" file="detector.out.xml" freq="3600" friendlyPos="True" />
+    <inductionLoop id="52" lane="23454126_0" pos="0.0" file="detector.out.xml" freq="3600" friendlyPos="True" />
+    <inductionLoop id="56" lane="-71760750#8_0" pos="25.30729324210164" file="detector.out.xml" freq="3600" friendlyPos="True" />
+    <inductionLoop id="57" lane="454486174#1_0" pos="8.798219006513621" file="detector.out.xml" freq="3600" friendlyPos="True" />
+    <inductionLoop id="58" lane="1110288374#3_0" pos="12.158457312003563" file="detector.out.xml" freq="3600" friendlyPos="True" />
+    <inductionLoop id="59" lane="23296256#1_0" pos="6.814412998414677" file="detector.out.xml" freq="3600" friendlyPos="True" />
+    <inductionLoop id="60" lane="97807588#7_0" pos="0.0" file="detector.out.xml" freq="3600" friendlyPos="True" />
+    <inductionLoop id="61" lane="135982510#0_1" pos="26.396458963983083" file="detector.out.xml" freq="3600" friendlyPos="True" />
+    <inductionLoop id="62" lane="-1131830810#0_0" pos="10.354802127318159" file="detector.out.xml" freq="3600" friendlyPos="True" />
+    <inductionLoop id="63" lane="1131234797_0" pos="17.004285429686586" file="detector.out.xml" freq="3600" friendlyPos="True" />
+    <inductionLoop id="64" lane="23510937#1_0" pos="6.312039655378133" file="detector.out.xml" freq="3600" friendlyPos="True" />
+    <inductionLoop id="65" lane="149955205#7_0" pos="8.617993891043097" file="detector.out.xml" freq="3600" friendlyPos="True" />
+    <inductionLoop id="66" lane="32479531#0_0" pos="0.0" file="detector.out.xml" freq="3600" friendlyPos="True" />
+    <inductionLoop id="67" lane="83078456#2_2" pos="0.0" file="detector.out.xml" freq="3600" friendlyPos="True" />
+    <inductionLoop id="72" lane="-31619992#12_0" pos="103.49566311019787" file="detector.out.xml" freq="3600" friendlyPos="True" />
+    <inductionLoop id="73" lane="24236308#0_0" pos="0.0" file="detector.out.xml" freq="3600" friendlyPos="True" />
+    <inductionLoop id="74" lane="135982480#0_1" pos="14.05647647183659" file="detector.out.xml" freq="3600" friendlyPos="True" />
+    <inductionLoop id="75" lane="183171900#0_1" pos="9.718887395331214" file="detector.out.xml" freq="3600" friendlyPos="True" />
+    <inductionLoop id="77" lane="23854020#1_0" pos="133.24266098705755" file="detector.out.xml" freq="3600" friendlyPos="True" />
+    <inductionLoop id="78" lane="-72232860_0" pos="143.48361003274346" file="detector.out.xml" freq="3600" friendlyPos="True" />
+    <inductionLoop id="79" lane="-71760750#8_0" pos="0.0" file="detector.out.xml" freq="3600" friendlyPos="True" />
+    <inductionLoop id="81" lane="132106763#0_0" pos="4.039305776795496" file="detector.out.xml" freq="3600" friendlyPos="True" />
+    <inductionLoop id="82" lane="135982480#0_0" pos="0.0" file="detector.out.xml" freq="3600" friendlyPos="True" />
+    <inductionLoop id="83" lane="31619992#11_0" pos="142.40488815129737" file="detector.out.xml" freq="3600" friendlyPos="True" />
+    <inductionLoop id="85" lane="34524142#1_0" pos="2.9772552659937057" file="detector.out.xml" freq="3600" friendlyPos="True" />
+    <inductionLoop id="86" lane="150061915#1_1" pos="45.89047775375912" file="detector.out.xml" freq="3600" friendlyPos="True" />
+    <inductionLoop id="87" lane="-234076713_0" pos="211.45561845790286" file="detector.out.xml" freq="3600" friendlyPos="True" />
+    <inductionLoop id="88" lane="-119743102#7_0" pos="57.02779302228749" file="detector.out.xml" freq="3600" friendlyPos="True" />
+    <inductionLoop id="89" lane="-452137927#1_0" pos="69.81931385082521" file="detector.out.xml" freq="3600" friendlyPos="True" />
+    <inductionLoop id="90" lane="-393171683#0_0" pos="0.0" file="detector.out.xml" freq="3600" friendlyPos="True" />
+    <inductionLoop id="93" lane="32497947#0_0" pos="0.0" file="detector.out.xml" freq="3600" friendlyPos="True" />
+    <inductionLoop id="94" lane="299421433#0_0" pos="41.88453651730601" file="detector.out.xml" freq="3600" friendlyPos="True" />
+    <inductionLoop id="95" lane="83078456#9_1" pos="122.31228759784693" file="detector.out.xml" freq="3600" friendlyPos="True" />
+    <inductionLoop id="97" lane="163830859#0_0" pos="51.29865130188505" file="detector.out.xml" freq="3600" friendlyPos="True" />
+    <inductionLoop id="101" lane="-72232860_0" pos="164.381665644317" file="detector.out.xml" freq="3600" friendlyPos="True" />
+    <inductionLoop id="102" lane="32497919#5_0" pos="27.05347426599969" file="detector.out.xml" freq="3600" friendlyPos="True" />
+    <inductionLoop id="103" lane="1120222462#3_1" pos="4.047929189467975" file="detector.out.xml" freq="3600" friendlyPos="True" />
+    <inductionLoop id="104" lane="25155146#2_0" pos="12.225573166806795" file="detector.out.xml" freq="3600" friendlyPos="True" />
+    <inductionLoop id="105" lane="-163923707#2_0" pos="50.12283726441393" file="detector.out.xml" freq="3600" friendlyPos="True" />
+    <inductionLoop id="106" lane="460508602_1" pos="134.36797677814093" file="detector.out.xml" freq="3600" friendlyPos="True" />
+    <inductionLoop id="107" lane="648493815_0" pos="0.0" file="detector.out.xml" freq="3600" friendlyPos="True" />
+    <inductionLoop id="108" lane="-23971068#3_0" pos="0.0" file="detector.out.xml" freq="3600" friendlyPos="True" />
+    <inductionLoop id="109" lane="454925164#0_0" pos="192.31439260290713" file="detector.out.xml" freq="3600" friendlyPos="True" />
+    <inductionLoop id="112" lane="23291629#1_0" pos="196.26115683071865" file="detector.out.xml" freq="3600" friendlyPos="True" />
+    <inductionLoop id="113" lane="-23291545#3_0" pos="29.740181279225066" file="detector.out.xml" freq="3600" friendlyPos="True" />
+    <inductionLoop id="114" lane="-23289817#1_0" pos="73.86011271676048" file="detector.out.xml" freq="3600" friendlyPos="True" />
+    <inductionLoop id="115" lane="23276195#0_0" pos="109.91356701208346" file="detector.out.xml" freq="3600" friendlyPos="True" />
+    <inductionLoop id="116" lane="275183476#2_0" pos="74.2027185393911" file="detector.out.xml" freq="3600" friendlyPos="True" />
+    <inductionLoop id="118" lane="400793364_0" pos="570.1156597642968" file="detector.out.xml" freq="3600" friendlyPos="True" />
+    <inductionLoop id="120" lane="26945332#8_0" pos="170.98798794891312" file="detector.out.xml" freq="3600" friendlyPos="True" />
+    <inductionLoop id="121" lane="1085806511#1_0" pos="985.6610811140487" file="detector.out.xml" freq="3600" friendlyPos="True" />
+    <inductionLoop id="122" lane="156265612#6_1" pos="87.9842477371665" file="detector.out.xml" freq="3600" friendlyPos="True" />
+    <inductionLoop id="123" lane="210137935_0" pos="152.40759058171238" file="detector.out.xml" freq="3600" friendlyPos="True" />
+    <inductionLoop id="124" lane="26680022_0" pos="113.29725371369075" file="detector.out.xml" freq="3600" friendlyPos="True" />
+    <inductionLoop id="126" lane="260210045#1_0" pos="7.812464509985825" file="detector.out.xml" freq="3600" friendlyPos="True" />
+    <inductionLoop id="128" lane="-452865652#0_0" pos="57.60072668665377" file="detector.out.xml" freq="3600" friendlyPos="True" />
+    <inductionLoop id="131" lane="-27032973#2_0" pos="0.0" file="detector.out.xml" freq="3600" friendlyPos="True" />
+    <inductionLoop id="133" lane="119742505#4_0" pos="367.9574407922363" file="detector.out.xml" freq="3600" friendlyPos="True" />
+    <inductionLoop id="134" lane="24865694#1_0" pos="15.34463938790063" file="detector.out.xml" freq="3600" friendlyPos="True" />
+    <inductionLoop id="135" lane="737507747#0_4" pos="5.911750904357004" file="detector.out.xml" freq="3600" friendlyPos="True" />
+    <inductionLoop id="136" lane="1302766173#0_0" pos="19.320590841113237" file="detector.out.xml" freq="3600" friendlyPos="True" />
+    <inductionLoop id="137" lane="1303980969_1" pos="7.152179100313287" file="detector.out.xml" freq="3600" friendlyPos="True" />
+    <inductionLoop id="139" lane="202009206#0_0" pos="4.811306167978364" file="detector.out.xml" freq="3600" friendlyPos="True" />
+    <inductionLoop id="140" lane="23291396#1_0" pos="15.035310143450543" file="detector.out.xml" freq="3600" friendlyPos="True" />
+    <inductionLoop id="141" lane="96199140#7_0" pos="2.66939237223605" file="detector.out.xml" freq="3600" friendlyPos="True" />
+    <inductionLoop id="142" lane="96199140#7_0" pos="0.0" file="detector.out.xml" freq="3600" friendlyPos="True" />
+    <inductionLoop id="143" lane="23366588#1_0" pos="104.92724333960857" file="detector.out.xml" freq="3600" friendlyPos="True" />
+    <inductionLoop id="144" lane="-23296548_0" pos="13.595982446864395" file="detector.out.xml" freq="3600" friendlyPos="True" />
+    <inductionLoop id="145" lane="23296535#0_1" pos="22.551190997670492" file="detector.out.xml" freq="3600" friendlyPos="True" />
+    <inductionLoop id="146" lane="23291373#1_1" pos="21.459886556528385" file="detector.out.xml" freq="3600" friendlyPos="True" />
+    <inductionLoop id="147" lane="23291344#1_0" pos="21.017233178482318" file="detector.out.xml" freq="3600" friendlyPos="True" />
+    <inductionLoop id="148" lane="275183484#5_0" pos="0.0" file="detector.out.xml" freq="3600" friendlyPos="True" />
+    <inductionLoop id="149" lane="132648783#1_0" pos="15.208071925510104" file="detector.out.xml" freq="3600" friendlyPos="True" />
+    <inductionLoop id="150" lane="529153745#0_0" pos="55.29833620500063" file="detector.out.xml" freq="3600" friendlyPos="True" />
+    <inductionLoop id="153" lane="-766208300#8_0" pos="76.47866626341313" file="detector.out.xml" freq="3600" friendlyPos="True" />
+    <inductionLoop id="154" lane="-450836861#0_0" pos="0.0" file="detector.out.xml" freq="3600" friendlyPos="True" />
+    <inductionLoop id="155" lane="450836902#1_0" pos="5.414402481943212" file="detector.out.xml" freq="3600" friendlyPos="True" />
+    <inductionLoop id="156" lane="325886647#1_1" pos="9.933766141491853" file="detector.out.xml" freq="3600" friendlyPos="True" />
+    <inductionLoop id="157" lane="-82549445_0" pos="0.0" file="detector.out.xml" freq="3600" friendlyPos="True" />
+    <inductionLoop id="159" lane="39216791#2_0" pos="0.1969771560361585" file="detector.out.xml" freq="3600" friendlyPos="True" />
+    <inductionLoop id="160" lane="1257418755#0_0" pos="24.17046135883293" file="detector.out.xml" freq="3600" friendlyPos="True" />
+    <inductionLoop id="161" lane="23184464#1_0" pos="9.894750006575281" file="detector.out.xml" freq="3600" friendlyPos="True" />
+    <inductionLoop id="162" lane="-361227932#2_0" pos="0.025665208987351022" file="detector.out.xml" freq="3600" friendlyPos="True" />
+    <inductionLoop id="163" lane="263173939#1_0" pos="7.090571204071086" file="detector.out.xml" freq="3600" friendlyPos="True" />
+    <inductionLoop id="164" lane="263173939#22_0" pos="55.82476715970115" file="detector.out.xml" freq="3600" friendlyPos="True" />
+    <inductionLoop id="165" lane="263173939#0_0" pos="1.5373028328862055" file="detector.out.xml" freq="3600" friendlyPos="True" />
+    <inductionLoop id="166" lane="201998907#2_2" pos="38.24211869663174" file="detector.out.xml" freq="3600" friendlyPos="True" />
+    <inductionLoop id="167" lane="230602341#1_0" pos="3.030627245295537" file="detector.out.xml" freq="3600" friendlyPos="True" />
+    <inductionLoop id="168" lane="95408280#1_0" pos="2.4976908850709703" file="detector.out.xml" freq="3600" friendlyPos="True" />
+    <inductionLoop id="169" lane="11480374#11_0" pos="75.0587442638407" file="detector.out.xml" freq="3600" friendlyPos="True" />
+    <inductionLoop id="170" lane="71760750#7_0" pos="102.02637946535431" file="detector.out.xml" freq="3600" friendlyPos="True" />
+    <inductionLoop id="171" lane="236093296#1_0" pos="0.7742288441060567" file="detector.out.xml" freq="3600" friendlyPos="True" />
+    <inductionLoop id="173" lane="540032813#1_0" pos="33.24187090512838" file="detector.out.xml" freq="3600" friendlyPos="True" />
+    <inductionLoop id="174" lane="40872975#1_0" pos="23.24844475598683" file="detector.out.xml" freq="3600" friendlyPos="True" />
+    <inductionLoop id="175" lane="77960510#2_2" pos="53.81347447410795" file="detector.out.xml" freq="3600" friendlyPos="True" />
+    <inductionLoop id="176" lane="661413466#1_0" pos="6.6310206532118565" file="detector.out.xml" freq="3600" friendlyPos="True" />
+    <inductionLoop id="177" lane="34395278#1_1" pos="18.903008293341962" file="detector.out.xml" freq="3600" friendlyPos="True" />
+    <inductionLoop id="178" lane="34395278#1_0" pos="17.354740717181947" file="detector.out.xml" freq="3600" friendlyPos="True" />
+    <inductionLoop id="179" lane="323825888#2_0" pos="121.03529129828442" file="detector.out.xml" freq="3600" friendlyPos="True" />
+    <inductionLoop id="180" lane="43469290#0_2" pos="15.01533402259362" file="detector.out.xml" freq="3600" friendlyPos="True" />
+    <inductionLoop id="181" lane="454030795#1_1" pos="0.12977131651293689" file="detector.out.xml" freq="3600" friendlyPos="True" />
+    <inductionLoop id="182" lane="146816196_0" pos="217.60241158319474" file="detector.out.xml" freq="3600" friendlyPos="True" />
+    <inductionLoop id="183" lane="210137935_1" pos="151.86104211938246" file="detector.out.xml" freq="3600" friendlyPos="True" />
+    <inductionLoop id="184" lane="-27028266#5_0" pos="15.423861668164063" file="detector.out.xml" freq="3600" friendlyPos="True" />
+    <inductionLoop id="185" lane="-151360500#1_0" pos="12.139515710894221" file="detector.out.xml" freq="3600" friendlyPos="True" />
+    <inductionLoop id="186" lane="24625176#0_0" pos="352.4142709658287" file="detector.out.xml" freq="3600" friendlyPos="True" />
+    <inductionLoop id="187" lane="-809282989#1_0" pos="9.197476311716914" file="detector.out.xml" freq="3600" friendlyPos="True" />
+    <inductionLoop id="188" lane="-867692575#0_0" pos="5.151718179053948" file="detector.out.xml" freq="3600" friendlyPos="True" />
+    <inductionLoop id="190" lane="24589437#6_0" pos="11.012411918684329" file="detector.out.xml" freq="3600" friendlyPos="True" />
+    <inductionLoop id="191" lane="1152037589_0" pos="21.37114936621915" file="detector.out.xml" freq="3600" friendlyPos="True" />
+    <inductionLoop id="192" lane="-39673908#5_1" pos="4.13216237772744" file="detector.out.xml" freq="3600" friendlyPos="True" />
+    <inductionLoop id="193" lane="657331022_1" pos="61.823655365614556" file="detector.out.xml" freq="3600" friendlyPos="True" />
+    <inductionLoop id="194" lane="151824736#2_2" pos="34.65611228716083" file="detector.out.xml" freq="3600" friendlyPos="True" />
+    <inductionLoop id="199" lane="1314476574#1_0" pos="14.83882002344677" file="detector.out.xml" freq="3600" friendlyPos="True" />
+    <inductionLoop id="200" lane="-32497598#4_0" pos="17.954029807675894" file="detector.out.xml" freq="3600" friendlyPos="True" />
+    <inductionLoop id="201" lane="23277434#2_0" pos="20.087546891111224" file="detector.out.xml" freq="3600" friendlyPos="True" />
+    <inductionLoop id="202" lane="452137912#1_1" pos="6.484067374685236" file="detector.out.xml" freq="3600" friendlyPos="True" />
+    <inductionLoop id="203" lane="150052420#4_0" pos="93.13518664271605" file="detector.out.xml" freq="3600" friendlyPos="True" />
+    <inductionLoop id="204" lane="1151980389_0" pos="0.0" file="detector.out.xml" freq="3600" friendlyPos="True" />
+    <inductionLoop id="205" lane="30588863#9_1" pos="6.924908455086112" file="detector.out.xml" freq="3600" friendlyPos="True" />
+    <inductionLoop id="206" lane="806941659_0" pos="14.440473632323705" file="detector.out.xml" freq="3600" friendlyPos="True" />
+    <inductionLoop id="207" lane="587239927#0_0" pos="30.81243057324786" file="detector.out.xml" freq="3600" friendlyPos="True" />
+    <inductionLoop id="208" lane="77960512#2_1" pos="55.1516685920741" file="detector.out.xml" freq="3600" friendlyPos="True" />
+    <inductionLoop id="209" lane="405111241#1_0" pos="5.696517093134789" file="detector.out.xml" freq="3600" friendlyPos="True" />
+    <inductionLoop id="210" lane="1116542953#0_1" pos="3.496130990257765" file="detector.out.xml" freq="3600" friendlyPos="True" />
+    <inductionLoop id="211" lane="23213604#1_0" pos="0.0" file="detector.out.xml" freq="3600" friendlyPos="True" />
+    <inductionLoop id="212" lane="450836849#2_1" pos="2.2216982749689547" file="detector.out.xml" freq="3600" friendlyPos="True" />
+    <inductionLoop id="213" lane="618323946#0_0" pos="0.0" file="detector.out.xml" freq="3600" friendlyPos="True" />
+    <inductionLoop id="215" lane="132106761#1_0" pos="31.328583538551218" file="detector.out.xml" freq="3600" friendlyPos="True" />
+    <inductionLoop id="216" lane="370093518_0" pos="48.154663727012576" file="detector.out.xml" freq="3600" friendlyPos="True" />
+    <inductionLoop id="217" lane="370093519#2_0" pos="2.1623614662091803" file="detector.out.xml" freq="3600" friendlyPos="True" />
+    <inductionLoop id="218" lane="23288923#5_2" pos="12.725848147766175" file="detector.out.xml" freq="3600" friendlyPos="True" />
+    <inductionLoop id="219" lane="23288931#7_1" pos="31.407114113128383" file="detector.out.xml" freq="3600" friendlyPos="True" />
+    <inductionLoop id="221" lane="-254584421#2_0" pos="0.0" file="detector.out.xml" freq="3600" friendlyPos="True" />
+    <inductionLoop id="223" lane="260210806#4_0" pos="5.058798517568302" file="detector.out.xml" freq="3600" friendlyPos="True" />
+    <inductionLoop id="224" lane="452865650#0_2" pos="15.15107339594311" file="detector.out.xml" freq="3600" friendlyPos="True" />
+    <inductionLoop id="226" lane="-71760750#8_0" pos="3.817604921020543" file="detector.out.xml" freq="3600" friendlyPos="True" />
+    <inductionLoop id="227" lane="23852701#3_1" pos="8.654932089770146" file="detector.out.xml" freq="3600" friendlyPos="True" />
+    <inductionLoop id="228" lane="150052414#1_0" pos="12.468296006068437" file="detector.out.xml" freq="3600" friendlyPos="True" />
+    <inductionLoop id="229" lane="150052413#8_0" pos="31.486330814438745" file="detector.out.xml" freq="3600" friendlyPos="True" />
+    <inductionLoop id="230" lane="1110288374#1_0" pos="44.172214553147526" file="detector.out.xml" freq="3600" friendlyPos="True" />
+    <inductionLoop id="232" lane="71966978_0" pos="93.45389321607223" file="detector.out.xml" freq="3600" friendlyPos="True" />
+    <inductionLoop id="233" lane="-135982499#5_0" pos="16.984820323503772" file="detector.out.xml" freq="3600" friendlyPos="True" />
+    <inductionLoop id="235" lane="387442533#2_2" pos="20.642360499903496" file="detector.out.xml" freq="3600" friendlyPos="True" />
+    <inductionLoop id="237" lane="699631358#5_0" pos="23.013754167873877" file="detector.out.xml" freq="3600" friendlyPos="True" />
+    <inductionLoop id="238" lane="71931342_0" pos="0.0" file="detector.out.xml" freq="3600" friendlyPos="True" />
+    <inductionLoop id="240" lane="-699631358#6_0" pos="1.141772722842258" file="detector.out.xml" freq="3600" friendlyPos="True" />
+    <inductionLoop id="241" lane="1116253896#1_1" pos="8.984129174755706" file="detector.out.xml" freq="3600" friendlyPos="True" />
+    <inductionLoop id="242" lane="23296246#0_0" pos="6.214032184494183" file="detector.out.xml" freq="3600" friendlyPos="True" />
+    <inductionLoop id="243" lane="131881840#2_1" pos="14.200082244022925" file="detector.out.xml" freq="3600" friendlyPos="True" />
+    <inductionLoop id="244" lane="149955205#4_0" pos="171.6614483163417" file="detector.out.xml" freq="3600" friendlyPos="True" />
+    <inductionLoop id="250" lane="135982477#1_0" pos="21.22951013075644" file="detector.out.xml" freq="3600" friendlyPos="True" />
+    <inductionLoop id="251" lane="150052402#3_1" pos="114.83512361448199" file="detector.out.xml" freq="3600" friendlyPos="True" />
+    <inductionLoop id="252" lane="346004296#1_1" pos="8.992007009314229" file="detector.out.xml" freq="3600" friendlyPos="True" />
+    <inductionLoop id="254" lane="726108531_0" pos="1.720799173243164" file="detector.out.xml" freq="3600" friendlyPos="True" />
+    <inductionLoop id="255" lane="-1224648666_0" pos="9.135343085102992" file="detector.out.xml" freq="3600" friendlyPos="True" />
+    <inductionLoop id="257" lane="-447911000_0" pos="109.62607480840951" file="detector.out.xml" freq="3600" friendlyPos="True" />
+    <inductionLoop id="258" lane="657331023_0" pos="98.49307002473932" file="detector.out.xml" freq="3600" friendlyPos="True" />
+    <inductionLoop id="259" lane="23296541#3_1" pos="67.07782669673225" file="detector.out.xml" freq="3600" friendlyPos="True" />
+    <inductionLoop id="260" lane="-27032289#0_0" pos="585.6716259149661" file="detector.out.xml" freq="3600" friendlyPos="True" />
+    <inductionLoop id="261" lane="-24839360#0_0" pos="53.34085672423564" file="detector.out.xml" freq="3600" friendlyPos="True" />
+    <inductionLoop id="262" lane="27028266#5_0" pos="38.41308500439122" file="detector.out.xml" freq="3600" friendlyPos="True" />
+    <inductionLoop id="263" lane="119743102#5_0" pos="68.5471053549824" file="detector.out.xml" freq="3600" friendlyPos="True" />
+    <inductionLoop id="264" lane="806941662#0_0" pos="34.434640429290035" file="detector.out.xml" freq="3600" friendlyPos="True" />
+    <inductionLoop id="265" lane="1101516383#0_1" pos="26.701766323593812" file="detector.out.xml" freq="3600" friendlyPos="True" />
+    <inductionLoop id="266" lane="23213604#1_0" pos="11.533203740670833" file="detector.out.xml" freq="3600" friendlyPos="True" />
+    <inductionLoop id="267" lane="-1115567470#1_0" pos="34.11712230113382" file="detector.out.xml" freq="3600" friendlyPos="True" />
+    <inductionLoop id="272" lane="135982499#4_0" pos="43.78465559742445" file="detector.out.xml" freq="3600" friendlyPos="True" />
+    <inductionLoop id="273" lane="-335384210#1_0" pos="60.80258844476191" file="detector.out.xml" freq="3600" friendlyPos="True" />
+    <inductionLoop id="274" lane="37931741#8_1" pos="51.436549125971666" file="detector.out.xml" freq="3600" friendlyPos="True" />
+    <inductionLoop id="275" lane="-35449271#2_0" pos="70.27838687805634" file="detector.out.xml" freq="3600" friendlyPos="True" />
+    <inductionLoop id="276" lane="447576658#2_0" pos="61.05540598505612" file="detector.out.xml" freq="3600" friendlyPos="True" />
+    <inductionLoop id="277" lane="-452137907#1_0" pos="5.588606102002156" file="detector.out.xml" freq="3600" friendlyPos="True" />
+    <inductionLoop id="278" lane="35204667#5_0" pos="125.0274497328931" file="detector.out.xml" freq="3600" friendlyPos="True" />
+    <inductionLoop id="279" lane="199612346_0" pos="0.0" file="detector.out.xml" freq="3600" friendlyPos="True" />
+    <inductionLoop id="280" lane="23837909#4_1" pos="99.1831664781253" file="detector.out.xml" freq="3600" friendlyPos="True" />
+    <inductionLoop id="281" lane="325457399#4_2" pos="145.52219950897123" file="detector.out.xml" freq="3600" friendlyPos="True" />
+    <inductionLoop id="282" lane="1188469816_1" pos="10.953141101985382" file="detector.out.xml" freq="3600" friendlyPos="True" />
+    <inductionLoop id="283" lane="303024690#4_0" pos="133.52281808186316" file="detector.out.xml" freq="3600" friendlyPos="True" />
+    <inductionLoop id="284" lane="724005062#1_0" pos="60.58133020037133" file="detector.out.xml" freq="3600" friendlyPos="True" />
+    <inductionLoop id="285" lane="-971318354_0" pos="71.51826060524681" file="detector.out.xml" freq="3600" friendlyPos="True" />
+    <inductionLoop id="286" lane="236468429#1_0" pos="31.70520831349613" file="detector.out.xml" freq="3600" friendlyPos="True" />
+    <inductionLoop id="288" lane="-151492338_0" pos="4.624381039664189" file="detector.out.xml" freq="3600" friendlyPos="True" />
+    <inductionLoop id="289" lane="1204509157#2_0" pos="107.4711105713589" file="detector.out.xml" freq="3600" friendlyPos="True" />
+    <inductionLoop id="294" lane="41277871#1_0" pos="109.39960412862804" file="detector.out.xml" freq="3600" friendlyPos="True" />
+    <inductionLoop id="295" lane="40504392#4_0" pos="12.807219884001716" file="detector.out.xml" freq="3600" friendlyPos="True" />
+    <inductionLoop id="296" lane="234076713_0" pos="750.2711738129085" file="detector.out.xml" freq="3600" friendlyPos="True" />
+    <inductionLoop id="298" lane="135982476#2_0" pos="134.15699421465192" file="detector.out.xml" freq="3600" friendlyPos="True" />
+    <inductionLoop id="299" lane="-118701789#0_0" pos="385.0473487002122" file="detector.out.xml" freq="3600" friendlyPos="True" />
+    <inductionLoop id="301" lane="23971068#3_0" pos="421.0069236308389" file="detector.out.xml" freq="3600" friendlyPos="True" />
+    <inductionLoop id="302" lane="1188469819#1_0" pos="27.63705573049461" file="detector.out.xml" freq="3600" friendlyPos="True" />
+    <inductionLoop id="303" lane="202009204#1_0" pos="33.894468869725756" file="detector.out.xml" freq="3600" friendlyPos="True" />
+    <inductionLoop id="304" lane="-275183484#6_0" pos="8.843021409616018" file="detector.out.xml" freq="3600" friendlyPos="True" />
+    <inductionLoop id="305" lane="201998907#2_1" pos="282.11366227936963" file="detector.out.xml" freq="3600" friendlyPos="True" />
+    <inductionLoop id="306" lane="-275183484#1_0" pos="2.559479158845025" file="detector.out.xml" freq="3600" friendlyPos="True" />
+    <inductionLoop id="307" lane="119742505#2_0" pos="0.0" file="detector.out.xml" freq="3600" friendlyPos="True" />
+    <inductionLoop id="308" lane="808542492#0_0" pos="17.28175578294723" file="detector.out.xml" freq="3600" friendlyPos="True" />
+    <inductionLoop id="309" lane="995253604#0_0" pos="4.8703843361588355" file="detector.out.xml" freq="3600" friendlyPos="True" />
+    <inductionLoop id="310" lane="23289817#1_0" pos="1.4418757917412146" file="detector.out.xml" freq="3600" friendlyPos="True" />
+    <inductionLoop id="311" lane="23288957#1_1" pos="20.18657632479626" file="detector.out.xml" freq="3600" friendlyPos="True" />
+    <inductionLoop id="312" lane="323422052_0" pos="0.0" file="detector.out.xml" freq="3600" friendlyPos="True" />
+    <inductionLoop id="313" lane="23289848#2_0" pos="91.01875182058616" file="detector.out.xml" freq="3600" friendlyPos="True" />
+    <inductionLoop id="317" lane="23288944#1_2" pos="13.452671473951408" file="detector.out.xml" freq="3600" friendlyPos="True" />
+    <inductionLoop id="318" lane="814704264_0" pos="7.660511956695824" file="detector.out.xml" freq="3600" friendlyPos="True" />
+    <inductionLoop id="319" lane="96199140#12_0" pos="88.92177200207102" file="detector.out.xml" freq="3600" friendlyPos="True" />
+    <inductionLoop id="320" lane="325723621#2_0" pos="78.498808227889" file="detector.out.xml" freq="3600" friendlyPos="True" />
+    <inductionLoop id="321" lane="24260991#1_0" pos="24.82740234602888" file="detector.out.xml" freq="3600" friendlyPos="True" />
+    <inductionLoop id="322" lane="529153745#0_0" pos="38.178891298214644" file="detector.out.xml" freq="3600" friendlyPos="True" />
+    <inductionLoop id="325" lane="129405510#0_0" pos="134.14958474574237" file="detector.out.xml" freq="3600" friendlyPos="True" />
+    <inductionLoop id="326" lane="810326298#1_0" pos="28.149929718578004" file="detector.out.xml" freq="3600" friendlyPos="True" />
+    <inductionLoop id="327" lane="-1178660151#1_0" pos="10.927736471806789" file="detector.out.xml" freq="3600" friendlyPos="True" />
+    <inductionLoop id="328" lane="-450836867#0_0" pos="0.0" file="detector.out.xml" freq="3600" friendlyPos="True" />
+    <inductionLoop id="330" lane="450836878#1_0" pos="9.184779096194806" file="detector.out.xml" freq="3600" friendlyPos="True" />
+    <inductionLoop id="331" lane="23189378#0_0" pos="96.04258366169341" file="detector.out.xml" freq="3600" friendlyPos="True" />
+    <inductionLoop id="332" lane="260898977#1_0" pos="5.826146962999684" file="detector.out.xml" freq="3600" friendlyPos="True" />
+    <inductionLoop id="333" lane="32479333#1_0" pos="5.94027759981576" file="detector.out.xml" freq="3600" friendlyPos="True" />
+    <inductionLoop id="334" lane="26602742#0_0" pos="0.0" file="detector.out.xml" freq="3600" friendlyPos="True" />
+    <inductionLoop id="338" lane="-65292476_0" pos="42.50186235400147" file="detector.out.xml" freq="3600" friendlyPos="True" />
+    <inductionLoop id="339" lane="183743755#0_0" pos="1.480810588832983" file="detector.out.xml" freq="3600" friendlyPos="True" />
+    <inductionLoop id="340" lane="388225406_0" pos="52.59529348242903" file="detector.out.xml" freq="3600" friendlyPos="True" />
+    <inductionLoop id="341" lane="49405053#0_1" pos="0.904198623215947" file="detector.out.xml" freq="3600" friendlyPos="True" />
+    <inductionLoop id="342" lane="23288931#0_1" pos="26.121301195736937" file="detector.out.xml" freq="3600" friendlyPos="True" />
+    <inductionLoop id="343" lane="23288923#2_2" pos="69.98876918776091" file="detector.out.xml" freq="3600" friendlyPos="True" />
+    <inductionLoop id="344" lane="150029324#0_0" pos="0.0" file="detector.out.xml" freq="3600" friendlyPos="True" />
+    <inductionLoop id="350" lane="32566032#0_0" pos="133.94920877896982" file="detector.out.xml" freq="3600" friendlyPos="True" />
+    <inductionLoop id="351" lane="1155399328_0" pos="22.886687693157626" file="detector.out.xml" freq="3600" friendlyPos="True" />
+    <inductionLoop id="352" lane="-299421427#1_0" pos="107.2120670762157" file="detector.out.xml" freq="3600" friendlyPos="True" />
+    <inductionLoop id="356" lane="204658616#2_0" pos="469.53576178678804" file="detector.out.xml" freq="3600" friendlyPos="True" />
+    <inductionLoop id="357" lane="156783789#2_1" pos="290.6900059976187" file="detector.out.xml" freq="3600" friendlyPos="True" />
+    <inductionLoop id="358" lane="216686364#1_0" pos="33.288090060142906" file="detector.out.xml" freq="3600" friendlyPos="True" />
+    <inductionLoop id="361" lane="-32566100#1_0" pos="65.90230589052085" file="detector.out.xml" freq="3600" friendlyPos="True" />
+    <inductionLoop id="365" lane="201998907#2_2" pos="281.95064811247016" file="detector.out.xml" freq="3600" friendlyPos="True" />
+    <inductionLoop id="366" lane="-23971068#2_0" pos="115.57939295820947" file="detector.out.xml" freq="3600" friendlyPos="True" />
+    <inductionLoop id="370" lane="23288945#1_1" pos="5.381510067597191" file="detector.out.xml" freq="3600" friendlyPos="True" />
+    <inductionLoop id="373" lane="96199140#0_0" pos="2.0318013436519506" file="detector.out.xml" freq="3600" friendlyPos="True" />
+    <inductionLoop id="374" lane="156231178#3_1" pos="22.320777312828994" file="detector.out.xml" freq="3600" friendlyPos="True" />
+    <inductionLoop id="375" lane="82549436#2_0" pos="118.08713035476116" file="detector.out.xml" freq="3600" friendlyPos="True" />
+    <inductionLoop id="376" lane="450575525_0" pos="21.077148302321408" file="detector.out.xml" freq="3600" friendlyPos="True" />
+    <inductionLoop id="378" lane="11480374#11_0" pos="59.53002354225067" file="detector.out.xml" freq="3600" friendlyPos="True" />
+    <inductionLoop id="379" lane="11480374#2_0" pos="4.425115760593859" file="detector.out.xml" freq="3600" friendlyPos="True" />
+    <inductionLoop id="380" lane="-435019924_0" pos="9.715888904832244" file="detector.out.xml" freq="3600" friendlyPos="True" />
+    <inductionLoop id="381" lane="-23276047#0_0" pos="5.943037943678298" file="detector.out.xml" freq="3600" friendlyPos="True" />
+    <inductionLoop id="382" lane="448811300#2_0" pos="0.0" file="detector.out.xml" freq="3600" friendlyPos="True" />
+    <inductionLoop id="383" lane="450836889#1_0" pos="0.0" file="detector.out.xml" freq="3600" friendlyPos="True" />
+    <inductionLoop id="384" lane="1121780977#0_0" pos="10.831961964482694" file="detector.out.xml" freq="3600" friendlyPos="True" />
+    <inductionLoop id="385" lane="325457399#3_2" pos="0.0" file="detector.out.xml" freq="3600" friendlyPos="True" />
+    <inductionLoop id="386" lane="28511996#1_0" pos="14.21953475971946" file="detector.out.xml" freq="3600" friendlyPos="True" />
+    <inductionLoop id="387" lane="77960510#1_1" pos="6.932898554225004" file="detector.out.xml" freq="3600" friendlyPos="True" />
+    <inductionLoop id="390" lane="1188469817#0_2" pos="2.424818405589427" file="detector.out.xml" freq="3600" friendlyPos="True" />
+    <inductionLoop id="392" lane="-231109180#1_0" pos="67.98685561560929" file="detector.out.xml" freq="3600" friendlyPos="True" />
+    <inductionLoop id="394" lane="82549436#2_0" pos="109.736420763088" file="detector.out.xml" freq="3600" friendlyPos="True" />
+    <inductionLoop id="395" lane="217845955#1_0" pos="169.45595635504594" file="detector.out.xml" freq="3600" friendlyPos="True" />
+    <inductionLoop id="397" lane="346004298#0_1" pos="9.224579144708544" file="detector.out.xml" freq="3600" friendlyPos="True" />
+    <inductionLoop id="400" lane="27235474#1_1" pos="22.403641061405356" file="detector.out.xml" freq="3600" friendlyPos="True" />
+    <inductionLoop id="401" lane="23288888#1_1" pos="24.144193763284346" file="detector.out.xml" freq="3600" friendlyPos="True" />
+    <inductionLoop id="402" lane="335384211#2_2" pos="10.738182206804753" file="detector.out.xml" freq="3600" friendlyPos="True" />
+    <inductionLoop id="403" lane="135982476#1_1" pos="13.229974858646996" file="detector.out.xml" freq="3600" friendlyPos="True" />
+    <inductionLoop id="404" lane="135982476#5_0" pos="28.30350288267221" file="detector.out.xml" freq="3600" friendlyPos="True" />
+    <inductionLoop id="405" lane="-455829556#1_0" pos="4.68826373834487" file="detector.out.xml" freq="3600" friendlyPos="True" />
+    <inductionLoop id="406" lane="1131234806#2_1" pos="3.352338202441071" file="detector.out.xml" freq="3600" friendlyPos="True" />
+    <inductionLoop id="407" lane="1288780345#0_0" pos="0.0" file="detector.out.xml" freq="3600" friendlyPos="True" />
+    <inductionLoop id="408" lane="281681811#3_0" pos="29.258444323058125" file="detector.out.xml" freq="3600" friendlyPos="True" />
+    <inductionLoop id="410" lane="-204658425#1_0" pos="57.5715801943666" file="detector.out.xml" freq="3600" friendlyPos="True" />
+    <inductionLoop id="411" lane="204658616#0_0" pos="73.34604768332342" file="detector.out.xml" freq="3600" friendlyPos="True" />
+    <inductionLoop id="412" lane="47222272#1_0" pos="939.5355583693796" file="detector.out.xml" freq="3600" friendlyPos="True" />
+    <inductionLoop id="415" lane="454030795#2_1" pos="50.15451300584136" file="detector.out.xml" freq="3600" friendlyPos="True" />
+    <inductionLoop id="416" lane="-24266527#2_0" pos="89.93163048159548" file="detector.out.xml" freq="3600" friendlyPos="True" />
+    <inductionLoop id="417" lane="23189134#3_0" pos="44.830910884279476" file="detector.out.xml" freq="3600" friendlyPos="True" />
+    <inductionLoop id="418" lane="816256658#1_1" pos="51.99190916149577" file="detector.out.xml" freq="3600" friendlyPos="True" />
+    <inductionLoop id="419" lane="171986553#0_0" pos="152.20849806415822" file="detector.out.xml" freq="3600" friendlyPos="True" />
+    <inductionLoop id="420" lane="-31619992#12_0" pos="0.0" file="detector.out.xml" freq="3600" friendlyPos="True" />
+    <inductionLoop id="424" lane="888419746_1" pos="2.124598336797191" file="detector.out.xml" freq="3600" friendlyPos="True" />
+    <inductionLoop id="429" lane="151360500#1_0" pos="80.96377925558768" file="detector.out.xml" freq="3600" friendlyPos="True" />
+    <inductionLoop id="430" lane="23288923#1_2" pos="0.9112115641692872" file="detector.out.xml" freq="3600" friendlyPos="True" />
+    <inductionLoop id="431" lane="648493813#2_1" pos="8.400562579521884" file="detector.out.xml" freq="3600" friendlyPos="True" />
+    <inductionLoop id="433" lane="-108300603#3_0" pos="13.110434210577903" file="detector.out.xml" freq="3600" friendlyPos="True" />
+    <inductionLoop id="434" lane="-97807588#9_0" pos="334.8522518918818" file="detector.out.xml" freq="3600" friendlyPos="True" />
+    <inductionLoop id="436" lane="47222272#1_1" pos="669.0931615619126" file="detector.out.xml" freq="3600" friendlyPos="True" />
+    <inductionLoop id="437" lane="216686364#1_0" pos="76.1115856687963" file="detector.out.xml" freq="3600" friendlyPos="True" />
+    <inductionLoop id="438" lane="59854990_1" pos="43.667652009326574" file="detector.out.xml" freq="3600" friendlyPos="True" />
+    <inductionLoop id="439" lane="28511996#1_0" pos="0.0" file="detector.out.xml" freq="3600" friendlyPos="True" />
+    <inductionLoop id="440" lane="24839360#0_0" pos="13.784650100246548" file="detector.out.xml" freq="3600" friendlyPos="True" />
+    <inductionLoop id="441" lane="108300603#7_1" pos="30.818422089248706" file="detector.out.xml" freq="3600" friendlyPos="True" />
+    <inductionLoop id="442" lane="-234076713_0" pos="168.28175727262465" file="detector.out.xml" freq="3600" friendlyPos="True" />
+    <inductionLoop id="444" lane="454030795#1_2" pos="0.1537601789794561" file="detector.out.xml" freq="3600" friendlyPos="True" />
+    <inductionLoop id="445" lane="80655884#0_0" pos="7.402492767357826" file="detector.out.xml" freq="3600" friendlyPos="True" />
+    <inductionLoop id="446" lane="-1235814834#0_0" pos="0.0" file="detector.out.xml" freq="3600" friendlyPos="True" />
+    <inductionLoop id="447" lane="41277856#1_0" pos="7.192358044218214" file="detector.out.xml" freq="3600" friendlyPos="True" />
+    <inductionLoop id="448" lane="1235814834#1_0" pos="2.4082983408240066" file="detector.out.xml" freq="3600" friendlyPos="True" />
+    <inductionLoop id="449" lane="23621960#3_0" pos="13.920329586379006" file="detector.out.xml" freq="3600" friendlyPos="True" />
+    <inductionLoop id="450" lane="1251207462#0_0" pos="0.6459452563162799" file="detector.out.xml" freq="3600" friendlyPos="True" />
+    <inductionLoop id="451" lane="460508602_1" pos="11.85678638327922" file="detector.out.xml" freq="3600" friendlyPos="True" />
+    <inductionLoop id="452" lane="809282989#0_1" pos="14.537331331448772" file="detector.out.xml" freq="3600" friendlyPos="True" />
+    <inductionLoop id="453" lane="-618409505#1_0" pos="17.75763697253961" file="detector.out.xml" freq="3600" friendlyPos="True" />
+    <inductionLoop id="454" lane="450836849#7_1" pos="38.87357960876753" file="detector.out.xml" freq="3600" friendlyPos="True" />
+    <inductionLoop id="455" lane="-1116253887#1_0" pos="19.107453898233892" file="detector.out.xml" freq="3600" friendlyPos="True" />
+    <inductionLoop id="456" lane="149955205#10_0" pos="140.87380272108578" file="detector.out.xml" freq="3600" friendlyPos="True" />
+    <inductionLoop id="457" lane="149955205#0_0" pos="47.045541877527086" file="detector.out.xml" freq="3600" friendlyPos="True" />
+    <inductionLoop id="458" lane="23288872_1" pos="56.132108113367906" file="detector.out.xml" freq="3600" friendlyPos="True" />
+    <inductionLoop id="464" lane="183171900#5_1" pos="72.10755536406597" file="detector.out.xml" freq="3600" friendlyPos="True" />
+    <inductionLoop id="465" lane="-135982482_0" pos="11.890807040615943" file="detector.out.xml" freq="3600" friendlyPos="True" />
+    <inductionLoop id="466" lane="135982520#1_0" pos="10.650988448552571" file="detector.out.xml" freq="3600" friendlyPos="True" />
+    <inductionLoop id="467" lane="346004298#5_1" pos="53.72270865122266" file="detector.out.xml" freq="3600" friendlyPos="True" />
+    <inductionLoop id="468" lane="-253811695#3_0" pos="12.348582021854423" file="detector.out.xml" freq="3600" friendlyPos="True" />
+    <inductionLoop id="471" lane="55527456#1_0" pos="10.217010325922276" file="detector.out.xml" freq="3600" friendlyPos="True" />
+    <inductionLoop id="472" lane="-149916584#0_0" pos="3.3050598796258335" file="detector.out.xml" freq="3600" friendlyPos="True" />
+    <inductionLoop id="474" lane="904711707#1_1" pos="18.535470280369147" file="detector.out.xml" freq="3600" friendlyPos="True" />
+    <inductionLoop id="476" lane="23815777#1_0" pos="4.706211152188803" file="detector.out.xml" freq="3600" friendlyPos="True" />
+    <inductionLoop id="477" lane="456648699#3_0" pos="0.0" file="detector.out.xml" freq="3600" friendlyPos="True" />
+    <inductionLoop id="478" lane="241544165#0_0" pos="0.0" file="detector.out.xml" freq="3600" friendlyPos="True" />
+    <inductionLoop id="479" lane="27028172#0_1" pos="19.2548646055006" file="detector.out.xml" freq="3600" friendlyPos="True" />
+    <inductionLoop id="480" lane="24865692#1_0" pos="6.48966018740887" file="detector.out.xml" freq="3600" friendlyPos="True" />
+    <inductionLoop id="482" lane="151824722#1_1" pos="9.859999253069775" file="detector.out.xml" freq="3600" friendlyPos="True" />
+    <inductionLoop id="483" lane="151824728#2_2" pos="0.0" file="detector.out.xml" freq="3600" friendlyPos="True" />
+    <inductionLoop id="486" lane="453786057#3_0" pos="6.818030383711777" file="detector.out.xml" freq="3600" friendlyPos="True" />
+    <inductionLoop id="487" lane="23288960#3_2" pos="0.7286635043753379" file="detector.out.xml" freq="3600" friendlyPos="True" />
+    <inductionLoop id="488" lane="-826561109#1_0" pos="6.903403012867009" file="detector.out.xml" freq="3600" friendlyPos="True" />
+    <inductionLoop id="489" lane="1315944433_1" pos="0.5452166618827009" file="detector.out.xml" freq="3600" friendlyPos="True" />
+    <inductionLoop id="492" lane="-119742505#4_0" pos="0.0" file="detector.out.xml" freq="3600" friendlyPos="True" />
+    <inductionLoop id="496" lane="1304381642_0" pos="26.430510248687554" file="detector.out.xml" freq="3600" friendlyPos="True" />
+    <inductionLoop id="497" lane="-323825891#0_0" pos="0.1777573375826931" file="detector.out.xml" freq="3600" friendlyPos="True" />
+    <inductionLoop id="498" lane="132006073#1_0" pos="13.192928184497877" file="detector.out.xml" freq="3600" friendlyPos="True" />
+    <inductionLoop id="500" lane="-867694740#4_0" pos="0.6364805780799477" file="detector.out.xml" freq="3600" friendlyPos="True" />
+    <inductionLoop id="501" lane="80653044#1_1" pos="4.271549525866932" file="detector.out.xml" freq="3600" friendlyPos="True" />
+    <inductionLoop id="502" lane="40504395#6_1" pos="17.096731410736542" file="detector.out.xml" freq="3600" friendlyPos="True" />
+    <inductionLoop id="503" lane="210137936#1_0" pos="16.413496555279806" file="detector.out.xml" freq="3600" friendlyPos="True" />
+    <inductionLoop id="504" lane="204658616#0_0" pos="32.18278308004951" file="detector.out.xml" freq="3600" friendlyPos="True" />
+    <inductionLoop id="506" lane="648493809#1_1" pos="35.49437580932786" file="detector.out.xml" freq="3600" friendlyPos="True" />
+    <inductionLoop id="507" lane="36774609#3_0" pos="0.0" file="detector.out.xml" freq="3600" friendlyPos="True" />
+    <inductionLoop id="508" lane="587236601#2_2" pos="35.221260528525995" file="detector.out.xml" freq="3600" friendlyPos="True" />
+    <inductionLoop id="509" lane="156265612#6_0" pos="28.766677555315894" file="detector.out.xml" freq="3600" friendlyPos="True" />
+    <inductionLoop id="510" lane="205519279#0_1" pos="11.498527032764045" file="detector.out.xml" freq="3600" friendlyPos="True" />
+    <inductionLoop id="511" lane="23277071#1_0" pos="14.00890991026377" file="detector.out.xml" freq="3600" friendlyPos="True" />
+    <inductionLoop id="512" lane="585918818_0" pos="0.0" file="detector.out.xml" freq="3600" friendlyPos="True" />
+    <inductionLoop id="513" lane="-1151980384#1_0" pos="2.72848229009881" file="detector.out.xml" freq="3600" friendlyPos="True" />
+    <inductionLoop id="514" lane="23189090#1_0" pos="4.042807383965973" file="detector.out.xml" freq="3600" friendlyPos="True" />
+    <inductionLoop id="515" lane="585942486#0_0" pos="58.43308304647473" file="detector.out.xml" freq="3600" friendlyPos="True" />
+    <inductionLoop id="516" lane="27028274#1_0" pos="21.1009090863607" file="detector.out.xml" freq="3600" friendlyPos="True" />
+    <inductionLoop id="519" lane="-39673910_0" pos="12.958307727588936" file="detector.out.xml" freq="3600" friendlyPos="True" />
+    <inductionLoop id="520" lane="-1116253895#0_0" pos="15.822453876946662" file="detector.out.xml" freq="3600" friendlyPos="True" />
+    <inductionLoop id="521" lane="-1110288374#6_0" pos="20.84143700301744" file="detector.out.xml" freq="3600" friendlyPos="True" />
+    <inductionLoop id="525" lane="1178617196#1_0" pos="13.184429811145545" file="detector.out.xml" freq="3600" friendlyPos="True" />
+    <inductionLoop id="526" lane="49403726#0_0" pos="16.36073679685196" file="detector.out.xml" freq="3600" friendlyPos="True" />
+    <inductionLoop id="527" lane="71760750#7_0" pos="75.10777021355852" file="detector.out.xml" freq="3600" friendlyPos="True" />
+    <inductionLoop id="530" lane="55302015#0_0" pos="25.905023993153307" file="detector.out.xml" freq="3600" friendlyPos="True" />
+    <inductionLoop id="531" lane="55302014#1_2" pos="0.912996768352101" file="detector.out.xml" freq="3600" friendlyPos="True" />
+    <inductionLoop id="532" lane="-23275370#4_0" pos="26.550209939139783" file="detector.out.xml" freq="3600" friendlyPos="True" />
+    <inductionLoop id="533" lane="766208300#3_0" pos="52.176145676960054" file="detector.out.xml" freq="3600" friendlyPos="True" />
+    <inductionLoop id="536" lane="766208300#8_0" pos="17.342525257175648" file="detector.out.xml" freq="3600" friendlyPos="True" />
+    <inductionLoop id="565" lane="33832076#0_0" pos="2.6917777054584464" file="detector.out.xml" freq="3600" friendlyPos="True" />
+    <inductionLoop id="567" lane="-23291396#2_0" pos="71.24049511715907" file="detector.out.xml" freq="3600" friendlyPos="True" />
+    <inductionLoop id="571" lane="23288757#2_2" pos="6.194510996342229" file="detector.out.xml" freq="3600" friendlyPos="True" />
+    <inductionLoop id="624" lane="1190711539#1_1" pos="8.380321140843355" file="detector.out.xml" freq="3600" friendlyPos="True" />
+    <inductionLoop id="628" lane="34395278#1_1" pos="231.82040290303988" file="detector.out.xml" freq="3600" friendlyPos="True" />
+    <inductionLoop id="630" lane="460508602_1" pos="3.8068883895796493" file="detector.out.xml" freq="3600" friendlyPos="True" />
+    <inductionLoop id="634" lane="997197853#1_0" pos="78.85355096418488" file="detector.out.xml" freq="3600" friendlyPos="True" />
+    <inductionLoop id="636" lane="-204658616#4_0" pos="83.9933854235008" file="detector.out.xml" freq="3600" friendlyPos="True" />
+    <inductionLoop id="649" lane="-230602341#1_0" pos="32.242032969283144" file="detector.out.xml" freq="3600" friendlyPos="True" />
+    <inductionLoop id="656" lane="234076714#4_0" pos="34.198688223334614" file="detector.out.xml" freq="3600" friendlyPos="True" />
+    <inductionLoop id="660" lane="-96199157#1_0" pos="3.004231230642787" file="detector.out.xml" freq="3600" friendlyPos="True" />
+    <inductionLoop id="683" lane="23275450#1_0" pos="61.836627016072555" file="detector.out.xml" freq="3600" friendlyPos="True" />
+    <inductionLoop id="691" lane="151766115#2_1" pos="9.846806857643129" file="detector.out.xml" freq="3600" friendlyPos="True" />
+    <inductionLoop id="707" lane="34351064#0_0" pos="0.0" file="detector.out.xml" freq="3600" friendlyPos="True" />
+    <inductionLoop id="712" lane="98387481#2_0" pos="164.56871708228724" file="detector.out.xml" freq="3600" friendlyPos="True" />
+    <inductionLoop id="713" lane="-30635860#1_0" pos="188.66966074000192" file="detector.out.xml" freq="3600" friendlyPos="True" />
+    <inductionLoop id="731" lane="-33832076#1_0" pos="4.004189391969778" file="detector.out.xml" freq="3600" friendlyPos="True" />
+    <inductionLoop id="736" lane="-32242298#1_0" pos="65.90680465627197" file="detector.out.xml" freq="3600" friendlyPos="True" />
+    <inductionLoop id="742" lane="23366578#0_0" pos="167.0925830283539" file="detector.out.xml" freq="3600" friendlyPos="True" />
+    <inductionLoop id="761" lane="452137909#0_0" pos="59.259949607576935" file="detector.out.xml" freq="3600" friendlyPos="True" />
+    <inductionLoop id="767" lane="204658616#0_0" pos="0.0" file="detector.out.xml" freq="3600" friendlyPos="True" />
+    <inductionLoop id="770" lane="53238691#5_0" pos="76.80275851748753" file="detector.out.xml" freq="3600" friendlyPos="True" />
+    <inductionLoop id="772" lane="210137936#1_1" pos="0.8152924414097221" file="detector.out.xml" freq="3600" friendlyPos="True" />
+    <inductionLoop id="819" lane="23288823#1_1" pos="30.636635206988917" file="detector.out.xml" freq="3600" friendlyPos="True" />
+    <inductionLoop id="839" lane="23288787#2_0" pos="33.97499906700705" file="detector.out.xml" freq="3600" friendlyPos="True" />
+    <inductionLoop id="858" lane="23184466#0_0" pos="107.6219343178615" file="detector.out.xml" freq="3600" friendlyPos="True" />
+    <inductionLoop id="863" lane="422154004_1" pos="16.674211714404915" file="detector.out.xml" freq="3600" friendlyPos="True" />
+    <inductionLoop id="896" lane="450836895#1_0" pos="6.6136606441393955" file="detector.out.xml" freq="3600" friendlyPos="True" />
+    <inductionLoop id="917" lane="460508602_0" pos="0.0" file="detector.out.xml" freq="3600" friendlyPos="True" />
+    <inductionLoop id="942" lane="-56825355_0" pos="93.82969081111412" file="detector.out.xml" freq="3600" friendlyPos="True" />
+    <inductionLoop id="969" lane="806941645#4_0" pos="56.51004588946309" file="detector.out.xml" freq="3600" friendlyPos="True" />
+    <inductionLoop id="975" lane="1304023938_0" pos="10.10953548114773" file="detector.out.xml" freq="3600" friendlyPos="True" />
+    <inductionLoop id="992" lane="-450836871#0_0" pos="0.7037513852049706" file="detector.out.xml" freq="3600" friendlyPos="True" />
+    <inductionLoop id="1009" lane="1178617195#0_0" pos="147.25309208294914" file="detector.out.xml" freq="3600" friendlyPos="True" />
 </additional>
