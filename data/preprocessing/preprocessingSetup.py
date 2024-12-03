@@ -30,7 +30,7 @@ def run():
     # generateRoadNamesFile(inputFile=TRAFFIC_FLOW_ACCURATE_FILE_PATH, sumoNetFile=SUMO_NET_PATH, roadNamesFilePath=ROAD_NAMES_FILE_PATH)
 
 
-    #5. Generate detector addtional file for SUMO simulator
+    #5. Generate detector additional file for SUMO simulator
     generateDetectorsCoordinatesFile(inputFile=TRAFFIC_FLOW_ACCURATE_FILE_PATH, detectorCoordinatesPath=EXTRACTED_DETECTOR_COORDINATES_FILE_PATH)
     mapDetectorsFromCoordinates(sumoNetFile=SUMO_NET_PATH, detectorCoordinatesPath=EXTRACTED_DETECTOR_COORDINATES_FILE_PATH, detectorFilePath=SUMO_DETECTORS_ADD_FILE_PATH)
     #5.1 Generate Induction Loop file for keeping traffic loop duplicates
