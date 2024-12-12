@@ -32,8 +32,9 @@ REGISTERED_DEVICES_PATH = projectPath + "/registereddevices/"
 
 TRAFFIC_FLOW_OPENDATA_FILE_PATH = REAL_WORLD_DATA_PATH + "/opendata/traffic_flow_2024.csv"
 ACCURACY_TRAFFIC_LOOP_OPENDATA_FILE_PATH = REAL_WORLD_DATA_PATH + "/opendata/accuracy_traffic_loop_2024.csv"
+STATISTICAL_AREAS_OPENDATA_FILE_PATH = REAL_WORLD_DATA_PATH + "/opendata/statistical_areas.csv"
 
-PROCESSED_DATA_PATH = projectPath + "/data/preprocessing/"
+PROCESSED_DATA_PATH = projectPath + "/data/preprocessing/generated/"
 TRAFFIC_FLOW_ACCURATE_FILE_PATH = PROCESSED_DATA_PATH + "/accurate_traffic_flow.csv"
 PROCESSED_TRAFFIC_FLOW_EDGE_FILE_PATH = PROCESSED_DATA_PATH +"/processed_traffic_flow.csv"
 ROAD_NAMES_FILE_PATH = PROCESSED_DATA_PATH + "/road_names.csv"

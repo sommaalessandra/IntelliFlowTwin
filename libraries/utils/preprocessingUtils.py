@@ -1,4 +1,10 @@
 import pandas as pd
+import geopandas as gpd
+import matplotlib.pyplot as plt
+from shapely.wkt import loads as load_wkt
+from shapely.geometry import Point, shape, Polygon, mapping
+from scipy.spatial import cKDTree
+import numpy as np
 import csv
 import xml.etree.ElementTree as ET
 import sys
@@ -730,3 +736,101 @@ def fillMissingDirections(inputFilePath: str, directionColumn = "direzione", def
     df[directionColumn].fillna(defaultDirection, inplace=True)
     # Save modified dataset
     df.to_csv(inputFilePath, index=False, sep=';')
+
+def addZones(inputFilePath: str, zoneFilePath: str, zoneColumn="codZone", zoneColumnID="Codice Area Statistica", withPlot=False):
+    """
+    Add Zone information to the input file entries. Each geopoint in the input data is evaluated as a point and searched
+    for which geoshape (of the zone file) contains that point. Once found, the associated zone id information is added
+    to the input file. For points that do not fall within any zone, the zone with the smallest distance centroid is
+    associated.
+    Args:
+        inputFilePath: input file containing the geopoints to be associated
+        zoneFilePath: file containing the zones described as geoshape and their associated IDs
+        zoneColumn: column name to be created within the input file
+        withPlot: boolean value for enable or not plot of the geopoint together with the geoshapes
+    Returns: The function updates the CSV file in place.
+    """
+    print("Start adding zones for the input file...")
+    df = pd.read_csv(inputFilePath, sep=';')
+    # Converts the 'geopoint' column to geometry
+    points_gdf = gpd.GeoDataFrame(
+        df,
+        geometry=df['geopoint'].apply(
+            lambda x: Point(map(float, x.split(',')))
+        ),
+        crs="EPSG:4326"  # Assuming WGS84 geographical coordinates
+    )
+    # Inverts latitude with longitude (saved in reverse in the geopoint)
+    points_gdf['geometry'] = points_gdf['geometry'].apply(lambda p: Point(p.y, p.x) if p.geom_type == 'Point' else p)
+    points_gdf[zoneColumn] = {}
+
+    # Custom function for creating geo shapes out of the zoneFile
+    def parse_custom_geo_shape(geo_shape_str):
+        """
+        Converts a customised geo shape string into a Shapely geometry.
+
+        Args:
+            geo_shape_str (str): A string representing the geometry (e.g. JSON-like).
+
+        Returns:
+            shapely.geometry: A Shapely Geometric Object.
+        """
+        try:
+            # Converts the string in a dict
+            geo_data = eval(geo_shape_str)
+            coordinates = geo_data["coordinates"]
+            geom_type = geo_data["type"].lower()
+
+            if geom_type == "polygon":
+                return Polygon(coordinates[0])
+            elif geom_type == "point":
+                return Point(coordinates)
+            else:
+                raise ValueError(f"Unsupported geometry type: {geom_type}")
+        except Exception as e:
+            raise ValueError(f"Invalid geo shape format: {geo_shape_str}") from e
+
+    geo_shapes_df = pd.read_csv(zoneFilePath, sep=';')
+    geo_shapes_gdf = gpd.GeoDataFrame(
+        geo_shapes_df,
+        geometry=geo_shapes_df['Geo Shape'].apply(parse_custom_geo_shape),
+        crs="EPSG:4326"  # Assuming WGS84 geographical coordinates
+    )
+
+    if withPlot:
+        fig, ax = plt.subplots(figsize=(10, 10))
+        # Plot geoshapes as lines
+        geo_shapes_gdf.boundary.plot(ax=ax, color='blue', linewidth=1)
+        # Plot points
+        points_gdf.plot(ax=ax, color='red', markersize=10)
+        plt.show()
+
+    # For each point, find the geoshape containing the point and add the zone ID
+    for idx, point in points_gdf.iterrows():
+        # Find the geoshape containing the point
+        containing_shape = geo_shapes_gdf[geo_shapes_gdf.geometry.contains(point.geometry)]
+
+        if not containing_shape.empty:
+            # add the zone ID
+            points_gdf.at[idx, zoneColumn] = containing_shape.iloc[0][zoneColumnID]  # sostituisci con il nome corretto della colonna
+    print("Added found zone IDs. Filling the empty rows with the nearest Zone...")
+    ### Filling NaN points
+    # Extract geoshape centroids as an array of co-ordinates
+    geo_shapes_centroids = np.array([[geom.centroid.x, geom.centroid.y] for geom in geo_shapes_gdf['geometry']])
+    # Extract the coordinates of the points as an array
+    points_coords = np.array([[geom.x, geom.y] for geom in points_gdf['geometry']])
+    # Create a KDTree for geoshape centroids
+    tree = cKDTree(geo_shapes_centroids)
+    # Find the index of the nearest geoshape for each point
+    distances, indices = tree.query(points_coords)
+    # Match the ID of the geoshape closest to the points
+    points_gdf['nearest_shape'] = indices
+    points_gdf['nearest_shape'] = points_gdf['nearest_shape'].apply(lambda idx: geo_shapes_gdf.iloc[idx][zoneColumnID])
+    # Replace NaN with the nearest geoshape
+    points_gdf[zoneColumn] = points_gdf[zoneColumn].fillna(points_gdf['nearest_shape'])
+    # Column no longer required
+    points_gdf = points_gdf.drop(columns=['nearest_shape'])
+
+    points_gdf.to_csv(inputFilePath, index=False, sep=';')
+    print("Saved the new data.")
+
