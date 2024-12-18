@@ -4,8 +4,8 @@
 
     <input>
         <net-file value="../static/full.net.xml"/>
-        <route-files value="sampleRoutes.rou.xml"/>
-        <additional-files value="../static/detectors.add.xml,../static/joined_vtypes.add.xml"/>
+        <route-files value="generatedRoutes.rou.xml"/>
+        <additional-files value="../static/detectors.add.xml"/>
     </input>
 
     <output>

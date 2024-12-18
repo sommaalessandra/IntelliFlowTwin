@@ -183,7 +183,7 @@ def addStartEnd(inputFile, roadnameFile, arcFile, nodeFile, sumoNetFile):
         else:
             print("Error, road not found!")
     df.to_csv(PROCESSED_DATA_PATH + "traffic_with_flow.csv", sep=';')
-def generateFlow(inputFile, time_slot="07:00-08:00"):
+def generateFlowXML(inputFile, time_slot="07:00-08:00"):
     df = pd.read_csv(inputFile, sep=';')
     root = ET.Element('routes')
     for index, row in df.iterrows():
@@ -352,11 +352,12 @@ def generateDetectorsCoordinatesFile(inputFile: str, detectorCoordinatesPath: st
     df_unique = input_df.drop_duplicates(['geopoint'])
     temp = []
     for index, row in df_unique.iterrows():
+        id = row['ID_univoco_stazione_spira']
         # Extract latitude and longitude from the geopoint
         coord = row['geopoint']
         lat, lon = map(float, coord.split(','))
 
-        temp.append({'id': index, 'lat': lat, 'lon': lon})
+        temp.append({'id': id, 'lat': lat, 'lon': lon})
 
     new_df = pd.DataFrame(temp, columns=['id', 'lat', 'lon'])
     new_df.to_csv(detectorCoordinatesPath, sep=';', index=False)
@@ -834,3 +835,102 @@ def addZones(inputFilePath: str, zoneFilePath: str, zoneColumn="codZone", zoneCo
     points_gdf.to_csv(inputFilePath, index=False, sep=';')
     print("Saved the new data.")
 
+def generateFlow(inputFilePath: str, outputFilePath: str, date: str, timeSlot: str, duration: int):
+    """
+    Generate detector flow file starting from a traffic loop measurement file.
+    Args:
+        inputFilePath:
+        outputFilePath:
+        date:
+        timeSlot:
+        duration:
+    Returns:
+
+    """
+
+    df = pd.read_csv(inputFilePath, sep=';')
+    df = df[df['data'].str.contains(date)]
+
+    header = ["Detector", "Time", "qPKW", "vPKW"]
+    with open(outputFilePath, mode="w", newline="") as file:
+        writer = csv.writer(file, delimiter=';')
+        writer.writerow(header)
+
+        for index, row in df.iterrows():
+            detector = row['ID_univoco_stazione_spira']
+            time = duration
+            first = int(timeSlot[:2])
+            last = int(timeSlot[6:8])
+
+            # Calculate the vehicle count for the specified time slot
+            if last - first > 1:  # If the time slot spans multiple hours
+                total_count = sum(row[f"{hour:02d}:00-{(hour + 1) % 24:02d}:00"] for hour in range(first, last))
+                qPKW = str(total_count)
+            else:
+                qPKW = str(row[timeSlot])
+            writer.writerow([detector, time, qPKW, 0, 30, 0])
+
+def fillEdgeDataInfo(inputFilePath: str, sumoNetFile: str):
+    # Load the SUMO network using sumolib
+    net = sumolib.net.readNet(sumoNetFile)
+
+    # Parsing del file XML
+    tree = ET.parse(inputFilePath)
+    root = tree.getroot()
+    # Itera attraverso tutti gli elementi <edge>
+    for edge in root.findall(".//edge"):
+        edge_id = edge.get("id")  # Leggi l'attributo 'id'
+        qPKW = edge.get("qPKW")  # Leggi l'attributo 'qPKW'
+        edge_lengths = {edge.getID(): edge.getLength() for edge in net.getEdges()}
+        density = float(qPKW) / edge_lengths[edge_id]  # vehicles per km
+        edge.set("density", str(density))
+    # Salva l'output in un nuovo file XML
+    output_file = "output_updated.xml"
+    tree.write(output_file, encoding="UTF-8", xml_declaration=True)
+
+def addDataForGM(inputFilePath: str, sumoNetFile: str, outputFilePath: str, date: str, timeSlot: str):
+    """
+
+    Args:
+        inputFilePath:
+        sumoNetFile:
+        outputFilePath:
+    Returns:
+    """
+
+    # Load the SUMO network using sumolib
+    net = sumolib.net.readNet(sumoNetFile)
+    # Load input data and filter unique road names and geopoints
+    input_df = pd.read_csv(inputFilePath, sep=';')
+    input_df = input_df[input_df['data'].str.contains(date)]
+
+    data = []
+    for index, row in input_df.iterrows():
+        edge_id = row["edge_id"]
+        edge = net.getEdge(edge_id)
+        length = edge.getLength()
+        vMax = edge.getSpeed()
+        first = int(timeSlot[:2])
+        last = int(timeSlot[6:8])
+
+        # Calculate the vehicle count for the specified time slot
+        if last - first > 1:  # If the time slot spans multiple hours
+            total_count = sum(row[f"{hour:02d}:00-{(hour + 1) % 24:02d}:00"] for hour in range(first, last))
+            flow = str(total_count)
+        else:
+            flow = str(row[timeSlot])
+
+        vps = int(flow) / 3600
+        density = vps / vMax
+
+        data.append({
+            "edge_id": edge_id,
+            "flow": flow,
+            "vehicles_per_second": vps,
+            "density": density,
+            "v_max": vMax,
+            "length": length
+        })
+    df = pd.DataFrame(data)
+    df.to_csv(outputFilePath, sep=';')
+    print("New Data saved into: " + outputFilePath + " file")
