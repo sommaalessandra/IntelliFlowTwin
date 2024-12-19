@@ -13,3 +13,7 @@ pytz~=2024.1
 pillow~=10.4.0
 matplotlib~=3.9.2
 pyproj~=3.7.0
+geopandas~=1.0.1
+numpy~=2.2.0
+sumolib~=1.21.0
+shapely~=2.0.6

@@ -23,6 +23,7 @@ SHADOWS_PATH = projectPath + "/data/digitalshadow/"
 
 
 REAL_WORLD_DATA_PATH = projectPath + "/data/realworlddata"
+MVENV_DATA_PATH = REAL_WORLD_DATA_PATH + '/mvenvdata'
 REAL_TRAFFIC_FLOW_DATA_MVENV_PATH = REAL_WORLD_DATA_PATH + "/mvenvdata/flows"
 REAL_TRAFFIC_FLOW_DATA_MVENV_FILE_PATH = REAL_WORLD_DATA_PATH + "/mvenvdata/flows/real_traffic_flow.csv"
 EXTRACTED_DETECTOR_COORDINATES_FILE_PATH = REAL_WORLD_DATA_PATH + "/mvenvdata/detectors.csv"

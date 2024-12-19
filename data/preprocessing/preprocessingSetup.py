@@ -4,10 +4,15 @@ from libraries.constants import TRAFFIC_FLOW_OPENDATA_FILE_PATH, ACCURACY_TRAFFI
 
 
 def run():
-    addDataForGM(inputFilePath=PROCESSED_TRAFFIC_FLOW_EDGE_FILE_PATH, sumoNetFile=SUMO_NET_PATH, outputFilePath=GM_DATA_FILE_PATH, date='2024-02-01',
-                 timeSlot='07:00-08:00')
-    generateFlow(inputFilePath=PROCESSED_TRAFFIC_FLOW_EDGE_FILE_PATH, outputFilePath=FLOW_DATA_FILE_PATH, date='2024-02-01',
-                 timeSlot='07:00-08:00', duration=60)
+
+
+    generateGModelData(inputFilePath=PROCESSED_TRAFFIC_FLOW_EDGE_FILE_PATH, sumoNetFile=SUMO_NET_PATH,
+                       outputFilePath=GM_DATA_FILE_PATH, date='2024-02-01',
+                       timeSlot='07:00-23:00', exponential= False)
+    generateFlow(inputFilePath=PROCESSED_TRAFFIC_FLOW_EDGE_FILE_PATH, gModelFilePath=GM_DATA_FILE_PATH,
+                 outputFilePath=FLOW_DATA_FILE_PATH, date='2024-02-01',
+                 timeSlot='07:00-23:00', duration=60)
+
     #1. Fill missing direction in the Open Data traffic flow dataset according to convention
     fillMissingDirections(TRAFFIC_FLOW_OPENDATA_FILE_PATH)
 
@@ -42,7 +47,13 @@ def run():
     generateRealFlow(PROCESSED_TRAFFIC_FLOW_EDGE_FILE_PATH)
 
     #9. Generate example edgedata file to be used for route genaration
-    generateEdgeDataFile(PROCESSED_TRAFFIC_FLOW_EDGE_FILE_PATH, date='2024-02-01', time_slot='07:00-08:00')
+    #generateEdgeDataFile(PROCESSED_TRAFFIC_FLOW_EDGE_FILE_PATH, date='2024-02-01', time_slot='07:00-08:00')
 
     #dailyFilter(PROCESSED_TRAFFIC_FLOW_EDGE_FILE_PATH, date='01/02/2024')
 
+    generateGModelData(inputFilePath=PROCESSED_TRAFFIC_FLOW_EDGE_FILE_PATH, sumoNetFile=SUMO_NET_PATH,
+                       outputFilePath=GM_DATA_FILE_PATH, date='2024-02-01',
+                       timeSlot='07:00-08:00')
+    generateFlow(inputFilePath=PROCESSED_TRAFFIC_FLOW_EDGE_FILE_PATH, gModelFilePath=GM_DATA_FILE_PATH,
+                 outputFilePath=FLOW_DATA_FILE_PATH, date='2024-02-01',
+                 timeSlot='07:00-08:00', duration=60)

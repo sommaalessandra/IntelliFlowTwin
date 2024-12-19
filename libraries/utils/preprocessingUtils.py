@@ -265,7 +265,7 @@ def filterWithAccuracy(file_input: str, file_accuracy: str,date_column: str,sens
 
 def generateRoadNamesFile(inputFile: str, sumoNetFile: str, roadNamesFilePath: str):
     """
-    Generate a road names file with edge IDs linked to each road based on geopoint coordinates.
+    Generate a road names file with edge IDs linked to each road, based on geopoint coordinates.
 
     This function uses the coordinates provided in the input file to find the closest `edge_id` in the SUMO network.
     The `edge_id` is associated with each road name based on the provided coordinates. This information is saved in
@@ -360,6 +360,9 @@ def generateDetectorsCoordinatesFile(inputFile: str, detectorCoordinatesPath: st
         temp.append({'id': id, 'lat': lat, 'lon': lon})
 
     new_df = pd.DataFrame(temp, columns=['id', 'lat', 'lon'])
+    if not os.path.exists(MVENV_DATA_PATH):
+        os.makedirs(MVENV_DATA_PATH)
+        print(f"Directory '{MVENV_DATA_PATH}' created for the output file.")
     new_df.to_csv(detectorCoordinatesPath, sep=';', index=False)
 
 def mapDetectorsFromCoordinates(sumoNetFile: str, detectorCoordinatesPath: str, detectorFilePath: str):
@@ -377,6 +380,7 @@ def mapDetectorsFromCoordinates(sumoNetFile: str, detectorCoordinatesPath: str, 
             the function saves an XML file (`detectorFilePath`) with induction loop definitions for SUMO.
 
     """
+    print("starting to map the detector using geospatial coordinates...")
     script = SUMO_TOOLS_PATH + "/detector/mapDetectors.py"
     command = [
         sys.executable,
@@ -724,7 +728,7 @@ def fillMissingDirections(inputFilePath: str, directionColumn = "direzione", def
     """
     Fill missing direction in a traffic file. If a default direction is not set, North will be used.
     Args:
-        inputFilePath: Path to the input CSV file.
+        inputFilePath: path to the input CSV file.
         directionColumn: column name where directions are defined.
         defaultDirection: direction to use when a road w.o. direction is met.
 
@@ -835,40 +839,6 @@ def addZones(inputFilePath: str, zoneFilePath: str, zoneColumn="codZone", zoneCo
     points_gdf.to_csv(inputFilePath, index=False, sep=';')
     print("Saved the new data.")
 
-def generateFlow(inputFilePath: str, outputFilePath: str, date: str, timeSlot: str, duration: int):
-    """
-    Generate detector flow file starting from a traffic loop measurement file.
-    Args:
-        inputFilePath:
-        outputFilePath:
-        date:
-        timeSlot:
-        duration:
-    Returns:
-
-    """
-
-    df = pd.read_csv(inputFilePath, sep=';')
-    df = df[df['data'].str.contains(date)]
-
-    header = ["Detector", "Time", "qPKW", "vPKW"]
-    with open(outputFilePath, mode="w", newline="") as file:
-        writer = csv.writer(file, delimiter=';')
-        writer.writerow(header)
-
-        for index, row in df.iterrows():
-            detector = row['ID_univoco_stazione_spira']
-            time = duration
-            first = int(timeSlot[:2])
-            last = int(timeSlot[6:8])
-
-            # Calculate the vehicle count for the specified time slot
-            if last - first > 1:  # If the time slot spans multiple hours
-                total_count = sum(row[f"{hour:02d}:00-{(hour + 1) % 24:02d}:00"] for hour in range(first, last))
-                qPKW = str(total_count)
-            else:
-                qPKW = str(row[timeSlot])
-            writer.writerow([detector, time, qPKW, 0, 30, 0])
 
 def fillEdgeDataInfo(inputFilePath: str, sumoNetFile: str):
     # Load the SUMO network using sumolib
@@ -888,16 +858,25 @@ def fillEdgeDataInfo(inputFilePath: str, sumoNetFile: str):
     output_file = "output_updated.xml"
     tree.write(output_file, encoding="UTF-8", xml_declaration=True)
 
-def addDataForGM(inputFilePath: str, sumoNetFile: str, outputFilePath: str, date: str, timeSlot: str):
+def generateGModelData(inputFilePath: str, sumoNetFile: str, outputFilePath: str, date: str, timeSlot: str,
+                       exponential = False):
     """
-
+    Generates the data that shape the traffic flow according to Greenshield's model.The data are computed using traffic
+    loops measurement as flow and retrieved road data (lanes, length, max speed) from the SUMO network
     Args:
-        inputFilePath:
-        sumoNetFile:
-        outputFilePath:
+        inputFilePath: path to input file from which both the edge_id and the flow value are retrieved
+        sumoNetFile:  path to the SUMO network file (e.g., `net.xml`) that includes the road network.
+        outputFilePath: path of the file to save the flow data related to the greenshield model
+        date: date of the selected traffic flow
+        timeSlot: time slot of the selected traffic flow
+        exponential: boolean to select between greenshield (linear) or greenberg (exponential) model
     Returns:
+        None: Saves the generated data to `outputFilePath`.
     """
-
+    if not exponential:
+        print("Start processing data for Greenshield model...")
+    else:
+        print("Start processing data for Greenberg model...")
     # Load the SUMO network using sumolib
     net = sumolib.net.readNet(sumoNetFile)
     # Load input data and filter unique road names and geopoints
@@ -910,6 +889,10 @@ def addDataForGM(inputFilePath: str, sumoNetFile: str, outputFilePath: str, date
         edge = net.getEdge(edge_id)
         length = edge.getLength()
         vMax = edge.getSpeed()
+        lane_count = len(edge.getLanes())
+        vehicleLength = 7.5 #7.5 # this length is including the gap between vehicles
+        maxDensity = lane_count / vehicleLength
+        print(f"Edge {edge_id}: k_jam = {maxDensity * 1000} vehicles/km")
         first = int(timeSlot[:2])
         last = int(timeSlot[6:8])
 
@@ -920,17 +903,112 @@ def addDataForGM(inputFilePath: str, sumoNetFile: str, outputFilePath: str, date
         else:
             flow = str(row[timeSlot])
 
-        vps = int(flow) / 3600
+        vps = int(flow) / (3600*(last-first)) # flow is set as vehicles per second
         density = vps / vMax
+        if not exponential:
+            velocity = vMax * (1 - density / maxDensity)
+        else:
+            velocity = vMax * np.exp(density/maxDensity)
+        density = vps / velocity if velocity > 0 else maxDensity
+        density = density / lane_count
+        norm_velocity = velocity / vMax
 
         data.append({
             "edge_id": edge_id,
+            "length": length,
             "flow": flow,
             "vehicles_per_second": vps,
             "density": density,
+            "max_density": maxDensity,
             "v_max": vMax,
-            "length": length
+            "velocity": velocity,
+            "norm_velocity": norm_velocity
         })
     df = pd.DataFrame(data)
-    df.to_csv(outputFilePath, sep=';')
-    print("New Data saved into: " + outputFilePath + " file")
+    df.to_csv(outputFilePath, sep=';', index=False, float_format='%.4f', decimal=',')
+    print("New Greenshield Model data saved into: " + outputFilePath + " file")
+
+    df = df[df['velocity'] < 10]
+    df = df[df['velocity'] > 6]
+    # Parametri del modello di Greenshield
+    v_max = 8.3333  # Velocità massima (esempio: 30 m/s)
+    k_jam = 133.33 / 1000 # Densità massima (esempio: 266 veicoli/km)
+
+    # Genera dati teorici
+    k_values = np.linspace(0, k_jam, 500)  # Range di densità
+    v_theoretical = v_max * (1 - k_values / k_jam)  # Velocità teorica
+    if not exponential:
+        v_theoretical = v_max * (1 - k_values / k_jam)  # Velocità teorica
+        v_theoretical_norm =  (1 - k_values / k_jam)  # Velocità teorica
+    else:
+        v_theoretical = v_max * np.exp(k_values / k_jam)
+        v_theoretical_norm =  np.exp(k_values / k_jam)  # Velocità teorica
+    q_theoretical = k_values * v_theoretical # Flusso teorico
+
+    # Grafico velocità vs densità
+    plt.figure(figsize=(10, 6))
+    plt.plot(k_values, v_theoretical, label='Modello di Greenshield', color='blue')
+    plt.scatter(df['density'], df['velocity'], label='Dati osservati', color='red')
+    plt.xlabel('Densità (veicoli/km)')
+    plt.ylabel('Velocità (m/s)')
+    #plt.ylabel('Velocità normalizzata (v/vMax)')
+    plt.title('Confronto Velocità vs Densità')
+    plt.legend()
+    plt.grid()
+    plt.show()
+
+    # Grafico flusso vs densità
+    plt.figure(figsize=(10, 6))
+    plt.plot(k_values, q_theoretical, label='Modello di Greenshield', color='green')
+    plt.scatter(df['density'], df['density'] * df['velocity'], label='Dati osservati', color='orange')
+    plt.xlabel('Densità (veicoli/km)')
+    plt.ylabel('Flusso (veicoli/s)')
+    plt.title('Confronto Flusso vs Densità')
+    plt.legend()
+    plt.grid()
+    plt.show()
+
+def generateFlow(inputFilePath: str, gModelFilePath: str,outputFilePath: str, date: str, timeSlot: str, duration: int):
+    """
+    Generate detector flow file starting from a traffic loop measurement file.
+    Args:
+        inputFilePath:
+        gModelFilePath:
+        outputFilePath:
+        date:
+        timeSlot:
+        duration:
+    Returns:
+
+    """
+
+    input_df = pd.read_csv(inputFilePath, sep=';')
+    input_df = input_df[input_df['data'].str.contains(date)]
+    df_gmodel = pd.read_csv(gModelFilePath, sep=';', decimal=',')
+    data = []
+
+    for index, row in input_df.iterrows():
+        detector = row['ID_univoco_stazione_spira']
+        edge_id = row['edge_id']
+        gmodel = df_gmodel.loc[df_gmodel["edge_id"] == edge_id].iloc[0]
+        vPKW = gmodel['velocity'] * 3.6
+        time = duration
+        first = int(timeSlot[:2])
+        last = int(timeSlot[6:8])
+
+        # Calculate the vehicle count for the specified time slot
+        if last - first > 1:  # If the time slot spans multiple hours
+            total_count = sum(row[f"{hour:02d}:00-{(hour + 1) % 24:02d}:00"] for hour in range(first, last))
+            qPKW = str(total_count)
+        else:
+            qPKW = str(row[timeSlot])
+        data.append({
+            "Detector": detector,
+            "Time": time,
+            "qPKW": qPKW,
+            "qLKW": 0,
+            "vPKW": vPKW,
+            "vLKW": 0
+        })
+    output_df = pd.DataFrame(data)
+    output_df.to_csv(outputFilePath, sep=';', index=False, float_format='%.4f', decimal=',')
