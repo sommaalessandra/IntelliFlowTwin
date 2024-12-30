@@ -858,6 +858,7 @@ def fillEdgeDataInfo(inputFilePath: str, sumoNetFile: str):
     output_file = "output_updated.xml"
     tree.write(output_file, encoding="UTF-8", xml_declaration=True)
 
+# FUNCTION TO BE DELETED
 def generateGModelData(inputFilePath: str, sumoNetFile: str, outputFilePath: str, date: str, timeSlot: str,
                        exponential = False):
     """
@@ -869,14 +870,14 @@ def generateGModelData(inputFilePath: str, sumoNetFile: str, outputFilePath: str
         outputFilePath: path of the file to save the flow data related to the greenshield model
         date: date of the selected traffic flow
         timeSlot: time slot of the selected traffic flow
-        exponential: boolean to select between greenshield (linear) or greenberg (exponential) model
+        exponential: boolean to select between Greenshield (linear) or Underwood (exponential) model
     Returns:
         None: Saves the generated data to `outputFilePath`.
     """
     if not exponential:
         print("Start processing data for Greenshield model...")
     else:
-        print("Start processing data for Greenberg model...")
+        print("Start processing data for Underwood model...")
     # Load the SUMO network using sumolib
     net = sumolib.net.readNet(sumoNetFile)
     # Load input data and filter unique road names and geopoints
@@ -908,16 +909,19 @@ def generateGModelData(inputFilePath: str, sumoNetFile: str, outputFilePath: str
         if not exponential:
             velocity = vMax * (1 - density / maxDensity)
         else:
-            velocity = vMax * np.exp(density/maxDensity)
+            velocity = vMax * np.exp(density / maxDensity)
         density = vps / velocity if velocity > 0 else maxDensity
         density = density / lane_count
         norm_velocity = velocity / vMax
+        vps_per_lane = vps /lane_count
 
         data.append({
             "edge_id": edge_id,
             "length": length,
+            "lane_count": lane_count,
             "flow": flow,
             "vehicles_per_second": vps,
+            "vps_per_lane": vps_per_lane,
             "density": density,
             "max_density": maxDensity,
             "v_max": vMax,
@@ -926,73 +930,156 @@ def generateGModelData(inputFilePath: str, sumoNetFile: str, outputFilePath: str
         })
     df = pd.DataFrame(data)
     df.to_csv(outputFilePath, sep=';', index=False, float_format='%.4f', decimal=',')
-    print("New Greenshield Model data saved into: " + outputFilePath + " file")
+    print("New Model data saved into: " + outputFilePath + " file")
+    print("Plotting the data according to theoretical model...")
 
-    df = df[df['velocity'] < 10]
-    df = df[df['velocity'] > 6]
-    # Parametri del modello di Greenshield
-    v_max = 8.3333  # Velocità massima (esempio: 30 m/s)
-    k_jam = 133.33 / 1000 # Densità massima (esempio: 266 veicoli/km)
+    # df = df[df['velocity'] < 10]
+    # df = df[df['velocity'] > 6]
+    # df = df[df['lane_count'] == 1]
+    # # df = df[df['maxDensity']]
 
-    # Genera dati teorici
-    k_values = np.linspace(0, k_jam, 500)  # Range di densità
-    v_theoretical = v_max * (1 - k_values / k_jam)  # Velocità teorica
-    if not exponential:
-        v_theoretical = v_max * (1 - k_values / k_jam)  # Velocità teorica
-        v_theoretical_norm =  (1 - k_values / k_jam)  # Velocità teorica
-    else:
-        v_theoretical = v_max * np.exp(k_values / k_jam)
-        v_theoretical_norm =  np.exp(k_values / k_jam)  # Velocità teorica
-    q_theoretical = k_values * v_theoretical # Flusso teorico
+    # unique values of max speed
+    unique_vmax = df["v_max"].unique()
 
-    # Grafico velocità vs densità
-    plt.figure(figsize=(10, 6))
-    plt.plot(k_values, v_theoretical, label='Modello di Greenshield', color='blue')
-    plt.scatter(df['density'], df['velocity'], label='Dati osservati', color='red')
-    plt.xlabel('Densità (veicoli/km)')
-    plt.ylabel('Velocità (m/s)')
-    #plt.ylabel('Velocità normalizzata (v/vMax)')
-    plt.title('Confronto Velocità vs Densità')
-    plt.legend()
-    plt.grid()
+    # Crea tre figure per i tre tipi di plot
+    fig1, ax1 = plt.subplots(len(unique_vmax), 1, figsize=(8, 4 * len(unique_vmax)))
+    fig2, ax2 = plt.subplots(len(unique_vmax), 1, figsize=(8, 4 * len(unique_vmax)))
+    fig3, ax3 = plt.subplots(len(unique_vmax), 1, figsize=(8, 4 * len(unique_vmax)))
+
+    if len(unique_vmax) == 1:  # Garantisci che gli assi siano array anche con un solo vmax
+        ax1 = [ax1]
+        ax2 = [ax2]
+        ax3 = [ax3]
+
+    for i, v_max in enumerate(unique_vmax):
+        # Filtra i dati per v_max corrente
+        subset = df[df["v_max"] == v_max]
+        v_max = (v_max * 3.6).round()
+        # Calcola k_jam per ogni segmento basandosi sul numero di corsie
+        # Media i valori di lane_count se ci sono più segmenti con lo stesso v_max
+        avg_lane_count = subset["lane_count"].mean()
+        # k_jam = 200 / avg_lane_count  # Stima densità al blocco
+        # k_jam = 133 / 1000  # Densità massima (esempio: 133 veicoli/km)
+        k_jam = avg_lane_count / 7.5 # Densità massima (esempio: 133 veicoli/km)
+        # Dati di densità teorici (da 0 a k_jam)
+        k = np.linspace(0, k_jam, 500)
+
+        if not exponential:
+            v_theoretical = v_max * (1 - k / k_jam)
+        else:
+            v_theoretical = v_max * np.exp(k / k_jam)
+        q_theoretical = v_theoretical * k  # Flusso teorico
+
+        # Flusso osservato
+        q_observed = subset["velocity"] * 3.6 * subset["density"]
+
+        # Plot Velocità-Densità
+        ax1[i].plot(k, v_theoretical, label=f"Curva teorica v_max = {v_max} km/h", color='blue')
+        ax1[i].scatter(subset["density"], (subset["velocity"]*3.6), label="Dati osservati", color='orange', alpha=0.7)
+        ax1[i].set_title(f"Velocità-Densità (v_max = {v_max} km/h)")
+        ax1[i].set_xlabel("Densità (veicoli/km)")
+        ax1[i].set_ylabel("Velocità (km/h)")
+        ax1[i].legend()
+        ax1[i].grid()
+
+        # Plot Flusso-Densità
+        ax2[i].plot(k, q_theoretical, label=f"Curva teorica v_max = {v_max} km/h", color='green')
+        ax2[i].scatter(subset["density"], q_observed, label="Dati osservati", color='red', alpha=0.7)
+        ax2[i].set_title(f"Flusso-Densità (v_max = {v_max} km/h)")
+        ax2[i].set_xlabel("Densità (veicoli/km)")
+        ax2[i].set_ylabel("Flusso (veicoli/h)")
+        ax2[i].legend()
+        ax2[i].grid()
+
+        # Plot Flusso-Velocità
+        ax3[i].plot(v_theoretical, q_theoretical, label=f"Curva teorica v_max = {v_max} km/h", color='purple')
+        ax3[i].scatter((subset["velocity"] * 3.6), q_observed, label="Dati osservati", color='brown', alpha=0.7)
+        ax3[i].set_title(f"Flusso-Velocità (v_max = {v_max} km/h)")
+        ax3[i].set_xlabel("Velocità (km/h)")
+        ax3[i].set_ylabel("Flusso (veicoli/h)")
+        ax3[i].legend()
+        ax3[i].grid()
+
+    # Migliora il layout delle figure
+    fig1.tight_layout()
+    fig2.tight_layout()
+    fig3.tight_layout()
+
+    # Mostra tutte le figure
     plt.show()
 
-    # Grafico flusso vs densità
-    plt.figure(figsize=(10, 6))
-    plt.plot(k_values, q_theoretical, label='Modello di Greenshield', color='green')
-    plt.scatter(df['density'], df['density'] * df['velocity'], label='Dati osservati', color='orange')
-    plt.xlabel('Densità (veicoli/km)')
-    plt.ylabel('Flusso (veicoli/s)')
-    plt.title('Confronto Flusso vs Densità')
-    plt.legend()
-    plt.grid()
-    plt.show()
+    # # Parametri del modello
+    # v_max = 8.3333  # Velocità massima (esempio: 30 m/s)
+    # k_jam = 133 / 1000 # Densità massima (esempio: 133 veicoli/km)
+    #
+    # # Genera dati teorici
+    # k_values = np.linspace(0, k_jam, 500)  # Range di densità
+    # if not exponential:
+    #     v_theoretical = v_max * (1 - k_values / k_jam)  # Velocità teorica
+    #     v_theoretical_norm =  (1 - k_values / k_jam)  # Velocità teorica
+    # else:
+    #     v_theoretical = v_max * np.exp(k_values / k_jam)
+    #     v_theoretical_norm =  np.exp(k_values / k_jam)  # Velocità teorica
+    # q_theoretical = k_values * v_theoretical # Flusso teorico
+    # q_theoretical_norm = k_values * v_theoretical_norm
+    #
+    # # Grafico velocità vs densità
+    # plt.figure(figsize=(10, 6))
+    # plt.plot(k_values, v_theoretical, label='Modello di Greenshield', color='blue')
+    # plt.scatter(df['density'], df['velocity'], label='Dati osservati', color='red')
+    # plt.xlabel('Densità (veicoli/km)')
+    # plt.ylabel('Velocità (m/s)')
+    # #plt.ylabel('Velocità normalizzata (v/vMax)')
+    # plt.title('Confronto Velocità vs Densità')
+    # plt.legend()
+    # plt.grid()
+    # plt.show()
+    #
+    # # Grafico flusso vs densità
+    # plt.figure(figsize=(10, 6))
+    # plt.plot(k_values, q_theoretical, label='Modello di Greenshield', color='green')
+    # plt.scatter(df['density'], (df['density'] * df['velocity']), label='Dati osservati', color='orange')
+    # plt.xlabel('Densità (veicoli/km)')
+    # plt.ylabel('Flusso (veicoli/s)')
+    # plt.title('Confronto Flusso vs Densità')
+    # plt.legend()
+    # plt.grid()
+    # plt.show()
+    #
+    #
+    # plt.figure(figsize=(10, 6))
+    # plt.plot(v_theoretical, q_theoretical, label='Modello di Greenshield', color='green')
+    # plt.scatter(df['velocity'], (df['density'] * df['velocity']), label='Dati osservati', color='orange')
+    # plt.xlabel('Densità (veicoli/km)')
+    # plt.ylabel('Flusso (veicoli/s)/lane')
+    # plt.title('Confronto Flusso vs Velocità')
+    # plt.legend()
+    # plt.grid()
+    # plt.show()
 
-def generateFlow(inputFilePath: str, gModelFilePath: str,outputFilePath: str, date: str, timeSlot: str, duration: int):
+def generateFlow(inputFilePath: str, modelFilePath: str,outputFilePath: str, date: str, timeSlot: str):
     """
     Generate detector flow file starting from a traffic loop measurement file.
     Args:
-        inputFilePath:
-        gModelFilePath:
-        outputFilePath:
-        date:
-        timeSlot:
-        duration:
+        inputFilePath: path of the Traffic measurement file from which to take information such as detectorID and edgeID
+        modelFilePath: path of the file that includes the information of the chosen traffic model
+        outputFilePath: path of the file to save the generated flow data
+        date: date of the selected traffic flow
+        timeSlot: Time window value of the measurements to be evaluated reported in the format hh:mm-hh:mm
     Returns:
-
+        None: generates the Flow file, saving it in the path indicated in outputFilePath
     """
 
     input_df = pd.read_csv(inputFilePath, sep=';')
     input_df = input_df[input_df['data'].str.contains(date)]
-    df_gmodel = pd.read_csv(gModelFilePath, sep=';', decimal=',')
+    df_model = pd.read_csv(modelFilePath, sep=';', decimal=',')
     data = []
 
     for index, row in input_df.iterrows():
-        detector = row['ID_univoco_stazione_spira']
+        detectorID = row['ID_univoco_stazione_spira']
         edge_id = row['edge_id']
-        gmodel = df_gmodel.loc[df_gmodel["edge_id"] == edge_id].iloc[0]
+        gmodel = df_model.loc[df_model["edge_id"] == edge_id].iloc[0]
         vPKW = gmodel['velocity'] * 3.6
-        time = duration
         first = int(timeSlot[:2])
         last = int(timeSlot[6:8])
 
@@ -1000,10 +1087,13 @@ def generateFlow(inputFilePath: str, gModelFilePath: str,outputFilePath: str, da
         if last - first > 1:  # If the time slot spans multiple hours
             total_count = sum(row[f"{hour:02d}:00-{(hour + 1) % 24:02d}:00"] for hour in range(first, last))
             qPKW = str(total_count)
+            time = total_count * 3600
         else:
             qPKW = str(row[timeSlot])
+            time = 3600
+
         data.append({
-            "Detector": detector,
+            "Detector": detectorID,
             "Time": time,
             "qPKW": qPKW,
             "qLKW": 0,

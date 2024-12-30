@@ -7,13 +7,20 @@ from libraries.classes.Agent import *
 from libraries.classes.SumoSimulator import Simulator
 from libraries.classes.SubscriptionManager import QuantumLeapManager
 from libraries.classes.Broker import Broker
+from libraries.classes.TrafficModeler import TrafficModeler
 from mobilityvenv.MobilityVirtualEnvironment import setupPhysicalSystem, startPhysicalSystem
 from data.preprocessing import preprocessingSetup
 
 if __name__ == "__main__":
 
+
     # 0. Pre-processing phase (to be run only once)
     preprocessingSetup.run()
+
+    model = TrafficModeler(trafficDataFile=PROCESSED_TRAFFIC_FLOW_EDGE_FILE_PATH, sumoNetFile=SUMO_NET_PATH,
+                           date='2024-02-01', timeSlot='00:00-23:00', modelType='underwood')
+    model.saveTrafficData()
+    model.plotModel()
 
     # 1. Instantiate Orion CB, IoT Agent and create three types of subscriptions.
     envVar = loadEnvVar(CONTAINER_ENV_FILE_PATH)
