@@ -1087,10 +1087,10 @@ def generateFlow(inputFilePath: str, modelFilePath: str,outputFilePath: str, dat
         if last - first > 1:  # If the time slot spans multiple hours
             total_count = sum(row[f"{hour:02d}:00-{(hour + 1) % 24:02d}:00"] for hour in range(first, last))
             qPKW = str(total_count)
-            time = total_count * 3600
+            time = (last - first) * 60
         else:
             qPKW = str(row[timeSlot])
-            time = 3600
+            time = 60
 
         data.append({
             "Detector": detectorID,
@@ -1102,3 +1102,14 @@ def generateFlow(inputFilePath: str, modelFilePath: str,outputFilePath: str, dat
         })
     output_df = pd.DataFrame(data)
     output_df.to_csv(outputFilePath, sep=';', index=False, float_format='%.4f', decimal=',')
+
+def generateEdgeFromFlow(inputFlowPath: str, detectorFilePath: str, outputEdgePath: str):
+    """
+
+    """
+    script = SUMO_TOOLS_PATH + "/detector/edgeDataFromFlow.py"
+    detector = detectorFilePath
+    flow = inputFlowPath
+    output = outputEdgePath
+    subprocess.run([sys.executable, script, "--detector-file", detector,
+                    "--detector-flow-file", flow, "--output-file", output, "--flow-columns", "qPKW"])

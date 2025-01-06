@@ -1,9 +1,15 @@
+from libraries.constants import MODEL_DATA_FILE_PATH, SUMO_TOOLS_PATH, SUMO_NET_PATH, SUMO_PATH
+from libraries.classes.SumoSimulator import Simulator
+import os
 import numpy as np
 import pandas as pd
 import sumolib
 from matplotlib import pyplot as plt
+import sys
+import subprocess
 
-from libraries.constants import MODEL_DATA_FILE_PATH
+from statistics import mean
+import xml.etree.ElementTree as ET
 
 class TrafficModeler:
     """
@@ -16,8 +22,11 @@ class TrafficModeler:
 
     trafficData: []
     sumoNet: sumolib.net
+    simulator: Simulator
     modelType: str
-    def __init__(self, trafficDataFile: str, sumoNetFile : str, date: str = None, timeSlot: str = '00:00-23:00', modelType: str = "greenshield"):
+    date: str
+    timeSlot: str
+    def __init__(self, simulator: Simulator, trafficDataFile: str, sumoNetFile : str, date: str = None, timeSlot: str = '00:00-23:00', modelType: str = "greenshield"):
         """
         Initializes the TrafficModeler, also deriving road parameters from the SUMO network
 
@@ -26,10 +35,12 @@ class TrafficModeler:
         :param timeSlot (str): Time window value of the measurements to be evaluated reported in the format hh:mm-hh:mm
         :param modelType (str): Name of the traffic model to apply
         """
-
+        self.simulator = simulator
         trafficDataDf = pd.read_csv(trafficDataFile, sep=';')
         if date is not None:
             trafficDataDf = trafficDataDf[trafficDataDf['data'].str.contains(date)]
+            self.date = date
+        self.timeSlot = timeSlot
         self.sumoNet = sumolib.net.readNet(sumoNetFile)
         self.modelType = modelType
         self.trafficData = []
@@ -55,7 +66,6 @@ class TrafficModeler:
             density = vps / vMax
             laneDensity = density / laneCount
             laneVps = vps / laneCount
-            density = vps / vMax
             if self.modelType == "greenshield":
                 velocity = vMax * (1 - density / maxDensity)
             elif self.modelType == "underwood":
@@ -183,3 +193,72 @@ class TrafficModeler:
     def evaluateModel(self, outputSUMO):
     # TODO: evaluate model according to SUMO output
         print("Function to be done")
+
+    def vTypeGeneration(self, modelType: str):
+        """
+
+        """
+
+        # Funzione per aggiungere un calibrator
+        def add_calibrator(root, calibrator_id, edge, output, flows):
+            calibrator = ET.SubElement(root, "calibrator", {
+                "id": calibrator_id,
+                "edge": edge,
+                "output": output
+            })
+            for flow in flows:
+                ET.SubElement(calibrator, "flow", flow)
+
+        if modelType == "idm":
+            carFollowModel = "IDM"
+            vtypeID = "customIDM"
+            lane_densities = [item['density'] for item in self.trafficData]
+            velocities = [item['velocity'] for item in self.trafficData]
+            spaceBetweenVehicles = 1 / mean(lane_densities)
+            carLength = 5
+            freeSpace = spaceBetweenVehicles - carLength
+            reactionTime = freeSpace / mean(velocities)
+
+            folder_name = f"{self.date}_{self.modelType}"
+            folder_path = os.path.join(SUMO_PATH, folder_name)
+            os.makedirs(folder_path, exist_ok=True)
+            # Nome del file XML
+            output_file = os.path.join(folder_path, "vtype.add.xml")
+            # Creazione della struttura XML
+            root = ET.Element("additional")  # Elemento radice
+            vtype = ET.SubElement(root, "vType", {
+                "id": vtypeID,
+                "carFollowModel": carFollowModel
+                # "tau": str(reactionTime)
+            })
+
+            df = pd.DataFrame(self.trafficData)
+            for index, row in df.iterrows():
+                add_calibrator(root, calibrator_id="calibrator_"+str(index), edge=row['edge_id'], output="calib_out.xml", )
+            # Scrittura su file
+            tree = ET.ElementTree(root)
+            # output_file = "vtype.add.xml"
+            tree.write(output_file, encoding="utf-8", xml_declaration=True)
+            print(f"vType File created: {output_file}")
+
+
+    def generateRandomRoute(self, sumoNetPath: str):
+
+        folder_name = f"{self.date}_{self.modelType}"
+        folder_path = os.path.join(SUMO_PATH, folder_name)
+        os.makedirs(folder_path, exist_ok=True)
+        script = SUMO_TOOLS_PATH + "/randomTrips.py"
+        subprocess.run(['python', script, "-n", sumoNetPath, "-r", folder_path + "/sampleRoutes.rou.xml",
+                        "--fringe-factor", "10", "--random", "--min-distance", "100", "--random-factor", "200"])
+    def generateRoute(self, inputEdgePath: str, inputRoutePath: str, outputRoutePath: str, modelType: str, withInitialRoute = True):
+        if withInitialRoute:
+            self.generateRandomRoute(sumoNetPath=SUMO_NET_PATH, outputRoutePath=SUMO_PATH)
+        folder_name = f"{self.date}_{self.modelType}"
+        folder_path = os.path.join(SUMO_PATH, folder_name)
+        os.makedirs(folder_path, exist_ok=True)
+        outputRoutePath = folder_path + "/generatedRoutes.rou.xml"
+        script = SUMO_TOOLS_PATH + "/routeSampler.py"
+        # attributes = --attributes="type=\"idmAlternative\""
+        subprocess.run([sys.executable, script, "--r", inputRoutePath,
+                        "--edgedata-files", inputEdgePath, "-o", outputRoutePath, "--edgedata-attribute", "qPKW",
+                        "--write-flows", "number"])
