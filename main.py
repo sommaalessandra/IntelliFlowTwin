@@ -18,23 +18,22 @@ if __name__ == "__main__":
     logFile = "./command_log.txt"
     sumoSimulator = Simulator(configurationPath=configurationPath, logFile=logFile)
     model = TrafficModeler(simulator=sumoSimulator, trafficDataFile=PROCESSED_TRAFFIC_FLOW_EDGE_FILE_PATH, sumoNetFile=SUMO_NET_PATH,
-                           date='2024-02-01', timeSlot='07:00-08:00', modelType='underwood')
+                           date='2024-02-01', timeSlot='10:00-11:00', modelType='underwood')
     model.saveTrafficData()
     generateFlow(inputFilePath=PROCESSED_TRAFFIC_FLOW_EDGE_FILE_PATH, modelFilePath=MODEL_DATA_FILE_PATH,
                  outputFilePath=FLOW_DATA_FILE_PATH, date='2024-02-01',
-                 timeSlot='07:00-08:00')
+                 timeSlot='10:00-11:00')
     model.vTypeGeneration(modelType='idm')
-    model.generateRandomRoute(sumoNetPath=libraries.constants.SUMO_NET_PATH,
-                              outputRoutePath=SUMO_PATH)
-    model.generateRoute()
-
-    model.plotModel()
+    # model.generateRandomRoute(sumoNetPath=libraries.constants.SUMO_NET_PATH)
+    # model.generateRoute()
+    #
+    # model.plotModel()
 
     # 0. Pre-processing phase (to be run only once)
     preprocessingSetup.run()
 
     model = TrafficModeler(trafficDataFile=PROCESSED_TRAFFIC_FLOW_EDGE_FILE_PATH, sumoNetFile=SUMO_NET_PATH,
-                           date='2024-02-01', timeSlot='00:00-23:00', modelType='underwood')
+                           date='2024-02-01', timeSlot='07:00-08:00', modelType='underwood')
     model.generateRandomRoute(sumoNetPath=libraries.constants.SUMO_NET_PATH, outputRoutePath=SUMO_PATH + '/sampleRoutes.rou.xml')
     model.saveTrafficData()
     model.plotModel()

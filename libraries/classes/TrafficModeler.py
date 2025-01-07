@@ -200,10 +200,12 @@ class TrafficModeler:
         """
 
         # Funzione per aggiungere un calibrator
-        def add_calibrator(root, calibrator_id, edge, output, flows):
+        def add_calibrator(root, calibrator_id, edge, pos, type, output, flows):
             calibrator = ET.SubElement(root, "calibrator", {
                 "id": calibrator_id,
                 "edge": edge,
+                "pos": pos,
+                "type": type,
                 "output": output
             })
             for flow in flows:
@@ -231,13 +233,15 @@ class TrafficModeler:
                 "carFollowModel": carFollowModel
                 # "tau": str(reactionTime)
             })
-
             df = pd.DataFrame(self.trafficData)
             for index, row in df.iterrows():
-                add_calibrator(root, calibrator_id="calibrator_"+str(index), edge=row['edge_id'], output="calib_out.xml", )
+                flow=[{"begin": "0" , "end": "3600", "vehsPerHour": str(row['flow']), "speed": str(row['velocity'])}]
+                add_calibrator(root, calibrator_id="calibrator_"+str(index), edge=row['edge_id'], pos="0", type=vtypeID , output="calib_out.xml",
+                               flows=flow)
             # Scrittura su file
             tree = ET.ElementTree(root)
             # output_file = "vtype.add.xml"
+            ET.indent(tree, '  ')
             tree.write(output_file, encoding="utf-8", xml_declaration=True)
             print(f"vType File created: {output_file}")
 

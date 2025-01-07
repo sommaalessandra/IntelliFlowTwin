@@ -11,7 +11,7 @@ def run():
     #                    timeSlot='07:00-23:00', exponential= False)
     generateFlow(inputFilePath=PROCESSED_TRAFFIC_FLOW_EDGE_FILE_PATH, modelFilePath=MODEL_DATA_FILE_PATH,
                  outputFilePath=FLOW_DATA_FILE_PATH, date='2024-02-01',
-                 timeSlot='07:00-14:00')
+                 timeSlot='10:00-11:00')
 
     #1. Fill missing direction in the Open Data traffic flow dataset according to convention
     fillMissingDirections(TRAFFIC_FLOW_OPENDATA_FILE_PATH)

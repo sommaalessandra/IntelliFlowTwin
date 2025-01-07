@@ -11,7 +11,7 @@
     <output>
         <tripinfo-output value="${SIMULATIONPATH}/tripinfos.xml"/>
         <save-state.prefix value="state"/>
-		<fcd-output value="${SIMULATIONPATH}/fcd.xml"/>
+		<!-- <fcd-output value="${SIMULATIONPATH}/fcd.xml"/> it gives a huge output -->
 		<vehroute-output value="${SIMULATIONPATH}/vehroute.xml" />
 		<summary-output value="${SIMULATIONPATH}/summary.xml" />
 		<queue-output value="${SIMULATIONPATH}/queue.xml" />
