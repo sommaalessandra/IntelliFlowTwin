@@ -5,13 +5,13 @@
     <input>
         <net-file value="../static/full.net.xml"/>
         <route-files value="generatedRoutes.rou.xml"/>
-        <additional-files value="../static/detectors.add.xml, ../static/vtype.add.xml"/>
+        <additional-files value="../static/detectors.add.xml, optimized_tls.add.xml"/>
     </input>
 
     <output>
         <tripinfo-output value="../output/tripinfos.xml"/>
         <save-state.prefix value="state"/>
-		<!--<fcd-output value="fcd.xml"/> -->
+		<!--<fcd-output value="/output/fcd.xml"/> -->
 		<vehroute-output value="../output/vehroute.xml" />
 		<summary-output value="../output/summary.xml" />
 		<queue-output value="../output/queue.xml" />
@@ -28,8 +28,10 @@
 
 
     <processing>  
-        <ignore-route-errors value="true"/> <!--  IGNORA PERCORSI CON ERRORI  -->
-        <time-to-teleport value="-1"/> <!-- DISABILITA TELETRASPORTO -->  
+		<threads value="4" />
+		<route-steps value="500" />
+        <!-- <ignore-route-errors value="true"/>  IGNORA PERCORSI CON ERRORI  -->
+        <time-to-teleport value="40"/> <!-- DISABILITA TELETRASPORTO -->  
 		<ignore-junction-blocker value="1"/> <!-- NON ASPETTARE DI ENTRARE NELLA ROTONDA/INCROCIO SE LA STRADA è LIBERA --> 
     </processing> 
 	

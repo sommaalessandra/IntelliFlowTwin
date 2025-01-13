@@ -1,0 +1,9 @@
+<configuration>
+    <net-file value="C:\Users\manfr\PycharmProjects\IntelliFlowTwin\sumoenv\static\full.net.xml"/>
+    <route-file value="C:\Users\manfr\PycharmProjects\IntelliFlowTwin\sumoenv\standalone\sampleRoutes.rou.xml"/>
+    <random value="True"/>
+    <min-distance value="100.0"/>
+    <max-distance value="2000.0"/>
+    <remove-loops value="True"/>
+    <random-routing-factor value="10.0"/>
+</configuration>

@@ -387,6 +387,7 @@ def mapDetectorsFromCoordinates(sumoNetFile: str, detectorCoordinatesPath: str, 
         script,
         "-n", sumoNetFile,
         "-d", detectorCoordinatesPath,
+        "--det-output-file", SUMO_OUTPUT_PATH + "/detector.out.xml",
         "-o", detectorFilePath
     ]
 

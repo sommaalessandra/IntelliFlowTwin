@@ -106,14 +106,16 @@ class TrafficModeler:
         print("New Model data saved into: " + outputDataPath + " file")
 
     # TODO: plotModel should also report some values for similarity
-    def plotModel(self):
+    def plotModel(self, model: str):
         """
         function that plots the values of flux, density and velocity against each other in three graphs.
         The values are compared with the traffic model chosen at the initialization stage
         """
         print("Plotting the data according to theoretical model...")
-
-        df = pd.DataFrame(self.trafficData)
+        if model is None:
+            df = pd.DataFrame(self.trafficData)
+        else:
+            df = pd.read_csv(model)
         # unique values of max speed
         unique_vmax = df["vMax"].unique()
 
@@ -190,9 +192,53 @@ class TrafficModeler:
     # through all the measurement dataset
         print("Function to be done")
 
-    def evaluateModel(self, outputSUMO):
+    def evaluateModel(self, detectorFilePath, detectorOutputSUMO: str, outputFilePath: str):
     # TODO: evaluate model according to SUMO output
         print("Function to be done")
+
+        # Parse detector.add.xml
+        tree = ET.parse(detectorFilePath)
+        root = tree.getroot()
+
+        # Estrarre il mapping detector -> edge
+        detector_mapping = {}
+        for detector in root.findall('inductionLoop'):
+            detector_id = detector.get('id')
+            lane = detector.get('lane')  # Es. "23276104_0"
+            edge_id = lane.split('_')[0]  # Ottieni solo l'edge_id
+            detector_mapping[detector_id] = edge_id
+
+        parser = ET.XMLParser(encoding='UTF-8')
+        tree = ET.parse(detectorOutputSUMO, parser=parser)
+        root = tree.getroot()
+        detectorData = []
+        for interval in root.findall("interval"):
+            detector_id = interval.get('id')
+            edge_id = detector_mapping[detector_id]
+            flow = float(interval.get('flow'))
+            speed = float(interval.get('speed'))
+            if flow > 0:
+                detectorData.append({
+                    'id': detector_id,
+                    'edge_id': edge_id,
+                    'flow': flow,
+                    'meanSpeed': speed,
+                    'occupancy': float(interval.get('occupancy'))
+                })
+
+        detector_df = pd.DataFrame(detectorData)
+        # detector_df.to_csv(outputFilePath, sep=';')
+        model_df = pd.DataFrame(self.trafficData)
+
+        # Confronta il modello con i detector per ID
+        merged_df = pd.merge(model_df, detector_df, left_on='edge_id', right_on='edge_id', how='inner')
+
+        # Calcola le discrepanze
+        merged_df['flow_diff'] = merged_df['flow_x'].astype(int) - merged_df['flow_y'].astype(int)
+        merged_df['velocity_diff'] = merged_df['velocity'] - merged_df['meanSpeed']
+        merged_df.to_csv(outputFilePath, sep=';', float_format='%.4f', decimal=',')
+        print(merged_df[['edge_id', 'flow_diff', 'velocity_diff']])
+
 
     def vTypeGeneration(self, modelType: str):
         """

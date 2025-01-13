@@ -1,0 +1,12 @@
+<configuration>
+    <route-files value="C:\Users\manfr\PycharmProjects\IntelliFlowTwin\sumoenv\standalone\sampleRoutes.rou.xml"/>
+    <edgedata-files value="C:\Users\manfr\PycharmProjects\IntelliFlowTwin\sumoenv\standalone\edgedata.xml"/>
+    <edgedata-attribute value="qPKW"/>
+    <output-file value="C:\Users\manfr\PycharmProjects\IntelliFlowTwin\sumoenv\standalone\generatedRoutes.rou.xml"/>
+    <verbose value="True"/>
+    <write-flows value="number"/>
+    <end value="3600"/>
+    <optimize value="full"/>
+    <minimize-vehicles value="1.0"/>
+    <threads value="4"/>
+</configuration>

@@ -5,13 +5,13 @@ from libraries.constants import TRAFFIC_FLOW_OPENDATA_FILE_PATH, ACCURACY_TRAFFI
 
 def run():
 
-    generateEdgeFromFlow(inputFlowPath=FLOW_DATA_FILE_PATH, detectorFilePath=SUMO_DETECTORS_ADD_FILE_PATH, outputEdgePath=EDGE_DATA_FILE_PATH)
-    # generateGModelData(inputFilePath=PROCESSED_TRAFFIC_FLOW_EDGE_FILE_PATH, sumoNetFile=SUMO_NET_PATH,
-    #                    outputFilePath=MODEL_DATA_FILE_PATH, date='2024-02-01',
-    #                    timeSlot='07:00-23:00', exponential= False)
-    generateFlow(inputFilePath=PROCESSED_TRAFFIC_FLOW_EDGE_FILE_PATH, modelFilePath=MODEL_DATA_FILE_PATH,
-                 outputFilePath=FLOW_DATA_FILE_PATH, date='2024-02-01',
-                 timeSlot='10:00-11:00')
+    # generateEdgeFromFlow(inputFlowPath=FLOW_DATA_FILE_PATH, detectorFilePath=SUMO_DETECTORS_ADD_FILE_PATH, outputEdgePath=EDGE_DATA_FILE_PATH)
+    # # generateGModelData(inputFilePath=PROCESSED_TRAFFIC_FLOW_EDGE_FILE_PATH, sumoNetFile=SUMO_NET_PATH,
+    # #                    outputFilePath=MODEL_DATA_FILE_PATH, date='2024-02-01',
+    # #                    timeSlot='07:00-23:00', exponential= False)
+    # generateFlow(inputFilePath=PROCESSED_TRAFFIC_FLOW_EDGE_FILE_PATH, modelFilePath=MODEL_DATA_FILE_PATH,
+    #              outputFilePath=FLOW_DATA_FILE_PATH, date='2024-02-01',
+    #              timeSlot='10:00-11:00')
 
     #1. Fill missing direction in the Open Data traffic flow dataset according to convention
     fillMissingDirections(TRAFFIC_FLOW_OPENDATA_FILE_PATH)
@@ -21,7 +21,7 @@ def run():
     filterWithAccuracy(TRAFFIC_FLOW_OPENDATA_FILE_PATH, ACCURACY_TRAFFIC_LOOP_OPENDATA_FILE_PATH, date_column='data',sensor_id_column='codice_spira', output_file=TRAFFIC_FLOW_ACCURATE_FILE_PATH, accepted_percentage=acceptedAccuracy)
 
     #3. Adding Zone ID for each measurement inside the input file.
-    addZones(inputFilePath=TRAFFIC_FLOW_ACCURATE_FILE_PATH, zoneFilePath=STATISTICAL_AREAS_OPENDATA_FILE_PATH)
+    # addZones(inputFilePath=TRAFFIC_FLOW_ACCURATE_FILE_PATH, zoneFilePath=STATISTICAL_AREAS_OPENDATA_FILE_PATH)
 
     #4. Filtering the dataset in a specific TIME WINDOW for testing purposes, and reordering the dataset in a chronological order.
     ##### Note: comment the following two code lines for working on the entire dataset.
