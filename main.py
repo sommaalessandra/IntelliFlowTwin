@@ -24,6 +24,8 @@ if __name__ == "__main__":
                  outputFilePath=FLOW_DATA_FILE_PATH, date='2024-02-01',
                  timeSlot='20:00-21:00')
     model.evaluateModel(detectorFilePath=SUMO_DETECTORS_ADD_FILE_PATH, detectorOutputSUMO=SUMO_OUTPUT_PATH + "/detector.out.xml", outputFilePath=PROCESSED_DATA_PATH + "/detectedFlow.csv")
+    model.evaluateSpeedError(detectedFlowPath=PROCESSED_DATA_PATH + "/detectedFlow.csv")
+    model.plotModel(result=PROCESSED_DATA_PATH + "/detectedFlow.csv")
     # model.vTypeGeneration(modelType='idm')
     # model.generateRandomRoute(sumoNetPath=libraries.constants.SUMO_NET_PATH)
     # model.generateRoute()

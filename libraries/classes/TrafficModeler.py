@@ -1,3 +1,5 @@
+import math
+
 from libraries.constants import MODEL_DATA_FILE_PATH, SUMO_TOOLS_PATH, SUMO_NET_PATH, SUMO_PATH
 from libraries.classes.SumoSimulator import Simulator
 import os
@@ -106,16 +108,16 @@ class TrafficModeler:
         print("New Model data saved into: " + outputDataPath + " file")
 
     # TODO: plotModel should also report some values for similarity
-    def plotModel(self, model: str):
+    def plotModel(self, result: str):
         """
         function that plots the values of flux, density and velocity against each other in three graphs.
         The values are compared with the traffic model chosen at the initialization stage
         """
         print("Plotting the data according to theoretical model...")
-        if model is None:
+        if result is None:
             df = pd.DataFrame(self.trafficData)
         else:
-            df = pd.read_csv(model)
+            df = pd.read_csv(result, sep=';', decimal=',')
         # unique values of max speed
         unique_vmax = df["vMax"].unique()
 
@@ -148,13 +150,22 @@ class TrafficModeler:
                 v_theoretical = v_max * np.exp(k / k_jam)
             q_theoretical = v_theoretical * k  # Flusso teorico
 
-            # Flusso osservato
-            q_observed = subset["velocity"] * 3.6 * subset["density"]
 
+            # Flusso osservato
+
+            if result is not None:
+                q_observed = subset["detected_speed"] * 3.6 * subset["detected_density"]
+            else:
+                q_observed = subset["velocity"] * 3.6 * subset["density"]
             # Plot Velocità-Densità
             ax1[i].plot(k, v_theoretical, label=f"Curva teorica v_max = {v_max} km/h", color='blue')
-            ax1[i].scatter(subset["density"], (subset["velocity"] * 3.6), label="Dati osservati", color='orange',
-                           alpha=0.7)
+            if result is not None:
+                ax1[i].scatter(subset["detected_density"], (subset["detected_speed"] * 3.6), label="Dati osservati",
+                               color='orange',
+                               alpha=0.7)
+            else:
+                ax1[i].scatter(subset["density"], (subset["velocity"] * 3.6), label="Dati osservati", color='orange',
+                               alpha=0.7)
             ax1[i].set_title(f"Velocità-Densità (v_max = {v_max} km/h)")
             ax1[i].set_xlabel("Densità (veicoli/km)")
             ax1[i].set_ylabel("Velocità (km/h)")
@@ -163,7 +174,10 @@ class TrafficModeler:
 
             # Plot Flusso-Densità
             ax2[i].plot(k, q_theoretical, label=f"Curva teorica v_max = {v_max} km/h", color='green')
-            ax2[i].scatter(subset["density"], q_observed, label="Dati osservati", color='red', alpha=0.7)
+            if result is not None:
+                ax2[i].scatter(subset["detected_density"], q_observed, label="Dati osservati", color='red', alpha=0.7)
+            else:
+                ax2[i].scatter(subset["density"], q_observed, label="Dati osservati", color='red', alpha=0.7)
             ax2[i].set_title(f"Flusso-Densità (v_max = {v_max} km/h)")
             ax2[i].set_xlabel("Densità (veicoli/km)")
             ax2[i].set_ylabel("Flusso (veicoli/h)")
@@ -172,7 +186,11 @@ class TrafficModeler:
 
             # Plot Flusso-Velocità
             ax3[i].plot(v_theoretical, q_theoretical, label=f"Curva teorica v_max = {v_max} km/h", color='purple')
-            ax3[i].scatter((subset["velocity"] * 3.6), q_observed, label="Dati osservati", color='brown', alpha=0.7)
+            if result is not None:
+                ax3[i].scatter((subset["detected_speed"] * 3.6), q_observed, label="Dati osservati", color='brown',
+                               alpha=0.7)
+            else:
+                ax3[i].scatter((subset["velocity"] * 3.6), q_observed, label="Dati osservati", color='brown', alpha=0.7)
             ax3[i].set_title(f"Flusso-Velocità (v_max = {v_max} km/h)")
             ax3[i].set_xlabel("Velocità (km/h)")
             ax3[i].set_ylabel("Flusso (veicoli/h)")
@@ -217,12 +235,16 @@ class TrafficModeler:
             edge_id = detector_mapping[detector_id]
             flow = float(interval.get('flow'))
             speed = float(interval.get('speed'))
+            vps = flow / 3600
+            density = vps / speed
+
             if flow > 0:
                 detectorData.append({
                     'id': detector_id,
                     'edge_id': edge_id,
                     'flow': flow,
                     'meanSpeed': speed,
+                    'density': density,
                     'occupancy': float(interval.get('occupancy'))
                 })
 
@@ -236,10 +258,118 @@ class TrafficModeler:
         # Calcola le discrepanze
         merged_df['flow_diff'] = merged_df['flow_x'].astype(int) - merged_df['flow_y'].astype(int)
         merged_df['velocity_diff'] = merged_df['velocity'] - merged_df['meanSpeed']
+
+        merged_df = merged_df.rename(columns={"flow_x": "real_flow", "flow_y": "detected_flow", "velocity":
+            "model_speed", "meanSpeed": "detected_speed", "density_x": "model_density", "density_y": "detected_density"})
+
+
         merged_df.to_csv(outputFilePath, sep=';', float_format='%.4f', decimal=',')
         print(merged_df[['edge_id', 'flow_diff', 'velocity_diff']])
+    def evaluateSpeedError(self, detectedFlowPath: str):
+        detector_df = pd.read_csv(detectedFlowPath, sep=';', decimal=',')
+        # Inizializza variabili per RMSE e MAPE
+        squared_errors = 0
+        absolute_percentage_errors = 0
+        n = 0  # Conta i dati validi
 
+        # Itera sulle spire condivise da modello e dati SUMO
+        for id, row in detector_df.iterrows():
+            y_true = float(row["model_speed"])
+            y_pred = float(row["detected_speed"])
 
+            squared_errors += (y_pred - y_true) ** 2
+            absolute_percentage_errors += abs((y_true - y_pred) / y_true)
+            n += 1
+        # Calcola RMSE e MAPE
+        if n > 0:
+            rmse = math.sqrt(squared_errors / n)
+            mape = (absolute_percentage_errors / n) * 100
+            print(f"RMSE: {rmse:.4f}")
+            print(f"MAPE: {mape:.2f}%")
+        else:
+            print("Nessun dato valido per il confronto.")
+
+    def plotResultAndModel(self, model: str):
+        """
+        function that plots the values of flux, density and velocity against each other in three graphs.
+        The values are compared with the traffic model chosen at the initialization stage
+        """
+        print("Plotting the data according to theoretical model...")
+        if model is None:
+            df = pd.DataFrame(self.trafficData)
+        else:
+            df = pd.read_csv(model, sep=';', decimal=',')
+        # unique values of max speed
+        unique_vmax = df["vMax"].unique()
+
+        # Crea tre figure per i tre tipi di plot
+        fig1, ax1 = plt.subplots(len(unique_vmax), 1, figsize=(8, 4 * len(unique_vmax)))
+        fig2, ax2 = plt.subplots(len(unique_vmax), 1, figsize=(8, 4 * len(unique_vmax)))
+        fig3, ax3 = plt.subplots(len(unique_vmax), 1, figsize=(8, 4 * len(unique_vmax)))
+
+        if len(unique_vmax) == 1:  # Garantisci che gli assi siano array anche con un solo vmax
+            ax1 = [ax1]
+            ax2 = [ax2]
+            ax3 = [ax3]
+
+        for i, v_max in enumerate(unique_vmax):
+            # Filtra i dati per v_max corrente
+            subset = df[df["vMax"] == v_max]
+            v_max = (v_max * 3.6).round()
+            # Calcola k_jam per ogni segmento basandosi sul numero di corsie
+            # Media i valori di lane_count se ci sono più segmenti con lo stesso v_max
+            avg_lane_count = subset["laneCount"].mean()
+            # k_jam = 200 / avg_lane_count  # Stima densità al blocco
+            # k_jam = 133 / 1000  # Densità massima (esempio: 133 veicoli/km)
+            k_jam = avg_lane_count / 7.5  # Densità massima (esempio: 133 veicoli/km)
+            # Dati di densità teorici (da 0 a k_jam)
+            k = np.linspace(0, k_jam, 500)
+
+            if self.modelType == "greenshield":
+                v_theoretical = v_max * (1 - k / k_jam)
+            elif self.modelType == "underwood":
+                v_theoretical = v_max * np.exp(k / k_jam)
+            q_theoretical = v_theoretical * k  # Flusso teorico
+
+            # Flusso osservato
+            q_observed = subset["model_speed"] * 3.6 * subset["model_density"]
+            q_detected = subset["detected_speed"] * 3.6 * subset["detected_density"]
+
+            # Plot Velocità-Densità
+            ax1[i].plot(k, v_theoretical, label=f"Curva teorica v_max = {v_max} km/h", color='blue')
+            ax1[i].scatter(subset["detected_density"], (subset["detected_speed"] * 3.6), label="Dati osservati", color='orange',
+                           alpha=0.7)
+            ax1[i].set_title(f"Velocità-Densità (v_max = {v_max} km/h)")
+            ax1[i].set_xlabel("Densità (veicoli/km)")
+            ax1[i].set_ylabel("Velocità (km/h)")
+            ax1[i].legend()
+            ax1[i].grid()
+
+            # Plot Flusso-Densità
+            ax2[i].plot(k, q_theoretical, label=f"Curva teorica v_max = {v_max} km/h", color='green')
+            ax2[i].scatter(subset["detected_density"], q_detected, label="Dati osservati", color='red', alpha=0.7)
+            ax2[i].set_title(f"Flusso-Densità (v_max = {v_max} km/h)")
+            ax2[i].set_xlabel("Densità (veicoli/km)")
+            ax2[i].set_ylabel("Flusso (veicoli/h)")
+            ax2[i].legend()
+            ax2[i].grid()
+
+            # Plot Flusso-Velocità
+            ax3[i].plot(v_theoretical, q_theoretical, label=f"Curva teorica v_max = {v_max} km/h", color='purple')
+            ax3[i].scatter((subset["detected_speed"] * 3.6), q_detected, label="Dati osservati", color='brown', alpha=0.7)
+            ax3[i].set_title(f"Flusso-Velocità (v_max = {v_max} km/h)")
+            ax3[i].set_xlabel("Velocità (km/h)")
+            ax3[i].set_ylabel("Flusso (veicoli/h)")
+            ax3[i].legend()
+            ax3[i].grid()
+
+        # Migliora il layout delle figure
+        fig1.tight_layout()
+        fig2.tight_layout()
+        fig3.tight_layout()
+
+        # Mostra tutte le figure
+        plt.show()
     def vTypeGeneration(self, modelType: str):
         """
 
@@ -290,8 +420,6 @@ class TrafficModeler:
             ET.indent(tree, '  ')
             tree.write(output_file, encoding="utf-8", xml_declaration=True)
             print(f"vType File created: {output_file}")
-
-
     def generateRandomRoute(self, sumoNetPath: str):
 
         folder_name = f"{self.date}_{self.modelType}"
