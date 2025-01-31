@@ -49,11 +49,12 @@ def run():
     #9. Generate example edgedata file to be used for route genaration
     #generateEdgeDataFile(PROCESSED_TRAFFIC_FLOW_EDGE_FILE_PATH, date='2024-02-01', time_slot='07:00-08:00')
 
-    #dailyFilter(PROCESSED_TRAFFIC_FLOW_EDGE_FILE_PATH, date='01/02/2024')
+    dailyFilter(PROCESSED_TRAFFIC_FLOW_EDGE_FILE_PATH, date='01/02/2024')
 
     # generateGModelData(inputFilePath=PROCESSED_TRAFFIC_FLOW_EDGE_FILE_PATH, sumoNetFile=SUMO_NET_PATH,
     #                    outputFilePath=MODEL_DATA_FILE_PATH, date='2024-02-01',
     #                    timeSlot='07:00-08:00')
-    # generateFlow(inputFilePath=PROCESSED_TRAFFIC_FLOW_EDGE_FILE_PATH, gModelFilePath=MODEL_DATA_FILE_PATH,
+    #### GENERATE flow.csv FILE TO BE FED INTO edgeDataFromFlow.py script to get edgedata.xml
+    # generateFlow(inputFilePath=PROCESSED_TRAFFIC_FLOW_EDGE_FILE_PATH, modelFilePath=MODEL_DATA_FILE_PATH,
     #              outputFilePath=FLOW_DATA_FILE_PATH, date='2024-02-01',
-    #              timeSlot='07:00-08:00')
+    #              timeSlot='00:00-01:00')

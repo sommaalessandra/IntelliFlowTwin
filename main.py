@@ -13,24 +13,101 @@ from mobilityvenv.MobilityVirtualEnvironment import setupPhysicalSystem, startPh
 from data.preprocessing import preprocessingSetup
 
 if __name__ == "__main__":
-    #
-    configurationPath = SUMO_PATH
+    # #
+    # configurationPath = SUMO_PATH + "/standalone"
+    # logFile = "./command_log.txt"
+    # sumoSimulator = Simulator(configurationPath=configurationPath, logFile=logFile)
+    # model = TrafficModeler(simulator=sumoSimulator, trafficDataFile=PROCESSED_TRAFFIC_FLOW_EDGE_FILE_PATH, sumoNetFile=SUMO_NET_PATH,
+    #                        date='2024-02-01', timeSlot='20:00-21:00', modelType='underwood')
+    # model.saveTrafficData()
+    # generateFlow(inputFilePath=PROCESSED_TRAFFIC_FLOW_EDGE_FILE_PATH, modelFilePath=MODEL_DATA_FILE_PATH,
+    #              outputFilePath=FLOW_DATA_FILE_PATH, date='2024-02-01',
+    #              timeSlot='20:00-21:00')
+    # # generateEdgeFromFlow(inputFlowPath=FLOW_DATA_FILE_PATH, detectorFilePath=SUMO_DETECTORS_ADD_FILE_PATH,
+    # #                      outputEdgePath=EDGE_DATA_FILE_PATH)
+    # # model.evaluateModel(detectorFilePath=SUMO_DETECTORS_ADD_FILE_PATH, detectorOutputSUMO=SUMO_OUTPUT_PATH + "/detector.out.xml", outputFilePath=PROCESSED_DATA_PATH + "/detectedFlow.csv")
+    # # model.evaluateSpeedError(detectedFlowPath=PROCESSED_DATA_PATH + "/detectedFlow.csv")
+    # # model.plotModel(result=PROCESSED_DATA_PATH + "/detectedFlow.csv")
+    # typeFilePath = model.vTypeGeneration(modelType='IDM')
+    # # model.generateRandomRoute(sumoNetPath=libraries.constants.SUMO_NET_PATH)
+    # # model.generateRoute(inputEdgePath=EDGE_DATA_FILE_PATH, withInitialRoute=False)
+    # model.runSimulation()
+    # model.evaluateModel(detectorFilePath=SUMO_DETECTORS_ADD_FILE_PATH,
+    #                     detectorOutputSUMO=SUMO_OUTPUT_PATH + "/detector.out.xml",
+    #                     outputFilePath=typeFilePath + "/output/detectedFlow.csv")
+    # model.plotModel(result=typeFilePath + "/detectedFlow.csv")
+
+    ### Instantiate a Trafic Modeler, specifing which macromodel you want to use to get the missing data (speed, density, etc.)
+    configurationPath = SUMO_PATH + "/standalone"
     logFile = "./command_log.txt"
     sumoSimulator = Simulator(configurationPath=configurationPath, logFile=logFile)
-    model = TrafficModeler(simulator=sumoSimulator, trafficDataFile=PROCESSED_TRAFFIC_FLOW_EDGE_FILE_PATH, sumoNetFile=SUMO_NET_PATH,
-                           date='2024-02-01', timeSlot='20:00-21:00', modelType='underwood')
-    model.saveTrafficData()
-    generateFlow(inputFilePath=PROCESSED_TRAFFIC_FLOW_EDGE_FILE_PATH, modelFilePath=MODEL_DATA_FILE_PATH,
-                 outputFilePath=FLOW_DATA_FILE_PATH, date='2024-02-01',
-                 timeSlot='20:00-21:00')
-    model.evaluateModel(detectorFilePath=SUMO_DETECTORS_ADD_FILE_PATH, detectorOutputSUMO=SUMO_OUTPUT_PATH + "/detector.out.xml", outputFilePath=PROCESSED_DATA_PATH + "/detectedFlow.csv")
-    model.evaluateSpeedError(detectedFlowPath=PROCESSED_DATA_PATH + "/detectedFlow.csv")
-    model.plotModel(result=PROCESSED_DATA_PATH + "/detectedFlow.csv")
-    # model.vTypeGeneration(modelType='idm')
-    # model.generateRandomRoute(sumoNetPath=libraries.constants.SUMO_NET_PATH)
-    # model.generateRoute()
-    #
-    # model.plotModel()
+
+    # getAverageEdgeLength(sumoNetFile=SUMO_NET_PATH)
+    # model = TrafficModeler(simulator=sumoSimulator, trafficDataFile="data/processed_traffic_flow.csv", sumoNetFile=SUMO_NET_PATH,
+    #                            date='2024-02-01', timeSlot='15:00-16:00', modelType='vanaerde')
+    ### Loop for simulating a day
+    macroModelType = "vanaerde"
+    carFollowingModel = "Krauss"
+    for timeslot in range(0, 24):
+        if timeslot < 9:
+            model = TrafficModeler(simulator=sumoSimulator, trafficDataFile=PROCESSED_TRAFFIC_FLOW_EDGE_FILE_PATH,
+                                   sumoNetFile=SUMO_NET_PATH,
+                                   date='2024-02-01',
+                                   timeSlot='0' + str(timeslot) + ':00-' + '0' + str(timeslot + 1) + ':00',
+                                   modelType=macroModelType)
+        elif timeslot == 9:
+            model = TrafficModeler(simulator=sumoSimulator, trafficDataFile=PROCESSED_TRAFFIC_FLOW_EDGE_FILE_PATH,
+                                   sumoNetFile=SUMO_NET_PATH,
+                                   date='2024-02-01', timeSlot='0' + str(timeslot) + ':00-' + str(timeslot + 1) + ':00',
+                                   modelType=macroModelType)
+        else:
+            model = TrafficModeler(simulator=sumoSimulator, trafficDataFile=PROCESSED_TRAFFIC_FLOW_EDGE_FILE_PATH,
+                                   sumoNetFile=SUMO_NET_PATH,
+                                   date='2024-02-01', timeSlot=str(timeslot) + ':00-' + str(timeslot + 1) + ':00',
+                                   modelType=macroModelType)
+        typeFilePath, confPath = model.vTypeGeneration(modelType=carFollowingModel, tau="1",
+                                                       additionalParam={"sigma": "0", "sigmaStep": "0.5"})
+        # typeFilePath, confPath = model.vTypeGeneration(modelType='IDM', tau="1.5", additionalParam={"delta": "6","stepping": "0.1"})
+        # typeFilePath, confPath = model.vTypeGeneration(modelType='W99', tau="1.5", additionalParam={"cc1": "1.5", "cc2": "10.0"})
+        model.saveTrafficData(outputDataPath=typeFilePath + "/model.csv")
+        # model.runSimulation(withGui=False)
+
+    # ### GENERATE flow.csv FILE TO BE FED INTO edgeDataFromFlow.py script to get edgedata.xml
+    # generateFlow(inputFilePath=PROCESSED_TRAFFIC_FLOW_EDGE_FILE_PATH, modelFilePath=MODEL_DATA_FILE_PATH,
+    #              outputFilePath=FLOW_DATA_FILE_PATH, date='2024-02-01',
+    #              timeSlot='00:00-01:00')
+    # ### GENERATE edgefile.xml TO BE USED BY routeSampler.py script to generate
+    # generateEdgeFromFlow(inputFlowPath=FLOW_DATA_FILE_PATH, detectorFilePath=SUMO_DETECTORS_ADD_FILE_PATH,
+    #                      outputEdgePath=EDGE_DATA_FILE_PATH)
+
+    ### Micro-model generation. The given typeFilePath output is the specific experiment folder
+    ### Uncomment the model you want to generate and calibrate the parameters
+    ###KRAUSS
+    typeFilePath, confPath = model.vTypeGeneration(modelType='Krauss', tau="1", additionalParam={"sigma": "0", "sigmaStep": "0.5"})
+    ###EIDM
+    # typeFilePath, confPath = model.vTypeGeneration(modelType='IDM', tau="1", additionalParam={"delta": "4","stepping": "0.25"})
+    ###W99
+    # typeFilePath, confPath = model.vTypeGeneration(modelType='W99', tau="1", additionalParam={"cc1": "1.30","cc2": "8.0"})
+    # model.saveTrafficData(outputDataPath=typeFilePath + "/model.csv")
+
+    ### THIS FUNCTION GENERATES ROUTE FILE ACCORDING TO FLOW randomTrips.py + routeSampler.py .
+    ### IT TAKES LONG TIME TO BE COMPLETED SO CONSIDER TO RUN IT ONLY ONCE
+    # model.generateRoute(inputEdgePath=EDGE_DATA_FILE_PATH, withInitialRoute=True, useStandardRandomRoute=False)
+    # model.runSimulation()
+
+    ### Evaluate model according to detector output afte SUMO simulation. It generates a .csv output file too, including
+    ### speed and flow differences
+
+    model.evaluateModel(edge_id='23288872#4', confPath= confPath, outputFilePath= confPath + "/detectedFlow.csv")
+    # model.evaluateModelwithDetector(detectorFilePath="sumoenv/static/detectors.add.xml", detectorOutputSUMO="sumoenv/output/detector.out.xml",
+    #                                 outputFilePath= typeFilePath + "/output/detectedFlow.csv")
+    model.evaluateError(detectedFlowPath= confPath + "/detectedFlow.csv", outputFilePath=confPath + "/error_summary.csv")
+
+    ### If you include a result, it will plot simulation detected data, otherwise will plot macroscopic derived data (the model one)
+    # model.plotModel(result=None)
+    model.plotTemporalResults(resultFilePath=confPath + "/detectedFlow.csv")
+    # model.compareResults(resultFilePath='sumoenv/greenshield_krauss_t15.csv')
+    # model.plotModel(result="data/detectedFlow.csv")
 
     # 0. Pre-processing phase (to be run only once)
     preprocessingSetup.run()

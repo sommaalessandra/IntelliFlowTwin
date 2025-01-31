@@ -1105,12 +1105,9 @@ def generateFlow(inputFilePath: str, modelFilePath: str,outputFilePath: str, dat
     output_df.to_csv(outputFilePath, sep=';', index=False, float_format='%.4f', decimal=',')
 
 def generateEdgeFromFlow(inputFlowPath: str, detectorFilePath: str, outputEdgePath: str):
-    """
-
-    """
-    script = SUMO_TOOLS_PATH + "/detector/edgeDataFromFlow.py"
+    script = r"C:\Program Files (x86)\Eclipse\Sumo\tools/detector/edgeDataFromFlow.py"
     detector = detectorFilePath
     flow = inputFlowPath
     output = outputEdgePath
     subprocess.run([sys.executable, script, "--detector-file", detector,
-                    "--detector-flow-file", flow, "--output-file", output, "--flow-columns", "qPKW"])
+                    "--detector-flow-file", flow, "--output-file", output, "--flow-columns", "qPKW", "-i", '61'])

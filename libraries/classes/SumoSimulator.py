@@ -9,7 +9,6 @@
 #
 # ****************************************************
 
-from libraries.constants import *
 from statistics import mean
 import os
 # These libraries are quite the same. They include most of the commands available in the traci library, but the
@@ -66,6 +65,7 @@ class Simulator:
         self.configurationPath = configurationPath
         # TODO: check if this routePath variable is needed.
         self.routePath = configurationPath
+        self.typePath = configurationPath
         staticpath = os.path.abspath(self.configurationPath + "/static")
         if not os.path.exists(staticpath):
             print("Error: the given path does not exist.")
@@ -148,11 +148,11 @@ class Simulator:
         step = 0
         while step < quantity and self.getRemainingVehicles() > 0:
             libtraci.simulationStep()
-            self.vehiclesSummary = self.getVehiclesSummary()
-            self.checkSubscription()
-            self.getInductionLoopSummary()
-            # self.setTLSProgram("219", "utopia")
-            print(self.getRemainingVehicles())
+            # self.vehiclesSummary = self.getVehiclesSummary()
+            # self.checkSubscription()
+            # self.getInductionLoopSummary()
+            # # self.setTLSProgram("219", "utopia")
+            # print(self.getRemainingVehicles())
             step += 1
 
     def oneHourStep(self):
@@ -212,6 +212,26 @@ class Simulator:
         self.routePath = routePath
         os.environ["SIMULATIONPATH"] = routePath
         print("The path was set to " + routePath)
+
+    def changeTypePath(self, typePath: str):
+        """
+        Changes the route path for the simulator.
+
+        This function checks if the provided route path is absolute. If it is not an absolute path,
+        it converts it to an absolute path based on the current working directory.
+        After ensuring that the path exists, it updates the simulator's route path and the
+        environment variable 'ROUTEFILENAME' to reflect the new path.
+
+        :param routePath: The absolute route file path.
+        :raises FileNotFoundError: If the given route path does not exist
+
+        """
+        if not os.path.exists(typePath):
+            print("Error: the given path does not exist.")
+            return
+        self.typePath = typePath
+        os.environ["TYPEPATH"] = typePath
+        print("The path was set to " + typePath)
 
     ### VEHICLE FUNCTIONS
     def getVehiclesSummary(self):
