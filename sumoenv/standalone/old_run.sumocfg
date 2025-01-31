@@ -15,6 +15,7 @@
 		<vehroute-output value="../output/vehroute.xml" />
 		<summary-output value="../output/summary.xml" />
 		<queue-output value="../output/queue.xml" />
+		<edgedata-output value="../output/edgedata-output.xml" />
     </output>
 
     <report>
@@ -44,9 +45,6 @@
 		<meso-lane-queue value="true"/>
     </mesoscopic>  -->
 
-	<!--
-	<time> 
-		<end value="3600" />
-	</time>
-	-->
+	
+	
 </configuration>
