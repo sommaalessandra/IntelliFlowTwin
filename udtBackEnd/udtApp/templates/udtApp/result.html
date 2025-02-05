@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="it">
+{% extends 'udtApp/base.html' %}
+{% load static %}
+    <link rel="stylesheet" type="text/css" href="{% static 'css/style.css' %}">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Dettagli Cartella</title>
+    
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+
+</head>
+<body>
+{% block content %}
+<div class="container mt-4">
+    <h2 class="text-center">{{ folder_name }}</h2>
+    {% if image_url %}
+        <div class="image-container">
+            <img src="{% url 'serve_image' folder_name %}" alt="Folder Image" class="folder-image" style="width: 100%; height: auto;">
+        </div>
+    {% else %}
+        <p class="text-center text-muted">No image available</p>
+    {% endif %}
+
+    {% if table_data %}
+        <div class="table-container">
+            <h4>Error Details</h4>
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        {% for header in headers %}
+                            <th>{{ header }}</th>
+                        {% endfor %}
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for row in table_data %}
+                        <tr>
+                            {% for value in row.values %}
+                                <td>{{ value }}</td>
+                            {% endfor %}
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    {% else %}
+        <p class="text-center text-muted">No CSV file found</p>
+    {% endif %}
+
+    <div class="text-center mt-3">
+        <a href="{% url 'simulationResults' %}" class="btn btn-primary">Go Back</a>
+    </div>
+</div>
+
+<!-- Bootstrap JS -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+{% endblock %}
+</body>
+</html>

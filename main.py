@@ -12,6 +12,46 @@ from libraries.classes.TrafficModeler import TrafficModeler
 from mobilityvenv.MobilityVirtualEnvironment import setupPhysicalSystem, startPhysicalSystem
 from data.preprocessing import preprocessingSetup
 
+
+def configureCalibrateAndRun(dataFilePath: str, carFollowingModel: str, macroModelType: str, tau: str,
+                             parameters: {}, date: str, timeslot: [], edge_id: str):
+    configurationPath = SUMO_PATH + "/standalone"
+    logFile = "./command_log.txt"
+    sumoSimulator = Simulator(configurationPath=configurationPath, logFile=logFile)
+    print("Instantiating a Traffic Modeler...")
+    basemodel = TrafficModeler(simulator=sumoSimulator, trafficDataFile=dataFilePath,
+                               sumoNetFile=SUMO_NET_PATH,
+                               date=date,
+                               timeSlot='00:00-01:00',
+                               modelType=macroModelType)
+    print("Starting Configuration")
+    for hour in range(timeslot[0], timeslot[1]):
+        if hour < 9:
+            basemodel = TrafficModeler(simulator=sumoSimulator, trafficDataFile=dataFilePath,
+                                   sumoNetFile=SUMO_NET_PATH,
+                                   date=date,
+                                   timeSlot='0' + str(hour) + ':00-' + '0' + str(hour + 1) + ':00',
+                                   modelType=macroModelType)
+        elif hour == 9:
+            basemodel = TrafficModeler(simulator=sumoSimulator, trafficDataFile=dataFilePath,
+                                   sumoNetFile=SUMO_NET_PATH,
+                                   date=date, timeSlot='0' + str(hour) + ':00-' + str(hour + 1) + ':00',
+                                   modelType=macroModelType)
+        else:
+            basemodel = TrafficModeler(simulator=sumoSimulator, trafficDataFile=dataFilePath,
+                                   sumoNetFile=SUMO_NET_PATH,
+                                   date=date, timeSlot=str(hour) + ':00-' + str(hour + 1) + ':00',
+                                   modelType=macroModelType)
+        typeFilePath, confPath = basemodel.vTypeGeneration(modelType=carFollowingModel, tau=tau,
+                                                       additionalParam=parameters)
+        basemodel.saveTrafficData(outputDataPath=typeFilePath + "/model.csv")
+        basemodel.runSimulation(withGui=False)
+    confPath = projectPath + "/" + confPath
+    basemodel.evaluateModel(edge_id=edge_id, confPath=confPath, outputFilePath=confPath + "/detectedFlow.csv")
+    basemodel.evaluateError(detectedFlowPath=confPath + "/detectedFlow.csv", outputFilePath=confPath + "/error_summary.csv")
+    basemodel.plotTemporalResults(resultFilePath=confPath + "/detectedFlow.csv", showImage=False)
+    return confPath
+
 if __name__ == "__main__":
     # #
     # configurationPath = SUMO_PATH + "/standalone"
@@ -46,8 +86,12 @@ if __name__ == "__main__":
     # model = TrafficModeler(simulator=sumoSimulator, trafficDataFile="data/processed_traffic_flow.csv", sumoNetFile=SUMO_NET_PATH,
     #                            date='2024-02-01', timeSlot='15:00-16:00', modelType='vanaerde')
     ### Loop for simulating a day
-    macroModelType = "vanaerde"
-    carFollowingModel = "Krauss"
+    macroModelType = "underwood"
+    carFollowingModel = "W99"
+
+    # configureCalibrateAndRun(dataFilePath=PROCESSED_TRAFFIC_FLOW_EDGE_FILE_PATH, carFollowingModel='W99',
+    #                                    macroModelType="underwood", tau="1", parameters={"cc1": "1.5", "cc2": "10.0"},
+    #                                    date='2024-02-01', timeslot=[0,1], edge_id='23288872#4')
     for timeslot in range(0, 24):
         if timeslot < 9:
             model = TrafficModeler(simulator=sumoSimulator, trafficDataFile=PROCESSED_TRAFFIC_FLOW_EDGE_FILE_PATH,
@@ -65,10 +109,10 @@ if __name__ == "__main__":
                                    sumoNetFile=SUMO_NET_PATH,
                                    date='2024-02-01', timeSlot=str(timeslot) + ':00-' + str(timeslot + 1) + ':00',
                                    modelType=macroModelType)
-        typeFilePath, confPath = model.vTypeGeneration(modelType=carFollowingModel, tau="1",
-                                                       additionalParam={"sigma": "0", "sigmaStep": "0.5"})
+        # typeFilePath, confPath = model.vTypeGeneration(modelType=carFollowingModel, tau="1",
+        #                                                additionalParam={"sigma": "0", "sigmaStep": "0.5"})
         # typeFilePath, confPath = model.vTypeGeneration(modelType='IDM', tau="1.5", additionalParam={"delta": "6","stepping": "0.1"})
-        # typeFilePath, confPath = model.vTypeGeneration(modelType='W99', tau="1.5", additionalParam={"cc1": "1.5", "cc2": "10.0"})
+        typeFilePath, confPath = model.vTypeGeneration(modelType='W99', tau="1", additionalParam={"cc1": "1.5", "cc2": "10.0"})
         model.saveTrafficData(outputDataPath=typeFilePath + "/model.csv")
         # model.runSimulation(withGui=False)
 
@@ -83,7 +127,7 @@ if __name__ == "__main__":
     ### Micro-model generation. The given typeFilePath output is the specific experiment folder
     ### Uncomment the model you want to generate and calibrate the parameters
     ###KRAUSS
-    typeFilePath, confPath = model.vTypeGeneration(modelType='Krauss', tau="1", additionalParam={"sigma": "0", "sigmaStep": "0.5"})
+    # typeFilePath, confPath = model.vTypeGeneration(modelType='Krauss', tau="1", additionalParam={"sigma": "0", "sigmaStep": "0.5"})
     ###EIDM
     # typeFilePath, confPath = model.vTypeGeneration(modelType='IDM', tau="1", additionalParam={"delta": "4","stepping": "0.25"})
     ###W99
@@ -105,12 +149,12 @@ if __name__ == "__main__":
 
     ### If you include a result, it will plot simulation detected data, otherwise will plot macroscopic derived data (the model one)
     # model.plotModel(result=None)
-    model.plotTemporalResults(resultFilePath=confPath + "/detectedFlow.csv")
+    # model.plotTemporalResults(resultFilePath=confPath + "/detectedFlow.csv", showImage=True)
     # model.compareResults(resultFilePath='sumoenv/greenshield_krauss_t15.csv')
     # model.plotModel(result="data/detectedFlow.csv")
 
     # 0. Pre-processing phase (to be run only once)
-    preprocessingSetup.run()
+    # preprocessingSetup.run()
 
     # model = TrafficModeler(simulator=sumoSimulator, trafficDataFile=PROCESSED_TRAFFIC_FLOW_EDGE_FILE_PATH, sumoNetFile=SUMO_NET_PATH,
     #                        date='2024-02-01', timeSlot='07:00-08:00', modelType='underwood')

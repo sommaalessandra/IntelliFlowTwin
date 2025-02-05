@@ -1,12 +1,21 @@
-import json
 from django.core.paginator import Paginator
-from django.shortcuts import render
-from django.http import HttpResponse
-from .models import Device
 import os
-from django.http import FileResponse, Http404
-from pathlib import Path
+import re
 from datetime import datetime
+from pathlib import Path
+
+import pandas as pd
+from django.core.paginator import Paginator
+from django.http import FileResponse, Http404
+from django.http import HttpResponse
+from django.shortcuts import render
+from django.contrib import messages
+
+from libraries.constants import PROCESSED_TRAFFIC_FLOW_EDGE_FILE_PATH
+from main import configureCalibrateAndRun
+from .forms import ConfigForm
+from .models import Device
+
 
 def index(request):
     return render(request, 'udtApp/index.html', {'nbar': 'home'})
@@ -73,7 +82,7 @@ def simulation(request):
     if not selected_date:  # Se la data non è fornita, usa la data corrente
         selected_date = datetime.now().strftime('%Y-%m-%d')
     start_time = request.GET.get('start_time', '00:00').strip()  # rimuovere spazi bianchi
-    end_time = request.GET.get('end_time', '23:00').strip()
+    end_time = request.GET.get('end_time', '24:00').strip()
 
     today = datetime.now().date()
     default_date = today.strftime('%Y-%m-%d')
@@ -108,27 +117,151 @@ def simulation(request):
     return render(request, 'udtApp/simulation.html', context)
 
 
-def serve_image(request, folder):
+# def serve_image(request, folder):
+#
+#     current_dir = os.path.abspath(os.getcwd())
+#     current_path = Path(current_dir).resolve()
+#     project_root = current_path.parent
+#     base_dir = project_root / 'sumoenv' / 'joined' / 'scenarioCollection'
+#     folder_path = os.path.join(base_dir, folder)
+#
+#
+#     # Filter only .png files
+#     images = [img for img in os.listdir(folder_path) if img.endswith(".png")]
+#
+#     # Get the selected type (in the page filter). Default is 'basic'
+#     selected_type = request.GET.get('type', 'basic')
+#
+#     context = {
+#         'folder': folder,
+#         'images': images,
+#         'selected_type': selected_type,
+#         'base_dir': base_dir
+#     }
+#     return render(request, 'udtApp/simulationScenario.html', context)
 
+def simulationModeler(request):
+    if request.method == 'POST':
+        form = ConfigForm(request.POST)
+        if form.is_valid():
+            messages.success(request, "Simulation Completed!")
+            data = form.cleaned_data
+            time_slot = [int(data['start_time']), int(data['end_time'])]
+
+            # Creiamo un dizionario con i parametri
+            params = {
+                'macromodel': data['macromodel'],
+                'car_following_model': data['car_following_model'],
+                'tau': str(data['tau']),
+                'time_slot': time_slot,
+                'date': data['data'].strftime('%Y-%m-%d'),
+            }
+
+            # Aggiunta degli additional parameters in base al modello selezionato
+            if data['car_following_model'] == 'Krauss':
+                params['sigma'] = str(data['sigma'])
+                params['sigmaStep'] = str(data['sigma_step'])
+                folderResult = configureCalibrateAndRun(dataFilePath=PROCESSED_TRAFFIC_FLOW_EDGE_FILE_PATH,
+                                                  macroModelType=params['macromodel'],
+                                                  carFollowingModel=params['car_following_model'], tau=params['tau'],
+                                                  parameters=params,
+                                                  date=params['date'], timeslot=time_slot, edge_id='23288872#4')
+            elif data['car_following_model'] == 'IDM':
+                params['delta'] = str(data['delta'])
+                params['stepping'] = str(data['stepping'])
+                folderResult = configureCalibrateAndRun(dataFilePath=PROCESSED_TRAFFIC_FLOW_EDGE_FILE_PATH,
+                                                  macroModelType=params['macromodel'],
+                                                  carFollowingModel=params['car_following_model'], tau=params['tau'],
+                                                  parameters=params,
+                                                  date=params['date'], timeslot=time_slot,
+                                                  edge_id='23288872#4')
+            elif data['car_following_model'] == 'W99':
+                params['cc1'] = str(data['cc1'])
+                params['cc2'] = str(data['cc2'])
+                folderResult = configureCalibrateAndRun(dataFilePath=PROCESSED_TRAFFIC_FLOW_EDGE_FILE_PATH,
+                                                  macroModelType=params['macromodel'],
+                                                  carFollowingModel=params['car_following_model'], tau=params['tau'],
+                                                  parameters=params,
+                                                  date=params['date'], timeslot=time_slot,
+                                                  edge_id='23288872#4')
+                print("Executed simulation " + str(folderResult))
+            messages.success(request, "Simulation Completed!")
+            folderResult = os.path.basename(os.path.normpath(folderResult))
+            print(str(folderResult))
+            return serveResults(request, folderResult)
+            # return render(request, 'udtApp/result.html', {'result': context})
+    else:
+        form = ConfigForm()
+
+    return render(request, 'udtApp/simulationModeler.html', {'form': form})
+def serve_image(request, folder_name):
+    BASE_DIR = "C:/Users/manfr/PycharmProjects/IntelliFlowTwin/sumoenv"
+    """View per servire l'immagine 'plotResults.png' dalla cartella specificata."""
+    image_path = os.path.join(BASE_DIR, folder_name, "plotResults.png")
+
+    if os.path.exists(image_path):
+        return FileResponse(open(image_path, "rb"), content_type="image/png")
+    else:
+        raise Http404("Immagine non trovata")
+def simulationResults(request):
+    # Regex per il formato "yyyy_mm_dd_Nome1_Nome2"
+    FOLDER_PATTERN = re.compile(r"^\d{4}-\d{2}-\d{2}_(.+)$")  # Nota il $ alla fine
+
+    # Getting the absolute path of the scenarioCollection folder
     current_dir = os.path.abspath(os.getcwd())
     current_path = Path(current_dir).resolve()
     project_root = current_path.parent
-    base_dir = project_root / 'sumoenv' / 'joined' / 'scenarioCollection'
-    folder_path = os.path.join(base_dir, folder)
+    base_dir = project_root / 'sumoenv'
+    if not os.path.exists(base_dir):
+        base_dir = project_root / 'MOBIDT' / 'sumoenv'
+        if not os.path.exists(base_dir):
+            return render(request, 'udtApp/emptyPage.html', {'item': 'Scenario folder'})
+    folders = []
+    for folder in os.listdir(base_dir):
+        if os.path.isdir(os.path.join(base_dir, folder)):
+            match = FOLDER_PATTERN.match(folder)
+            if match:
+                print(match)
+                display_name = match.group(1).replace("_", " ").title()  # Rimuove underscore
+                folders.append({"full_name": folder, "display_name": display_name})
+
+    return render(request, "udtApp/simulationResults.html", {"folders": folders})
 
 
-    # Filter only .png files
-    images = [img for img in os.listdir(folder_path) if img.endswith(".png")]
 
-    # Get the selected type (in the page filter). Default is 'basic'
-    selected_type = request.GET.get('type', 'basic')
+def serveResults(request, folder_name):
+    FOLDER_PATTERN = re.compile(r"^\d{4}-\d{2}-\d{2}_(.+)$")  # Nota il $ alla fine
+    # folder_path = os.path.join(settings.MEDIA_ROOT, "your_directory", folder_name)
+    current_dir = os.path.abspath(os.getcwd())
+    current_path = Path(current_dir).resolve()
+    project_root = current_path.parent
+    base_dir = project_root / 'sumoenv'
+    folder_path = os.path.join(base_dir, folder_name)
+    # Controlla che la cartella esista e rispetti il pattern
+    if os.path.exists(folder_path):
+        files = os.listdir(folder_path)
 
-    context = {
-        'folder': folder,
-        'images': images,
-        'selected_type': selected_type,
-        'base_dir': base_dir
-    }
-    return render(request, 'udtApp/simulationScenario.html', context)
-
-
+        # Find a .png file inside the directory
+        image_file = None
+        for file in files:
+            if file.endswith(".png"):
+                image_file = file
+                break
+        csv_file = os.path.join(folder_path, "error_summary.csv")
+        table_data = None
+        headers = []
+        if os.path.exists(csv_file):  # Se il file esiste, lo carica
+            df = pd.read_csv(csv_file, sep=';', decimal=',')  # Legge il CSV
+            table_data = df.to_dict(orient="records")  # Converte in lista di dizionari
+            headers = df.columns.tolist()  # Prende le intestazioni
+        context = {
+            "folder_name": folder_name,
+            "image_url": f"/media/{folder_name}/{image_file}" if image_file else None,
+            "table_data": table_data,
+            "headers": headers
+            }
+        print(f"{folder_path}/{image_file}")
+        return render(request, "udtApp/result.html", context)
+            # return render(request, "view_folder.html", {"folder_name": folder_name, "files": files})
+    else:
+        return render(request, "error.html", {"message": "Folder not found or access not allowed."})

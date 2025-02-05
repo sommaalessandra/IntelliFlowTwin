@@ -1,0 +1,33 @@
+.automobile {
+    width: 80px;  /* Imposta la larghezza */
+    height: auto;  /* Mantiene le proporzioni */
+}
+
+.folder-icon {
+	width: 80px; /* Rimpicciolisce l'icona */
+	height: auto;
+}
+.folder-card {
+	text-align: center;
+	padding: 15px;
+	border-radius: 10px;
+	transition: transform 0.2s;
+}
+.folder-card:hover {
+	transform: scale(1.05);
+}
+
+.image-container {
+    display: flex;
+    justify-content: center;  /* Centra orizzontalmente */
+    align-items: center;      /* Centra verticalmente */
+    width: 100vw;             /* Occupa tutta la larghezza della finestra */
+    height: 100vh;            /* Occupa tutta l'altezza della finestra */
+    overflow: hidden;         /* Evita scrollbar */
+}
+
+.folder-image {
+    max-width: 90vw;    /* Larghezza massima 90% della finestra */
+    max-height: 90vh;   /* Altezza massima 90% della finestra */
+    object-fit: contain; /* Adatta senza deformare */
+}

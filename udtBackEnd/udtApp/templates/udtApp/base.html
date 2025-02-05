@@ -2,9 +2,16 @@
     <head>
     <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+        <style>
+        /* Aggiunge spazio sotto la navbar per evitare sovrapposizioni */
+        body {
+            padding-top: 60px; /* Altezza navbar */
+        }
+    </style>
     </head>
-    <nav class="navbar navbar-expand-lg navbar-light bg-light">
-    <a class="navbar-brand" href="{% url 'index' %}">UdtApp</a>
+    <body>
+    <nav class="navbar navbar-expand-lg navbar-light bg-light fixed-top">
+    <a class="navbar-brand" href="{% url 'index' %}">FlowTwin</a>
     <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNavAltMarkup"
         aria-controls="navbarNavAltMarkup" aria-expanded="false" aria-label="Toggle navigation">
         <span class="navbar-toggler-icon"></span>
@@ -14,12 +21,14 @@
             <a class="nav-item nav-link {% if nbar == 'home' %}active{% endif %}" href="{% url 'index' %}">Home</a>
             <a class="nav-item nav-link {% if nbar == 'entityList' %}active{% endif %}" href="{% url 'entityList' %}">Entity List</a>
             <a class="nav-item nav-link {% if nbar == 'monitor' %}active{% endif %}" href="{% url 'monitor' %}">Monitor</a>
-            <a class="nav-item nav-link {% if nbar == 'simulation' %}active{% endif %}" href="{% url 'simulation' %}">Simulation</a>
+            <a class="nav-item nav-link disabled {% if nbar == 'simulation' %}active{% endif %}" href="{% url 'simulation' %}">Simulation</a>
+            <a class="nav-item nav-link {% if nbar == 'simulationModeler' %}active{% endif %}" href="{% url 'simulationModeler' %}">Calibrator</a>
+            <a class="nav-item nav-link {% if nbar == 'simulationResults' %}active{% endif %}" href="{% url 'simulationResults' %}"> Results</a>
         </div>
     </div>
     </nav>
 
     {% block content %}
     {% endblock content %}
-  </body>
+    </body>
 </html>

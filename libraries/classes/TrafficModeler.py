@@ -55,7 +55,7 @@ class TrafficModeler:
             laneCount = len(edge.getLanes())
             vehicleLength = 7.5 #7.5 # this length is including the gap between vehicles
             maxDensity = laneCount / vehicleLength
-            print(f"Edge {edge_id}: k_jam = {maxDensity * 1000} vehicles/km")
+            # print(f"Edge {edge_id}: k_jam = {maxDensity * 1000} vehicles/km")
             first = int(timeSlot[:2])
             last = int(timeSlot[6:8])
             # Calculate the vehicle count for the specified time slot
@@ -103,6 +103,9 @@ class TrafficModeler:
                 "normVelocity": normVelocity
             })
 
+    def changeTimeslot(self, timeSlot: str):
+        self.timeSlot = timeSlot
+        self.timeSlot = self.timeSlot.replace(':', '-')
     def saveTrafficData(self, outputDataPath: str):
     # TODO: set a name convention for saving new model data (e.g. greenshield_01-02-2024_00:00-23:00)
         """
@@ -248,7 +251,7 @@ class TrafficModeler:
         plt.tight_layout()
         plt.show()
 
-    def plotTemporalResults(self, resultFilePath: str):
+    def plotTemporalResults(self, resultFilePath: str, showImage = True):
         def timeslot_to_numeric(timeslot):
             start_hour, start_min, end_hour, end_min = map(int, timeslot.split('-'))
             # Calcolo del tempo in secondi dall'inizio del giorno
@@ -308,7 +311,8 @@ class TrafficModeler:
         plt.tight_layout()
         simulationDirectory = os.path.dirname(resultFilePath)
         plt.savefig(simulationDirectory + '/plotResults.png')
-        plt.show()
+        if showImage:
+            plt.show()
 
         # # Dati rilevati
         # if y_axis == "flow":
@@ -452,6 +456,7 @@ class TrafficModeler:
             if os.path.isdir(folder_path):
                 xml_file = os.path.join(folder_path, '/output/edgedata-output.xml')
                 xml_file = folder_path + "/output/edgedata-output.xml"
+                print("PATH: " + str(xml_file))
                 tree = ET.parse(xml_file)
                 root = tree.getroot()
 
@@ -588,6 +593,10 @@ class TrafficModeler:
         flow_absolute_percentage_errors = 0
         n = 0  # Count valid data
 
+        # Lists to store true values for calculating the range
+        speed_true_values = []
+        density_true_values = []
+
         # Iterate on traffic loops shared by model and SUMO data
         for id, row in detector_df.iterrows():
             speed_true = float(row["real_speed"])
@@ -599,9 +608,11 @@ class TrafficModeler:
             if speed_pred != 0:
                 speed_squared_errors += (speed_pred - speed_true) ** 2
                 speed_absolute_percentage_errors += abs((speed_true - speed_pred) / speed_true)
+                speed_true_values.append(speed_true)
             if density_pred != 0:
                 density_squared_errors += (density_pred - density_true) ** 2
                 density_absolute_percentage_errors += abs((density_true - density_pred) / density_true)
+                density_true_values.append(density_true)
             if flow_pred !=0:
                 flow_squared_errors += (flow_pred - flow_true) ** 2
                 flow_absolute_percentage_errors += abs((flow_true - flow_pred) / flow_true)
@@ -616,13 +627,30 @@ class TrafficModeler:
             density_mape = (density_absolute_percentage_errors / n) * 100
             flow_rmse = math.sqrt(flow_squared_errors / n)
             flow_mape = (flow_absolute_percentage_errors / n) * 100
+
+            # Calculate NRMSE
+            speed_range = max(speed_true_values) - min(speed_true_values)
+            density_range = max(density_true_values) - min(density_true_values)
+
+            speed_nrmse = speed_rmse / speed_range if speed_range != 0 else 0
+            density_nrmse = density_rmse / density_range if density_range != 0 else 0
+
             print(f"Speed RMSE: {speed_rmse:.4f}")
             print(f"Speed MAPE: {speed_mape:.2f}%")
+            print(f"Speed NRMSE: {speed_nrmse:.4f}")
             print(f"Density RMSE: {density_rmse:.4f}")
             print(f"Density MAPE: {density_mape:.2f}%")
+            print(f"Density NRMSE: {density_nrmse:.4f}")
             print(f"Flow RMSE: {flow_rmse:.4f}")
             print(f"Flow MAPE: {flow_pred:.2f}%")
-            error_data.append({'speed_rmse': speed_rmse, 'speed_mape': speed_mape, 'density_rmse':density_rmse, 'density_mape': density_mape, 'flow_rmse':flow_rmse, 'flow_mape':flow_mape})
+            error_data.append({'speed_rmse': speed_rmse,
+                               'speed_mape': speed_mape,
+                               'speed_nrmse': speed_nrmse,
+                               'density_rmse':density_rmse,
+                               'density_mape': density_mape,
+                               'density_nrmse': density_nrmse,
+                               'flow_rmse':flow_rmse,
+                               'flow_mape':flow_mape})
             error_df = pd.DataFrame(error_data)
             error_df.to_csv(outputFilePath, sep=';', float_format='%.4f', decimal=',')
 
@@ -656,10 +684,12 @@ class TrafficModeler:
             carFollowModel = "Krauss"
             vtypeID = "customModel"
             if "sigma" in additionalParam:
+                print("FOUND SIGMA")
                 sigma = additionalParam["sigma"]
             else:
                 sigma = "0" #perfect driving
             if "sigmaStep" in additionalParam:
+                print("FOUND SIGMA STEP")
                 sigmaStep = additionalParam["sigmaStep"]
             else:
                 sigmaStep = "step-length"
@@ -782,3 +812,6 @@ class TrafficModeler:
         output_path = folder_path + "/output/"
         os.makedirs(output_path, exist_ok=True)
         self.simulator.start(activeGui=withGui, logFilePath="./command_log.txt")
+
+
+

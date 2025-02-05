@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="it">
+{% extends 'udtApp/base.html' %}
+{% load static %}
+{% block content %}
+<head>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script>
+        function updateAdditionalFields() {
+            let model = document.getElementById("id_car_following_model").value;
+
+            document.getElementById("krauss_fields").style.display = model === "Krauss" ? "block" : "none";
+            document.getElementById("idm_fields").style.display = model === "IDM" ? "block" : "none";
+            document.getElementById("w99_fields").style.display = model === "W99" ? "block" : "none";
+        }
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
+
+    <style>
+        /* Stile base per la pagina */
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            display: flex;
+            height: 100vh;
+            margin: 20px;
+            margin-left: 40px;
+        }
+
+                /* Toolbar fissa in alto */
+        .toolbar {
+            width: 100%;
+            background: #333;
+            color: white;
+            padding: 15px;
+            text-align: center;
+            position: fixed;
+            top: 0;
+            left: 0;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            z-index: 100;
+        }
+
+        /* Contenitore del form */
+        .form-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+            width: 400px;
+            text-align: center;
+            position: absolute;
+            top: 80px;
+            left: 50px;
+            margin-top: 100px; /* Evita sovrapposizione con toolbar */
+        }
+
+        /* Stile dei campi input */
+        .form-container input,
+        .form-container select {
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+
+        /* Stile del bottone */
+        .submit-button {
+            background: #4CAF50;
+            color: white;
+            padding: 12px;
+            border: none;
+            border-radius: 5px;
+            width: 100%;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        .submit-button:hover {
+            background: #45a049;
+        }
+
+        /* Toast in basso e centrato */
+        .toast-message {
+            background: #4CAF50;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 5px;
+            text-align: center;
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 1000;
+        }
+        h3 {
+            display: block; /* Assicura che occupi tutta la larghezza disponibile */
+            width: 100%; /* Allinea il titolo con il form */
+            margin-bottom: 20px; /* Aggiunge spazio tra il titolo e il form */
+            clear: both;
+        }
+    </style>
+</head>
+
+<body>
+
+    <form method="post" id="configForm">
+        <h3>Calibrate your simulation</h3>
+        {% csrf_token %}
+
+        <p>{{ form.macromodel.label_tag }} {{ form.macromodel }}</p>
+        <p>{{ form.car_following_model.label_tag }} {{ form.car_following_model }}
+            <script>document.getElementById("id_car_following_model").addEventListener("change", updateAdditionalFields);</script>
+        </p>
+
+        <p>{{ form.tau.label_tag }} {{ form.tau }}</p>
+
+        <!-- Additional Parameters per ogni modello -->
+        <div id="krauss_fields" style="display:none;">
+            <p>{{ form.sigma.label_tag }} {{ form.sigma }}</p>
+            <p>{{ form.sigma_step.label_tag }} {{ form.sigma_step }}</p>
+        </div>
+
+        <div id="idm_fields" style="display:none;">
+            <p>{{ form.delta.label_tag }} {{ form.delta }}</p>
+            <p>{{ form.stepping.label_tag }} {{ form.stepping }}</p>
+        </div>
+
+        <div id="w99_fields" style="display:none;">
+            <p>{{ form.cc1.label_tag }} {{ form.cc1 }}</p>
+            <p>{{ form.cc2.label_tag }} {{ form.cc2 }}</p>
+        </div>
+
+        <p>{{ form.data.label_tag }} {{ form.data }}</p>
+
+        <p>{{ form.start_time.label_tag }} {{ form.start_time }}</p>
+        <p>{{ form.end_time.label_tag }} {{ form.end_time }}</p>
+
+        <button type="submit" id="submitButton" class="submit-button">Start</button>
+
+        {% if messages %}
+            {% for message in messages %}
+                <div id="toast-message" class="toast {% if message.tags %}{{ message.tags }}{% endif %}">
+                    {{ message }}
+                </div>
+            {% endfor %}
+        {% endif %}
+    </form>
+
+    <script>updateAdditionalFields();</script>
+
+    <script>
+    document.getElementById("configForm").addEventListener("submit", function(event) {
+        event.preventDefault();  // Blocca l'invio immediato del form
+
+        // Mostra il toast prima di avviare la funzione
+        Toastify({
+            text: "Starting Simulation...",
+            duration: 3000,
+            gravity: "bottom",
+            position: "center",
+            backgroundColor: "linear-gradient(to right, #4CAF50, #45a049)"
+        }).showToast();
+
+        // Attendi mezzo secondo prima di inviare il form
+        setTimeout(() => {
+            event.target.submit();  // Invia il form dopo il ritardo
+        }, 500);  // 500 millisecondi di ritardo
+    });
+    </script>
+
+
+    <style>
+            .toast {
+        position: fixed;
+        bottom: 20px; /* Distanza dal fondo */
+        left: 50%; /* Centra orizzontalmente */
+        transform: translateX(-50%); /* Corregge la posizione */
+        background: #4caf50; /* Verde per successo */
+        color: white;
+        padding: 15px 20px;
+        border-radius: 8px;
+        display: none;
+        box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.2);
+        font-size: 16px;
+        font-weight: bold;
+        text-align: center;
+        animation: fadeIn 0.5s, fadeOut 0.5s 3s forwards;
+    }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes fadeOut {
+            from { opacity: 1; }
+            to { opacity: 0; display: none; }
+        }
+
+        .toast-message {
+            background: #4CAF50;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 5px;
+            text-align: center;
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 1000;
+        }
+    </style>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            var toast = document.getElementById("toast-message");
+            if (toast) {
+                toast.style.display = "block";
+                setTimeout(function() {
+                    toast.style.display = "none";
+                }, 3500);
+            }
+        });
+    </script>
+
+</body>
+{% endblock %}
+</html>
+
+

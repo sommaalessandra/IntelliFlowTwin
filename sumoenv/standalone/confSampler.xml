@@ -1,13 +1,13 @@
 <configuration>
-    <route-files value="C:\Users\manfr\PycharmProjects\IntelliFlowTwin\sumoenv\standalone\sampleRoutes.rou.xml"/>
-    <edgedata-files value="C:\Users\manfr\PycharmProjects\IntelliFlowTwin\sumoenv\standalone\edgedata.xml"/>
+    <route-files value="C:\Users\manfr\PycharmProjects\TrafficModelingTool\sumoenv\standalone\sampleRoutes.rou.xml"/>
+    <edgedata-files value="C:\Users\manfr\PycharmProjects\TrafficModelingTool\sumoenv\standalone\edgedata.xml"/>
     <edgedata-attribute value="qPKW"/>
-    <output-file value="C:\Users\manfr\PycharmProjects\IntelliFlowTwin\sumoenv\standalone\generatedRoutes.rou.xml"/>
+    <output-file value="C:\Users\manfr\PycharmProjects\TrafficModelingTool\sumoenv\standalone\generatedRoutes.rou.xml"/>
+    <attributes value="type='customModel'"/>
     <write-flows value="number"/>
     <begin value="0"/>
-    <end value="3000"/>
     <total-count value="10000"/>
     <optimize value="full"/>
     <minimize-vehicles value="1.0"/>
-    <threads value="4"/>
+    <threads value="8"/>
 </configuration>
