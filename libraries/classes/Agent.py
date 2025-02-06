@@ -17,7 +17,7 @@ import json
 import requests
 from requests.structures import CaseInsensitiveDict
 from libraries.classes.Broker import *
-
+import time
 
 class Agent:
     agentID: str
@@ -196,23 +196,28 @@ class Agent:
                     "type": "Point",
                     "coordinates": coordinates
                 },
-                "timeSlot" : timeSlot,
+                "timeSlot": timeSlot,
                 "laneDirection": direction,
                 "dateObserved": date
             }
 
         try:
+
             sendingResponse = requests.post(url_sending, headers=header, data=json.dumps(payload))
             sendingResponse.raise_for_status()  # Raise an error if the status code is not 2xx
         except requests.RequestException as e:
             raise Exception(f"Failed to send data to IoT Agent: {e}")
 
         if sendingResponse.status_code == 200 or sendingResponse.status_code == 201:
+            print("Data sent successfully to IoT Agent!")
+            time.sleep(3)
             try:
                 if self.cbReference is None:
                     self.cbReference = Broker(pn=self.brokerPortNumber, pnt=None, host=self.hostname, fiwareservice=self.fiwareService)
                 if self.cbConnection is None:
                     self.cbConnection = self.cbReference.createConnection()
+                print("Updating Context Broker entities linked to device: " + str(device_id) + "...")
+                time.sleep(3)
                 cbResponse = self.cbReference.updateContext(deviceID=device_id, date=date, timeSlot=timeSlot, trafficFlow=flow,
                                                   coordinates=coordinates,laneDirection=direction, cbConnection=self.cbConnection)
                 if cbResponse is True:

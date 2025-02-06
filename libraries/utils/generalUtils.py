@@ -80,6 +80,13 @@ def processingTlData(timeSlot, trafficData, roads: dict):
             trafficLoopIdentifier= "TL{}".format(str(row["ID_loop"]))
             trafficLoopSensor = roads[roadName].getSensor(trafficLoopIdentifier)
             if trafficLoopSensor is not None and trafficLoopSensor.name == "TL":
+                print("Sending new traffic loop measurement to IoT agent...")
+                print("ID Traffic Loop Device: " + str(trafficLoopSensor.devicePartialID))
+                print("Traffic Flow Measurment: " + str(trafficFlow))
+                print("Traffic Loop Position: [" + str(longitude) + ", " + str(latitude) + "]")
+                print("Road: " + str(roadName))
+
+                time.sleep(3)
                 trafficLoopSensor.sendData(date, timeSlot, trafficFlow, coordinates, direction,
                                            device_id=trafficLoopSensor.devicePartialID,
                                            device_key=trafficLoopSensor.apiKey)

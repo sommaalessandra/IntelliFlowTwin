@@ -12,9 +12,10 @@ from libraries.classes.TrafficModeler import TrafficModeler
 from mobilityvenv.MobilityVirtualEnvironment import setupPhysicalSystem, startPhysicalSystem
 from data.preprocessing import preprocessingSetup
 
-
+### TODO: Rearrangement of project functions and modules -> delete main and instead create functions on web app
 def configureCalibrateAndRun(dataFilePath: str, carFollowingModel: str, macroModelType: str, tau: str,
                              parameters: {}, date: str, timeslot: [], edge_id: str):
+
     configurationPath = SUMO_PATH + "/standalone"
     logFile = "./command_log.txt"
     sumoSimulator = Simulator(configurationPath=configurationPath, logFile=logFile)
@@ -45,7 +46,7 @@ def configureCalibrateAndRun(dataFilePath: str, carFollowingModel: str, macroMod
         typeFilePath, confPath = basemodel.vTypeGeneration(modelType=carFollowingModel, tau=tau,
                                                        additionalParam=parameters)
         basemodel.saveTrafficData(outputDataPath=typeFilePath + "/model.csv")
-        basemodel.runSimulation(withGui=False)
+        basemodel.runSimulation(withGui=True)
     confPath = projectPath + "/" + confPath
     basemodel.evaluateModel(edge_id=edge_id, confPath=confPath, outputFilePath=confPath + "/detectedFlow.csv")
     basemodel.evaluateError(detectedFlowPath=confPath + "/detectedFlow.csv", outputFilePath=confPath + "/error_summary.csv")
@@ -53,34 +54,12 @@ def configureCalibrateAndRun(dataFilePath: str, carFollowingModel: str, macroMod
     return confPath
 
 if __name__ == "__main__":
-    # #
-    # configurationPath = SUMO_PATH + "/standalone"
-    # logFile = "./command_log.txt"
-    # sumoSimulator = Simulator(configurationPath=configurationPath, logFile=logFile)
-    # model = TrafficModeler(simulator=sumoSimulator, trafficDataFile=PROCESSED_TRAFFIC_FLOW_EDGE_FILE_PATH, sumoNetFile=SUMO_NET_PATH,
-    #                        date='2024-02-01', timeSlot='20:00-21:00', modelType='underwood')
-    # model.saveTrafficData()
-    # generateFlow(inputFilePath=PROCESSED_TRAFFIC_FLOW_EDGE_FILE_PATH, modelFilePath=MODEL_DATA_FILE_PATH,
-    #              outputFilePath=FLOW_DATA_FILE_PATH, date='2024-02-01',
-    #              timeSlot='20:00-21:00')
-    # # generateEdgeFromFlow(inputFlowPath=FLOW_DATA_FILE_PATH, detectorFilePath=SUMO_DETECTORS_ADD_FILE_PATH,
-    # #                      outputEdgePath=EDGE_DATA_FILE_PATH)
-    # # model.evaluateModel(detectorFilePath=SUMO_DETECTORS_ADD_FILE_PATH, detectorOutputSUMO=SUMO_OUTPUT_PATH + "/detector.out.xml", outputFilePath=PROCESSED_DATA_PATH + "/detectedFlow.csv")
-    # # model.evaluateSpeedError(detectedFlowPath=PROCESSED_DATA_PATH + "/detectedFlow.csv")
-    # # model.plotModel(result=PROCESSED_DATA_PATH + "/detectedFlow.csv")
-    # typeFilePath = model.vTypeGeneration(modelType='IDM')
-    # # model.generateRandomRoute(sumoNetPath=libraries.constants.SUMO_NET_PATH)
-    # # model.generateRoute(inputEdgePath=EDGE_DATA_FILE_PATH, withInitialRoute=False)
-    # model.runSimulation()
-    # model.evaluateModel(detectorFilePath=SUMO_DETECTORS_ADD_FILE_PATH,
-    #                     detectorOutputSUMO=SUMO_OUTPUT_PATH + "/detector.out.xml",
-    #                     outputFilePath=typeFilePath + "/output/detectedFlow.csv")
-    # model.plotModel(result=typeFilePath + "/detectedFlow.csv")
+
 
     ### Instantiate a Trafic Modeler, specifing which macromodel you want to use to get the missing data (speed, density, etc.)
     configurationPath = SUMO_PATH + "/standalone"
     logFile = "./command_log.txt"
-    sumoSimulator = Simulator(configurationPath=configurationPath, logFile=logFile)
+    # sumoSimulator = Simulator(configurationPath=configurationPath, logFile=logFile)
 
     # getAverageEdgeLength(sumoNetFile=SUMO_NET_PATH)
     # model = TrafficModeler(simulator=sumoSimulator, trafficDataFile="data/processed_traffic_flow.csv", sumoNetFile=SUMO_NET_PATH,
@@ -92,28 +71,28 @@ if __name__ == "__main__":
     # configureCalibrateAndRun(dataFilePath=PROCESSED_TRAFFIC_FLOW_EDGE_FILE_PATH, carFollowingModel='W99',
     #                                    macroModelType="underwood", tau="1", parameters={"cc1": "1.5", "cc2": "10.0"},
     #                                    date='2024-02-01', timeslot=[0,1], edge_id='23288872#4')
-    for timeslot in range(0, 24):
-        if timeslot < 9:
-            model = TrafficModeler(simulator=sumoSimulator, trafficDataFile=PROCESSED_TRAFFIC_FLOW_EDGE_FILE_PATH,
-                                   sumoNetFile=SUMO_NET_PATH,
-                                   date='2024-02-01',
-                                   timeSlot='0' + str(timeslot) + ':00-' + '0' + str(timeslot + 1) + ':00',
-                                   modelType=macroModelType)
-        elif timeslot == 9:
-            model = TrafficModeler(simulator=sumoSimulator, trafficDataFile=PROCESSED_TRAFFIC_FLOW_EDGE_FILE_PATH,
-                                   sumoNetFile=SUMO_NET_PATH,
-                                   date='2024-02-01', timeSlot='0' + str(timeslot) + ':00-' + str(timeslot + 1) + ':00',
-                                   modelType=macroModelType)
-        else:
-            model = TrafficModeler(simulator=sumoSimulator, trafficDataFile=PROCESSED_TRAFFIC_FLOW_EDGE_FILE_PATH,
-                                   sumoNetFile=SUMO_NET_PATH,
-                                   date='2024-02-01', timeSlot=str(timeslot) + ':00-' + str(timeslot + 1) + ':00',
-                                   modelType=macroModelType)
+    # for timeslot in range(0, 24):
+    #     if timeslot < 9:
+    #         model = TrafficModeler(simulator=sumoSimulator, trafficDataFile=PROCESSED_TRAFFIC_FLOW_EDGE_FILE_PATH,
+    #                                sumoNetFile=SUMO_NET_PATH,
+    #                                date='2024-02-01',
+    #                                timeSlot='0' + str(timeslot) + ':00-' + '0' + str(timeslot + 1) + ':00',
+    #                                modelType=macroModelType)
+    #     elif timeslot == 9:
+    #         model = TrafficModeler(simulator=sumoSimulator, trafficDataFile=PROCESSED_TRAFFIC_FLOW_EDGE_FILE_PATH,
+    #                                sumoNetFile=SUMO_NET_PATH,
+    #                                date='2024-02-01', timeSlot='0' + str(timeslot) + ':00-' + str(timeslot + 1) + ':00',
+    #                                modelType=macroModelType)
+    #     else:
+    #         model = TrafficModeler(simulator=sumoSimulator, trafficDataFile=PROCESSED_TRAFFIC_FLOW_EDGE_FILE_PATH,
+    #                                sumoNetFile=SUMO_NET_PATH,
+    #                                date='2024-02-01', timeSlot=str(timeslot) + ':00-' + str(timeslot + 1) + ':00',
+    #                                modelType=macroModelType)
         # typeFilePath, confPath = model.vTypeGeneration(modelType=carFollowingModel, tau="1",
         #                                                additionalParam={"sigma": "0", "sigmaStep": "0.5"})
         # typeFilePath, confPath = model.vTypeGeneration(modelType='IDM', tau="1.5", additionalParam={"delta": "6","stepping": "0.1"})
-        typeFilePath, confPath = model.vTypeGeneration(modelType='W99', tau="1", additionalParam={"cc1": "1.5", "cc2": "10.0"})
-        model.saveTrafficData(outputDataPath=typeFilePath + "/model.csv")
+        # typeFilePath, confPath = model.vTypeGeneration(modelType='W99', tau="1", additionalParam={"cc1": "1.5", "cc2": "10.0"})
+        # model.saveTrafficData(outputDataPath=typeFilePath + "/model.csv")
         # model.runSimulation(withGui=False)
 
     # ### GENERATE flow.csv FILE TO BE FED INTO edgeDataFromFlow.py script to get edgedata.xml
@@ -142,10 +121,10 @@ if __name__ == "__main__":
     ### Evaluate model according to detector output afte SUMO simulation. It generates a .csv output file too, including
     ### speed and flow differences
 
-    model.evaluateModel(edge_id='23288872#4', confPath= confPath, outputFilePath= confPath + "/detectedFlow.csv")
+    # model.evaluateModel(edge_id='23288872#4', confPath= confPath, outputFilePath= confPath + "/detectedFlow.csv")
     # model.evaluateModelwithDetector(detectorFilePath="sumoenv/static/detectors.add.xml", detectorOutputSUMO="sumoenv/output/detector.out.xml",
     #                                 outputFilePath= typeFilePath + "/output/detectedFlow.csv")
-    model.evaluateError(detectedFlowPath= confPath + "/detectedFlow.csv", outputFilePath=confPath + "/error_summary.csv")
+    # model.evaluateError(detectedFlowPath= confPath + "/detectedFlow.csv", outputFilePath=confPath + "/error_summary.csv")
 
     ### If you include a result, it will plot simulation detected data, otherwise will plot macroscopic derived data (the model one)
     # model.plotModel(result=None)
@@ -155,12 +134,6 @@ if __name__ == "__main__":
 
     # 0. Pre-processing phase (to be run only once)
     # preprocessingSetup.run()
-
-    # model = TrafficModeler(simulator=sumoSimulator, trafficDataFile=PROCESSED_TRAFFIC_FLOW_EDGE_FILE_PATH, sumoNetFile=SUMO_NET_PATH,
-    #                        date='2024-02-01', timeSlot='07:00-08:00', modelType='underwood')
-    # model.generateRandomRoute(sumoNetPath=libraries.constants.SUMO_NET_PATH, outputRoutePath=SUMO_PATH + '/sampleRoutes.rou.xml')
-    # model.saveTrafficData()
-    # model.plotModel()
 
     # 1. Instantiate Orion CB, IoT Agent and create three types of subscriptions.
     envVar = loadEnvVar(CONTAINER_ENV_FILE_PATH)

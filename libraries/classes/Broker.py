@@ -10,8 +10,8 @@
 #       - RoadEntityError, RoadSegmentEntityError, TrafficFlowObservedError: Specific exceptions for errors related
 #           to road, road segment, and traffic flow observed entities.
 # ****************************************************
-
-
+import json
+import time
 from ngsildclient import Client, Entity, Rel
 from typing import Optional, List, Tuple
 from libraries.classes.DigitalShadowManager import DigitalShadowManager
@@ -338,12 +338,23 @@ class Broker:
             cEntity["trafficFlow"].value = newFlow
             cEntity.tprop("DateTime",date)
             cEntity.prop('timeslot', timeslot)
+            # print("Updating RoadSegment Entity: " + json.dumps(cEntity.to_json(), indent=4))
+            output = json.dumps(json.loads(cEntity.to_json()), indent=4, ensure_ascii=False)
+            print("Updating RoadSegment Entity: ")
+            time.sleep(1)
+            print(output)
+            time.sleep(3)
             response = cbConnection.update(cEntity, overwrite=True)
             return response
         elif eType=="TrafficFlowObserved":
             cEntity["trafficFlow"].value = newFlow
             cEntity.tprop('DateTime',date)
             cEntity.prop('timeslot', timeslot)
+            output = json.dumps(json.loads(cEntity.to_json()), indent=4, ensure_ascii=False)
+            print("Updating TrafficFlowObserved Entity: ")
+            time.sleep(1)
+            print(output)
+            time.sleep(3)
             response = cbConnection.update(cEntity, overwrite=True)
             return response
         else:
