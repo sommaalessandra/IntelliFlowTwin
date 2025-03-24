@@ -341,9 +341,9 @@ class Broker:
             # print("Updating RoadSegment Entity: " + json.dumps(cEntity.to_json(), indent=4))
             output = json.dumps(json.loads(cEntity.to_json()), indent=4, ensure_ascii=False)
             print("Updating RoadSegment Entity: ")
-            time.sleep(1)
+            # time.sleep(1)
             print(output)
-            time.sleep(3)
+            # time.sleep(3)
             response = cbConnection.update(cEntity, overwrite=True)
             return response
         elif eType=="TrafficFlowObserved":
@@ -352,9 +352,9 @@ class Broker:
             cEntity.prop('timeslot', timeslot)
             output = json.dumps(json.loads(cEntity.to_json()), indent=4, ensure_ascii=False)
             print("Updating TrafficFlowObserved Entity: ")
-            time.sleep(1)
+            # time.sleep(1)
             print(output)
-            time.sleep(3)
+            # time.sleep(3)
             response = cbConnection.update(cEntity, overwrite=True)
             return response
         else:

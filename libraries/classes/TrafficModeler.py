@@ -352,7 +352,7 @@ class TrafficModeler:
         # plt.show()
 
 
-    def compareResults(self, resultFilePath: str, y_axis = "flow"):
+    def compareResults(self, resultPath: str, y_axis = "flow"):
         def timeslot_to_numeric(timeslot):
             start_hour, start_min, end_hour, end_min = map(int, timeslot.split('-'))
             # Calcolo del tempo in secondi dall'inizio del giorno
@@ -361,78 +361,123 @@ class TrafficModeler:
             # Restituisci il valore medio del timeslot per l'ordinamento
             return (start_seconds + end_seconds) / 2
 
-        data = pd.read_csv(resultFilePath, delimiter=';')
+        files = [f for f in os.listdir(resultPath) if f.startswith("detectedFlow") and f.endswith(".csv")]
+        # Lista per salvare i DataFrame con i parametri estratti
+        dfs = []
+        detected_flow = []
+        detected_speed = []
+        detected_density = []
+        spl_flow = []
+        spl_speed = []
+        spl_density = []
+        y_smooth_flow = []
+        y_smooth_speed = []
+        y_smooth_density = []
+        i = 0
+        for file in files:
+            # Estrai il nome del file senza percorso
+            filename = os.path.basename(file)
 
-        data['timeslot_numeric'] = data['timeslot'].apply(timeslot_to_numeric)
-        data = data.sort_values(by='timeslot_numeric')
-        # Interpolazione per i dati rilevati
+            # Estrai i parametri dal nome del file
+            parts = filename.replace(".csv", "").split("_")  # Divide il nome in base a "_"
+            t_value = parts[1]  # "t1"
+            ap_values = parts[2:]  # ["ap1", "ap5"]
 
-        spl1 = UnivariateSpline(data['timeslot_numeric'], data['detected_flow_1'], s=0)
-        spl2 = UnivariateSpline(data['timeslot_numeric'], data['detected_speed_1'], s=0)
-        spl3 = UnivariateSpline(data['timeslot_numeric'], data['detected_density_1'], s=0)
-        spl4 = UnivariateSpline(data['timeslot_numeric'], data['detected_flow_2'], s=0)
-        spl5 = UnivariateSpline(data['timeslot_numeric'], data['detected_speed_2'], s=0)
-        spl6 = UnivariateSpline(data['timeslot_numeric'], data['detected_density_2'], s=0)
-        spl7 = UnivariateSpline(data['timeslot_numeric'], data['detected_flow_3'], s=0)
-        spl8 = UnivariateSpline(data['timeslot_numeric'], data['detected_speed_3'], s=0)
-        spl9 = UnivariateSpline(data['timeslot_numeric'], data['detected_density_3'], s=0)
-        x_smooth = np.linspace(data['timeslot_numeric'].min(), data['timeslot_numeric'].max(), 500)
-        y_smooth1 = spl1(x_smooth)
-        y_smooth2 = spl2(x_smooth)
-        y_smooth3 = spl3(x_smooth)
-        y_smooth4 = spl4(x_smooth)
-        y_smooth5 = spl5(x_smooth)
-        y_smooth6 = spl6(x_smooth)
-        y_smooth7 = spl7(x_smooth)
-        y_smooth8 = spl8(x_smooth)
-        y_smooth9 = spl9(x_smooth)
+            # Leggi il CSV
+            data = pd.read_csv(resultPath + '/' + file, delimiter=';')
+            data['timeslot_numeric'] = data['timeslot'].apply(timeslot_to_numeric)
+            data = data.sort_values(by='timeslot_numeric')
+            detected_flow.append(data['detected_flow'])
+            detected_speed.append(data['detected_speed'])
+            detected_density.append(data['detected_density'])
+            spl_flow.append(UnivariateSpline(data['timeslot_numeric'], data['detected_flow'], s=0))
+            spl_speed.append(UnivariateSpline(data['timeslot_numeric'], data['detected_speed'], s=0))
+            spl_density.append(UnivariateSpline(data['timeslot_numeric'], data['detected_density'], s=0))
+            x_smooth = np.linspace(data['timeslot_numeric'].min(), data['timeslot_numeric'].max(), 500)
+            y_smooth_flow.append(spl_flow[i](x_smooth))
+            y_smooth_speed.append(spl_speed[i](x_smooth))
+            y_smooth_density.append(spl_density[i](x_smooth))
+            i += 1
+
+
+        # data = pd.read_csv(resultPath, delimiter=';')
+        #
+        # data['timeslot_numeric'] = data['timeslot'].apply(timeslot_to_numeric)
+        # data = data.sort_values(by='timeslot_numeric')
+        # # Interpolazione per i dati rilevati
+        #
+        # spl1 = UnivariateSpline(data['timeslot_numeric'], data['detected_flow_1'], s=0)
+        # spl2 = UnivariateSpline(data['timeslot_numeric'], data['detected_speed_1'], s=0)
+        # spl3 = UnivariateSpline(data['timeslot_numeric'], data['detected_density_1'], s=0)
+        # spl4 = UnivariateSpline(data['timeslot_numeric'], data['detected_flow_2'], s=0)
+        # spl5 = UnivariateSpline(data['timeslot_numeric'], data['detected_speed_2'], s=0)
+        # spl6 = UnivariateSpline(data['timeslot_numeric'], data['detected_density_2'], s=0)
+        # spl7 = UnivariateSpline(data['timeslot_numeric'], data['detected_flow_3'], s=0)
+        # spl8 = UnivariateSpline(data['timeslot_numeric'], data['detected_speed_3'], s=0)
+        # spl9 = UnivariateSpline(data['timeslot_numeric'], data['detected_density_3'], s=0)
+        # x_smooth = np.linspace(data['timeslot_numeric'].min(), data['timeslot_numeric'].max(), 500)
+        # y_smooth1 = spl1(x_smooth)
+        # y_smooth2 = spl2(x_smooth)
+        # y_smooth3 = spl3(x_smooth)
+        # y_smooth4 = spl4(x_smooth)
+        # y_smooth5 = spl5(x_smooth)
+        # y_smooth6 = spl6(x_smooth)
+        # y_smooth7 = spl7(x_smooth)
+        # y_smooth8 = spl8(x_smooth)
+        # y_smooth9 = spl9(x_smooth)
         # Crea lo scatterplot
-        fig, axes = plt.subplots(1, 3, figsize=(21, 6))
-        fig.legend(loc="upper left")
+        # fig, axes = plt.subplots(1, 3, figsize=(21, 6))
+        # fig.legend(loc="upper left")
+        plt.figure(figsize=(14, 12))
         # Primo asse: Velocità-Densità
         # ax1.plot(density_range, velocity_theoretical, label="Velocità teorica", color="blue")
-        axes[0].scatter(data['timeslot_numeric'], data['detected_flow_1'], label="Detected Standard Krauss Flow", color="blue", alpha=0.7)
-        axes[0].plot(x_smooth, y_smooth1, color='blue', linestyle='-', label='Detected Standard Krauss Curve')
-        axes[0].scatter(data['timeslot_numeric'], data['detected_flow_2'], label="Detected Imperfect Krauss Flow", color="green", alpha=0.7)
-        axes[0].plot(x_smooth, y_smooth4, color='green', linestyle='-', label='Detected Imperfect Krauss Curve')
-        axes[0].scatter(data['timeslot_numeric'], data['detected_flow_3'], label="Detected Perfect Krauss Flow", color="red", alpha=0.7)
-        axes[0].plot(x_smooth, y_smooth7, color='red', linestyle='-', label='Detected Perfect Krauss Curve')
-        axes[0].scatter(data['timeslot_numeric'], data['real_flow'], label="Real Flow", color="black", alpha=0.7)
+        # axes[0].scatter(data['timeslot_numeric'], detected_flow[0], label="Detected Standard Krauss Flow", color="blue", alpha=0.7)
+        # axes[0].plot(x_smooth, y_smooth_flow[0], color='blue', linestyle='-', label='Detected Standard Krauss Curve')
+        # axes[0].scatter(data['timeslot_numeric'], detected_flow[1], label="Detected Perfect Krauss Flow", color="red", alpha=0.7)
+        # axes[0].plot(x_smooth, y_smooth_flow[1], color='green', linestyle='-', label='Detected Imperfect Krauss Curve')
+        # axes[0].scatter(data['timeslot_numeric'], detected_flow[2], label="Detected Imperfect Krauss Flow", color="green", alpha=0.7)
+        # axes[0].plot(x_smooth, y_smooth_flow[2], color='red', linestyle='-', label='Detected Perfect Krauss Curve')
+        # axes[0].scatter(data['timeslot_numeric'], data['real_flow'], label="Real Flow", color="black", alpha=0.7)
+        #
+        # axes[0].set_xlabel("Time")
+        # axes[0].set_ylabel("Flow (vehicles/h)")
+        # axes[0].tick_params(axis="y")
 
-        axes[0].set_xlabel("Time")
-        axes[0].set_ylabel("Flow (vehicles/h)")
-        axes[0].tick_params(axis="y")
-        axes[0].legend(loc="upper left")
-        axes[0].grid(True, linestyle='--', alpha=0.6)
+        # axes[0].grid(True, linestyle='--', alpha=0.6)
         # Secondo asse: Flusso-Densità
-        axes[1].scatter(data['timeslot_numeric'], data['detected_speed_1'], label="Detected Krauss Speed", color="blue", alpha=0.7)
-        axes[1].scatter(data['timeslot_numeric'], data['detected_speed_2'], label="Detected Imperfect Krauss Speed", color="green", alpha=0.7)
-        axes[1].scatter(data['timeslot_numeric'], data['detected_speed_3'], label="Detected Perfect Krauss Speed", color="red", alpha=0.7)
-        axes[1].scatter(data['timeslot_numeric'], data['real_speed'], label="Real Speed", color="black", alpha=0.7)
-        axes[1].plot(x_smooth, y_smooth2, color='blue', linestyle='-', label='Detected Standard Krauss Curve')
-        axes[1].plot(x_smooth, y_smooth5, color='green', linestyle='-', label='Detected Imperfect Krauss Curve')
-        axes[1].plot(x_smooth, y_smooth8, color='red', linestyle='-', label='Detected Perfect Krauss Curve')
-        axes[1].set_xlabel("Time")
-        axes[1].set_ylabel("Speed (m/s)")
-        axes[1].tick_params(axis="y", labelcolor="green")
-        # axes[1].legend(loc="upper right")
+        plt.scatter(data['timeslot_numeric'], detected_speed[0], label="Detected Krauss Speed", color="blue", alpha=0.7)
+        plt.scatter(data['timeslot_numeric'], detected_speed[1], label="Detected Perfect Krauss Speed", color="red", alpha=0.7)
+        plt.scatter(data['timeslot_numeric'], detected_speed[2], label="Detected Imperfect Krauss Speed", color="green", alpha=0.7)
+        plt.scatter(data['timeslot_numeric'], data['real_speed'], label="Real Speed", color="black", alpha=0.7)
+        plt.plot(x_smooth, y_smooth_speed[0], color='blue', linestyle='-', label='Detected Standard Krauss Curve')
+        plt.plot(x_smooth, y_smooth_speed[1], color='red', linestyle='-', label='Detected Perfect Krauss Curve')
+        plt.plot(x_smooth, y_smooth_speed[2], color='green', linestyle='-', label='Detected Imperfect Krauss Curve')
+        plt.xlabel("Time")
+        plt.ylabel("Speed (m/s)")
+        plt.tick_params(axis="y", labelcolor="black")
+        plt.legend(['Detected Standard Krauss Curve', 'Detected Perfect Krauss Curve', 'Detected Imperfect Krauss Curve', 'Real Speed'],loc="upper left")
+        plt.title(f"Comparison Between Krauss and IDM model Speed (tau=1)")
+        plt.show()
 
-        axes[2].scatter(data['timeslot_numeric'], data['detected_density_1'], label="Detected Standard Krauss Density", color="blue",
+        plt.figure(figsize=(14, 12))  # Crea una nuova figura
+        plt.scatter(data['timeslot_numeric'], detected_density[0], label="Detected Standard Krauss Density", color="blue",
                         alpha=0.7)
-        axes[2].scatter(data['timeslot_numeric'], data['detected_density_2'], label="Detected Imperfect Krauss Density", color="green",
+        plt.scatter(data['timeslot_numeric'], detected_density[1], label="Detected Perfect Krauss Density", color="red",
                         alpha=0.7)
-        axes[2].scatter(data['timeslot_numeric'], data['detected_density_3'], label="Detected Perfect Krauss Density", color="red",
+        plt.scatter(data['timeslot_numeric'], detected_density[2], label="Detected Imperfect Krauss Density", color="green",
                         alpha=0.7)
-        axes[2].scatter(data['timeslot_numeric'], data['real_density'], label="Real Density", color="black", alpha=0.7)
-        axes[2].plot(x_smooth, y_smooth3, color='blue', linestyle='-', label='Detected Standard Krauss Curve')
-        axes[2].plot(x_smooth, y_smooth6, color='green', linestyle='-', label='Detected Imperfect Krauss Curve')
-        axes[2].plot(x_smooth, y_smooth9, color='red', linestyle='-', label='Detected Perfect Krauss Curve')
-        axes[2].set_xlabel("Time")
-        axes[2].set_ylabel("Density (vehicle/m)")
-        axes[2].tick_params(axis="y", labelcolor="green")
+        plt.scatter(data['timeslot_numeric'], data['real_density'], label="Real Density", color="black", alpha=0.7)
+        plt.plot(x_smooth, y_smooth_density[0], color='blue', linestyle='-', label='Detected Standard Krauss Curve')
+        plt.plot(x_smooth, y_smooth_density[1], color='red', linestyle='-', label='Detected Perfect Krauss Curve')
+        plt.plot(x_smooth, y_smooth_density[2], color='green', linestyle='-', label='Detected Imperfect Krauss Curve')
+        plt.xlabel("Time")
+        plt.ylabel("Density (vehicle/m)")
+        plt.tick_params(axis="y", labelcolor="black")
+        plt.legend(['Detected Standard Krauss Curve', 'Detected Perfect Krauss Curve', 'Detected Imperfect Krauss Curve', 'Real Density'],loc="upper left")
+        plt.title(f"Comparison Between Krauss and IDM model Density (tau=1)")
         # axes[2].legend(loc="upper right")
         # Titolo e layout
-        plt.title(f"Comparison Between Krauss and IDM model (tau=1.5)")
+
         plt.tight_layout()
         plt.show()
 

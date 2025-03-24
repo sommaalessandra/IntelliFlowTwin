@@ -6,6 +6,14 @@ import time
 from datetime import datetime, timedelta
 import random
 
+from bson import ObjectId
+from pymongo import MongoClient
+
+from libraries.classes.TrafficModeler import TrafficModeler
+from libraries.constants import SUMO_PATH, SUMO_NET_PATH, PROCESSED_TRAFFIC_FLOW_EDGE_FILE_PATH
+from libraries.classes.SumoSimulator import Simulator
+
+
 def readingFiles(folder: str):
     """
     Read all CSV files in the specified folder, using the file names as dictionary keys.
@@ -68,6 +76,10 @@ def processingTlData(trafficData, trafficLoop):
 '''
 
 def processingTlData(timeSlot, trafficData, roads: dict):
+    timestamps = []
+    client = MongoClient("mongodb://localhost:27017/")
+    db = client["orion-openiot"]
+    collection = db["entities"]
     for index, row in trafficData.iterrows():
         trafficFlow = row["flow"]
         raw_coordinates = row["geopoint"]
@@ -76,21 +88,80 @@ def processingTlData(timeSlot, trafficData, roads: dict):
         direction = str(row["direction"])
         roadName = row['road_name']
         date = row['date']
+
         if roadName in roads:
             trafficLoopIdentifier= "TL{}".format(str(row["ID_loop"]))
             trafficLoopSensor = roads[roadName].getSensor(trafficLoopIdentifier)
+            partial_id = trafficLoopSensor.devicePartialID
+            entry = collection.find_one({"_id.id": {"$regex": partial_id}})
+            if index == len(trafficData) - 1:
+                old_mod_date = entry["modDate"] if entry else None
+
+
             if trafficLoopSensor is not None and trafficLoopSensor.name == "TL":
+                if index == 0:
+                    first_start_time = time.time_ns() / 1e9
+
+                start_time = time.time_ns()
+                # timestamps.append({"evento": "Start", "Sensor TL": str(trafficLoopSensor.devicePartialID),"start_timestamp": start_time})
                 print("Sending new traffic loop measurement to IoT agent...")
                 print("ID Traffic Loop Device: " + str(trafficLoopSensor.devicePartialID))
                 print("Traffic Flow Measurment: " + str(trafficFlow))
                 print("Traffic Loop Position: [" + str(longitude) + ", " + str(latitude) + "]")
                 print("Road: " + str(roadName))
 
-                time.sleep(3)
+                # time.sleep(3)
                 trafficLoopSensor.sendData(date, timeSlot, trafficFlow, coordinates, direction,
                                            device_id=trafficLoopSensor.devicePartialID,
                                            device_key=trafficLoopSensor.apiKey)
-        time.sleep(1) #simulating a sort of delay among entries
+                end_time = time.time_ns()
+                if index == len(trafficData) - 1:
+                    new_mod_date = wait_for_mod_date_change(entry_id=partial_id, old_mod_date=old_mod_date)
+                    # new_mod_date = str(new_mod_date)
+                    # new_mod_date = int(new_mod_date[:11])
+                    # first_start_time = str(first_start_time)
+                    # first_start_time = int(first_start_time[:11])
+                    elapsed_time = (new_mod_date-first_start_time)
+                    elapsed_time = f"{int(elapsed_time)},{str(round(elapsed_time % 1, 4))[2:]}"
+                    timestamps.append({"evento": "One Hour Measurement", "Sensor TL": "All","start_timestamp": first_start_time, "end_timestamp": new_mod_date,
+                                       "elapsed_time": elapsed_time})
+                else:
+                    timestamps.append({"evento": "Sending Data", "Sensor TL": str(trafficLoopSensor.devicePartialID),"start_timestamp": start_time, "end_timestamp": end_time,
+                                    "elapsed_time": end_time-start_time})
+    configurationPath = SUMO_PATH + "/standalone"
+    logFile = "./command_log.txt"
+    sumoSimulator = Simulator(configurationPath=configurationPath, logFile=logFile)
+    print("Instantiating a Traffic Modeler...")
+    basemodel = TrafficModeler(simulator=sumoSimulator, trafficDataFile=PROCESSED_TRAFFIC_FLOW_EDGE_FILE_PATH,
+                               sumoNetFile=SUMO_NET_PATH,
+                               date='2024-02-01',
+                               timeSlot=timeSlot,
+                               modelType="greenshield")
+    basemodel.saveTrafficData(outputDataPath="time/tm_time/model.csv")
+    modeled_time = time.time_ns() / 1e9
+    basemodel.vTypeGeneration(modelType="W99", tau="1.5",
+                                                       additionalParam={"cc1": "1.3", "cc2": "8"})
+    basemodel.runSimulation(withGui=False)
+    simulated_time = time.time_ns() / 1e9
+    # modeled_time = str(modeled_time)
+    # modeled_time = int(modeled_time[:11])
+    elapsed_modeling_time = (modeled_time - first_start_time)
+    elapsed_modeling_time = f"{int(elapsed_modeling_time)},{str(round(elapsed_modeling_time % 1, 4))[2:]}"
+    elapsed_simulating_time = (simulated_time - first_start_time)
+    elapsed_simulating_time = f"{int(elapsed_simulating_time)},{str(round(elapsed_simulating_time % 1, 4))[2:]}"
+    timestamps.append(
+        {"evento": "Sending Data", "Sensor TL": str(trafficLoopSensor.devicePartialID), "start_timestamp": start_time,
+         "end_timestamp": end_time,
+         "elapsed_time": end_time - start_time})
+    timestamps.append({"evento": "Time After Modeling", "Sensor TL": "All", "start_timestamp": first_start_time,
+                       "end_timestamp": modeled_time,
+                       "elapsed_time": elapsed_modeling_time})
+    timestamps.append({"evento": "Time After Simulating", "Sensor TL": "All", "start_timestamp": first_start_time,
+                       "end_timestamp": simulated_time,
+                       "elapsed_time": elapsed_simulating_time})
+    df = pd.DataFrame(timestamps)
+    df.to_csv("time/tm_sim_time/timestamps-" + str(timeSlot.replace(':', '-')) + ".csv", index=False, sep=';')
+        # time.sleep(1) #simulating a sort of delay among entries
 
 
 #Function to convert geopoint format having a number without dots
@@ -114,6 +185,9 @@ def convertDate(date: str, timeslot: str):
     # Extract start and end times in 24-hour format
     start_time, end_time = timeslot.split("-")
     end_hour_24 = int(end_time.split(":")[0])
+    if end_hour_24 == 24:
+        end_hour_24 = 0
+        day += 1
     # Generate a random delay in minutes (between 0 and 10)
     random_delay = random.randint(0, 10)
     # Combine date and end time to create a datetime object for the end time of the timeslot
@@ -124,3 +198,16 @@ def convertDate(date: str, timeslot: str):
     d = final_time.strftime("%Y-%m-%dT%H:%M:%S") + "Z"
     return d
 
+# Funzione per attendere l'aggiornamento di modDate
+def wait_for_mod_date_change(entry_id, old_mod_date, timeout=60, interval=1):
+    client = MongoClient("mongodb://localhost:27017/")
+    db = client["orion-openiot"]
+    collection = db["entities"]
+    start_time = time.time()
+    while time.time() - start_time < timeout:
+        entry = collection.find_one({"_id.id": {"$regex": entry_id}})
+        new_mod_date = entry["modDate"] if entry else None
+        if new_mod_date != old_mod_date:
+            return new_mod_date
+        time.sleep(interval)  # Aspetta prima di ricontrollare
+    return old_mod_date  # Timeout: ritorna il vecchio valore

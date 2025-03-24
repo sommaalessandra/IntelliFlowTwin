@@ -109,9 +109,12 @@ def startPhysicalSystem(roads: dict[int, PhysicalSystemConnector]):
     [trafficData, files] = readingFiles(REAL_TRAFFIC_FLOW_DATA_MVENV_PATH)
     for i, file in enumerate(files):
         tlColumnsNames = ["index", "date", "flow", "road_name", "ID_loop", "geopoint", "direction"]
-        for i in range(23):
+        for i in range(0,24):
             # the time slot column reports the number of cars that passed through a traffic loop sensor during that time frame (the traffic flow in that slot)
-            tempTimeSlot = str(datetime.time(i).strftime("%H:00")) + '-' + str(datetime.time(i+1).strftime("%H:00"))
+            if i <23:
+                tempTimeSlot = str(datetime.time(i).strftime("%H:00")) + '-' + str(datetime.time(i+1).strftime("%H:00"))
+            else:
+                tempTimeSlot = "23:00-24:00"
             tempData = trafficData[file][["index", "data", tempTimeSlot, "Nome via", "ID_univoco_stazione_spira", "geopoint", "direzione"]]
             tempData.columns = tlColumnsNames
             processingTlData(tempTimeSlot, tempData, roads)

@@ -46,11 +46,20 @@ def configureCalibrateAndRun(dataFilePath: str, carFollowingModel: str, macroMod
         typeFilePath, confPath = basemodel.vTypeGeneration(modelType=carFollowingModel, tau=tau,
                                                        additionalParam=parameters)
         basemodel.saveTrafficData(outputDataPath=typeFilePath + "/model.csv")
-        basemodel.runSimulation(withGui=True)
+        basemodel.runSimulation(withGui=False)
     confPath = projectPath + "/" + confPath
-    basemodel.evaluateModel(edge_id=edge_id, confPath=confPath, outputFilePath=confPath + "/detectedFlow.csv")
-    basemodel.evaluateError(detectedFlowPath=confPath + "/detectedFlow.csv", outputFilePath=confPath + "/error_summary.csv")
-    basemodel.plotTemporalResults(resultFilePath=confPath + "/detectedFlow.csv", showImage=False)
+    paramvalues = list(parameters.values())
+    print(str(paramvalues[0]))
+    basemodel.evaluateModel(edge_id=edge_id, confPath=confPath, outputFilePath=confPath + "/detectedFlow_t" + str(tau)
+                                                                               + "_ap" + str(paramvalues[0]) + "_ap" + str(paramvalues[1]) + ".csv")
+    basemodel.evaluateError(detectedFlowPath=confPath + "/detectedFlow_t" + str(tau) + "_ap" + str(paramvalues[0])
+                                           +  "_ap" + str(paramvalues[1]) + ".csv",
+                            outputFilePath=confPath + "/error_summary_t"+ str(tau)
+                                           + "_ap" + str(paramvalues[0]) + "_ap" + str(paramvalues[1]) +".csv")
+    basemodel.plotTemporalResults(resultFilePath=confPath + "/detectedFlow_t" + str(tau) + "_ap" + str(paramvalues[0])
+                                           +  "_ap" + str(paramvalues[1]) + ".csv", showImage=False)
+    # basemodel.compareResults(resultPath=confPath)
+    # basemodel.plotModel(result=None)
     return confPath
 
 if __name__ == "__main__":
@@ -68,9 +77,11 @@ if __name__ == "__main__":
     macroModelType = "underwood"
     carFollowingModel = "W99"
 
-    # configureCalibrateAndRun(dataFilePath=PROCESSED_TRAFFIC_FLOW_EDGE_FILE_PATH, carFollowingModel='W99',
-    #                                    macroModelType="underwood", tau="1", parameters={"cc1": "1.5", "cc2": "10.0"},
-    #                                    date='2024-02-01', timeslot=[0,1], edge_id='23288872#4')
+    # configureCalibrateAndRun(dataFilePath=PROCESSED_TRAFFIC_FLOW_EDGE_FILE_PATH, carFollowingModel='Krauss',
+    #                                    macroModelType="vanaerde", tau="1.5", parameters={"sigma": "0", "sigmaStep": "0.5"},
+    #                                    date='2024-02-01', timeslot=[0,24], edge_id='23288872#4')
+
+
     # for timeslot in range(0, 24):
     #     if timeslot < 9:
     #         model = TrafficModeler(simulator=sumoSimulator, trafficDataFile=PROCESSED_TRAFFIC_FLOW_EDGE_FILE_PATH,
@@ -147,7 +158,7 @@ if __name__ == "__main__":
     IoTAgent = Agent(aid="01", hostname="localhost", cb_port=cbport, south_port=iotasouth, northport=iotanorth, fw_service="openiot", fw_path="/")
     quantumLeapManager = QuantumLeapManager(containerName="fiware-quantumleap", cbPort=cbport, quantumleapPort=quantumleapPort)
 
-    quantumLeapManager.createQuantumLeapSubscription(cbConnection=cbConnection, entityType="Road Segment", attribute="trafficFlow", description="Notify me of Traffic Flow")
+    quantumLeapManager.createQuantumLeapSubscription(cbConnection=cbConnection, entityType="RoadSegment", attribute="trafficFlow", description="Notify me of Traffic Flow")
     quantumLeapManager.createQuantumLeapSubscription(cbConnection=cbConnection, entityType="trafficflowobserved", attribute="trafficFlow", description="Notify me of Traffic Flow")
     quantumLeapManager.createQuantumLeapSubscription(cbConnection=cbConnection, entityType="Device", attribute="trafficFlow", description="Notify me of traffic Flow")
 
