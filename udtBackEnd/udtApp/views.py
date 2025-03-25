@@ -11,8 +11,17 @@ from django.http import HttpResponse
 from django.shortcuts import render
 from django.contrib import messages
 
-from libraries.constants import PROCESSED_TRAFFIC_FLOW_EDGE_FILE_PATH
-from main import configureCalibrateAndRun
+from libraries.constants import PROCESSED_TRAFFIC_FLOW_EDGE_FILE_PATH, SUMO_PATH, CONTAINER_ENV_FILE_PATH
+from libraries.classes.DigitalTwinManager import DigitalTwinManager
+from libraries.classes.DataManager import *
+from libraries.classes.Planner import Planner
+from libraries.classes.DigitalTwinManager import DigitalTwinManager
+from libraries.classes.Agent import *
+from libraries.classes.SumoSimulator import Simulator
+from libraries.classes.SubscriptionManager import QuantumLeapManager
+from libraries.classes.Broker import Broker
+from libraries.utils.generalUtils import loadEnvVar
+# from libraries.classes.DigitalTwinManager import configureCalibrateAndRun
 from .forms import ConfigForm
 from .models import Device
 
@@ -141,7 +150,23 @@ def simulation(request):
 #     return render(request, 'udtApp/simulationScenario.html', context)
 
 def simulationModeler(request):
+    envVar = loadEnvVar(CONTAINER_ENV_FILE_PATH)
+    timescalePort = envVar.get("TIMESCALE_DB_PORT")
     if request.method == 'POST':
+        timescaleManager = TimescaleManager(
+            host="localhost",
+            port=timescalePort,
+            dbname="quantumleap",
+            username="postgres",
+            password="postgres"
+        )
+        dataManager = DataManager("TwinDataManager")
+        dataManager.addDBManager(timescaleManager)
+        configurationPath = SUMO_PATH + "/standalone"
+        logFile = SUMO_PATH + "/standalone/command_log.txt"
+        sumoSimulator = Simulator(configurationPath=configurationPath, logFile=logFile)
+        twinManager = DigitalTwinManager(dataManager=dataManager, simulator=sumoSimulator,
+                                         sumoConfigurationPath=configurationPath, sumoLogFile=logFile)
         form = ConfigForm(request.POST)
         if form.is_valid():
             messages.success(request, "Simulation Completed!")
@@ -161,7 +186,7 @@ def simulationModeler(request):
             if data['car_following_model'] == 'Krauss':
                 params['sigma'] = str(data['sigma'])
                 params['sigmaStep'] = str(data['sigma_step'])
-                folderResult = configureCalibrateAndRun(dataFilePath=PROCESSED_TRAFFIC_FLOW_EDGE_FILE_PATH,
+                folderResult = twinManager.configureCalibrateAndRun(dataFilePath=PROCESSED_TRAFFIC_FLOW_EDGE_FILE_PATH,
                                                   macroModelType=params['macromodel'],
                                                   carFollowingModel=params['car_following_model'], tau=params['tau'],
                                                   parameters=params,
@@ -169,7 +194,7 @@ def simulationModeler(request):
             elif data['car_following_model'] == 'IDM':
                 params['delta'] = str(data['delta'])
                 params['stepping'] = str(data['stepping'])
-                folderResult = configureCalibrateAndRun(dataFilePath=PROCESSED_TRAFFIC_FLOW_EDGE_FILE_PATH,
+                folderResult = twinManager.configureCalibrateAndRun(dataFilePath=PROCESSED_TRAFFIC_FLOW_EDGE_FILE_PATH,
                                                   macroModelType=params['macromodel'],
                                                   carFollowingModel=params['car_following_model'], tau=params['tau'],
                                                   parameters=params,
@@ -178,7 +203,7 @@ def simulationModeler(request):
             elif data['car_following_model'] == 'W99':
                 params['cc1'] = str(data['cc1'])
                 params['cc2'] = str(data['cc2'])
-                folderResult = configureCalibrateAndRun(dataFilePath=PROCESSED_TRAFFIC_FLOW_EDGE_FILE_PATH,
+                folderResult = twinManager.configureCalibrateAndRun(dataFilePath=PROCESSED_TRAFFIC_FLOW_EDGE_FILE_PATH,
                                                   macroModelType=params['macromodel'],
                                                   carFollowingModel=params['car_following_model'], tau=params['tau'],
                                                   parameters=params,

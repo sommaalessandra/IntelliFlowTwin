@@ -15,14 +15,22 @@ from libraries.constants import SUMO_PATH, SUMO_NET_PATH, SUMO_DETECTORS_ADD_FIL
 
 class TrafficModeler:
     """
-    A class that manages and compares traffic patterns based on the actual data provided as input
+    A class that manages and compares traffic patterns based on the actual data provided as input. There are functions
+    for constructing estimates from macroscopic models and functions for customizing car-following models used in the
+    simulation phase
 
     Attributes:
-        trafficDataFile (pandas DataFrame): dataframe containing traffic measurement.
+        trafficData (pandas DataFrame): dataframe containing traffic measurement.
+        macroscopicData (list): list of macroscopic data linked to specific induction loop location
         sumoNet (sumolib.net): sumolib class that contains the road network information representable on SUMO
+        simulator (SumoSimulator): instance of SumoSimulator class that manages and runs SUMO simulations
+        modelType (str): name of the macroscopic model type to apply when building estimations
+        date (str): date on which the measurements to be modeled were taken
+        timeslot (str): hourly timeslot on which the measurements to be modeled were taken
     """
 
-    trafficData: []
+    trafficData: pd.DataFrame
+    macroscopicData: []
     sumoNet: sumolib.net
     simulator: Simulator
     modelType: str
@@ -40,30 +48,102 @@ class TrafficModeler:
         self.simulator = simulator
         trafficDataDf = pd.read_csv(trafficDataFile, sep=';')
         if date is not None:
-            trafficDataDf = trafficDataDf[trafficDataDf['data'].str.contains(date)]
+            self.trafficData = trafficDataDf[trafficDataDf['data'].str.contains(date)]
             self.date = date
         self.timeSlot = timeSlot
         self.timeSlot = self.timeSlot.replace(':', '-')
         self.sumoNet = sumolib.net.readNet(sumoNetFile)
         self.modelType = modelType
-        self.trafficData = []
-        for index, row in trafficDataDf.iterrows():
+        self.getMacroscopicModel()
+        # self.macroscopicData = []
+        # for index, row in self.trafficData.iterrows():
+        #     edge_id = row["edge_id"]
+        #     edge = self.sumoNet.getEdge(edge_id)
+        #     length = edge.getLength()
+        #     vMax = edge.getSpeed()
+        #     laneCount = len(edge.getLanes())
+        #     vehicleLength = 7.5 #7.5 # this length is including the gap between vehicles
+        #     maxDensity = laneCount / vehicleLength
+        #     # print(f"Edge {edge_id}: k_jam = {maxDensity * 1000} vehicles/km")
+        #     first = int(timeSlot[:2])
+        #     last = int(timeSlot[6:8])
+        #     # Calculate the vehicle count for the specified time slot
+        #     if last - first > 1:  # If the time slot spans multiple hours
+        #         total_count = sum(row[f"{hour:02d}:00-{(hour + 1) % 24:02d}:00"] for hour in range(first, last))
+        #         flow = str(total_count)
+        #     else:
+        #         flow = str(row[timeSlot])
+        #
+        #     vps = int(flow) / (3600 * (last - first))  # flow is set as vehicles per second
+        #     density = vps / vMax
+        #     laneDensity = density / laneCount
+        #     laneVps = vps / laneCount
+        #     if self.modelType == "greenshield":
+        #         velocity = vMax * (1 - density / maxDensity)
+        #     elif self.modelType == "underwood":
+        #         velocity = vMax * np.exp(density / maxDensity)
+        #     elif self.modelType == "vanaerde":
+        #         critical_density = maxDensity / 2
+        #         q_max = critical_density * vMax  # max flow
+        #         c1 = (vMax / q_max) - (1 / maxDensity)
+        #         c2 = 1 / (maxDensity * q_max)
+        #
+        #         # Calcolo della velocità usando Van Aerde
+        #         velocity = vMax / (1 + c1 * density + c2 * density ** 2)
+        #
+        #     density = vps / velocity if velocity > 0 else maxDensity
+        #     laneDensity = density / laneCount
+        #     normVelocity = velocity / vMax
+        #     vpsPerLane = vps / laneCount
+        #
+        #     self.macroscopicData.append({
+        #         "edge_id": edge_id,
+        #         "length": length,
+        #         "laneCount": laneCount,
+        #         "flow": flow,
+        #         "vehiclesPerSecond": vps,
+        #         "vpsPerLane": vpsPerLane,
+        #         "laneVps": laneVps,
+        #         "density": density,
+        #         "laneDensity": laneDensity,
+        #         "maxDensity": maxDensity,
+        #         "vMax": vMax,
+        #         "velocity": velocity,
+        #         "normVelocity": normVelocity
+        #     })
+
+    def changeTimeslot(self, timeSlot: str):
+        """
+        change the timeslot to be evaluated. Changing the timeslot will cause a recalculation of macroscopic
+        values according to the previously selected model
+        """
+        self.timeSlot = timeSlot
+        self.timeSlot = self.timeSlot.replace(':', '-')
+        self.getMacroscopicModel()
+
+    def getMacroscopicModel(self):
+        """
+        calculate macroscopic data according to a selected model. This is called when a instance of the class is created
+        or the timeslot is changed
+        """
+        self.macroscopicData = []
+        for index, row in self.trafficData.iterrows():
             edge_id = row["edge_id"]
             edge = self.sumoNet.getEdge(edge_id)
             length = edge.getLength()
             vMax = edge.getSpeed()
             laneCount = len(edge.getLanes())
-            vehicleLength = 7.5 #7.5 # this length is including the gap between vehicles
+            vehicleLength = 7.5  # 7.5 # this length is including the gap between vehicles
             maxDensity = laneCount / vehicleLength
             # print(f"Edge {edge_id}: k_jam = {maxDensity * 1000} vehicles/km")
-            first = int(timeSlot[:2])
-            last = int(timeSlot[6:8])
+            first = int(self.timeSlot[:2])
+            last = int(self.timeSlot[6:8])
             # Calculate the vehicle count for the specified time slot
             if last - first > 1:  # If the time slot spans multiple hours
                 total_count = sum(row[f"{hour:02d}:00-{(hour + 1) % 24:02d}:00"] for hour in range(first, last))
                 flow = str(total_count)
             else:
-                flow = str(row[timeSlot])
+                flow = str(row[self.timeSlot[:2]+':00-'+self.timeSlot[6:8]+':00'])
 
             vps = int(flow) / (3600 * (last - first))  # flow is set as vehicles per second
             density = vps / vMax
@@ -87,7 +167,7 @@ class TrafficModeler:
             normVelocity = velocity / vMax
             vpsPerLane = vps / laneCount
 
-            self.trafficData.append({
+            self.macroscopicData.append({
                 "edge_id": edge_id,
                 "length": length,
                 "laneCount": laneCount,
@@ -103,9 +183,6 @@ class TrafficModeler:
                 "normVelocity": normVelocity
             })
 
-    def changeTimeslot(self, timeSlot: str):
-        self.timeSlot = timeSlot
-        self.timeSlot = self.timeSlot.replace(':', '-')
     def saveTrafficData(self, outputDataPath: str):
     # TODO: set a name convention for saving new model data (e.g. greenshield_01-02-2024_00:00-23:00)
         """
@@ -114,10 +191,285 @@ class TrafficModeler:
             outputDataPath: path of the file to save the traffic model data
         """
         print("Saving...")
-        df = pd.DataFrame(self.trafficData)
+        df = pd.DataFrame(self.macroscopicData)
         df.to_csv(outputDataPath, sep=';', index=False, float_format='%.4f', decimal=',')
         print("New Model data saved into: " + outputDataPath + " file")
 
+
+    def evaluateModel(self, edge_id: str, confPath: str, outputFilePath: str):
+        """
+        Determines the values found in simulations of speed, density, and flow of a specific traffic loop
+        (given in input through an edge_id). The results, averaged for the one-hour slot, are saved in the given output
+        .csv file.
+        Args:
+            :param edge_id: the edge_id on which to read measurements from simulations
+            :param confPath: path in which the results of all hourly simulations are saved
+            :param outputFilePath: path to the file in which to save simulation results for a loop
+        """
+        # Remove a previous output file if present
+        if os.path.isfile(outputFilePath):
+            os.remove(outputFilePath)
+        # Iterating through all one-hour simulation directories
+        for folder_name in os.listdir(confPath):
+            folder_path = os.path.join(confPath, folder_name)
+            # Check if it is a valid directory
+            if os.path.isdir(folder_path):
+                xml_file = folder_path + "/output/edgedata-output.xml"
+                print("PATH: " + str(xml_file))
+                tree = ET.parse(xml_file)
+                root = tree.getroot()
+
+                # edge_id = '151824728#0'
+                # edge_id = '23288872#4' #the one used for experiments
+                # edge_id = '-39673910' #this is the 30 km/h one but there are few measurements
+                edgeData = []
+                for interval in root.findall('interval'):
+                    found = False
+                    for edge in interval.findall('edge'):
+                        if edge.get('id') == edge_id:  # Controlla se l'id corrisponde alla lane+
+                            found = True
+                            detected_lane_density = edge.get('laneDensity')
+                            detected_speed = edge.get('speed')
+                            detected_flow = int(edge.get('entered')) / 3600
+                            detected_density = detected_flow / float(detected_speed)
+                            detected_count = int(edge.get('entered'))
+                            model_df = pd.read_csv(folder_path+"/model.csv", sep=';', decimal=',')
+                            real_density = model_df[model_df['edge_id'] == edge_id]["density"].values[0]
+                            real_speed = round(model_df[model_df['edge_id'] == edge_id]["velocity"].values[0], 2)
+                            real_flow = model_df[model_df['edge_id'] == edge_id]["vehiclesPerSecond"].values[0]
+                            real_count = model_df[model_df['edge_id'] == edge_id]["flow"].values[0]
+
+                            edgeData.append({
+                                'edge_id': edge_id,
+                                'detected_density': detected_density,
+                                'detected_lane_density': detected_lane_density,
+                                'detected_speed': detected_speed,
+                                'detected_flow': detected_flow,
+                                'detected_count': detected_count,
+                                'real_density': real_density,
+                                'real_speed': real_speed,
+                                'real_flow': real_flow,
+                                'real_count': real_count,
+                                'timeslot': folder_name
+                            })
+                    if not found:
+                        edgeData.append({
+                            'edge_id': edge_id,
+                            'detected_density': '0',
+                            'detected_lane_density': '0',
+                            'detected_speed': '0',
+                            'detected_flow': '0',
+                            'detected_count': '0',
+                            'real_density': '0',
+                            'real_speed': '0',
+                            'real_flow': '0',
+                            'real_count': '0',
+                            'timeslot': folder_name
+                        })
+
+                detector_df = pd.DataFrame(edgeData)
+                fieldnames = edgeData[0].keys()
+                file_exists = os.path.isfile(outputFilePath)
+                with open(outputFilePath, mode='a', newline='', encoding='utf-8') as file:
+                    writer = csv.DictWriter(file, fieldnames=fieldnames, delimiter=';')
+
+                    # Write the header only if the file is new
+                    if not file_exists:
+                        writer.writeheader()
+                    # Add data
+                    writer.writerows(edgeData)
+    def evaluateError(self, detectedFlowPath: str, outputFilePath: str):
+        """
+        Function for calculating RMSE and MAPE values of flow, velocity and density
+        Args:
+            :param detectedFlowPath: path of the file to get flow, speed and density attribute
+            :param outputFilePath: path of the file to save error data
+        """
+        error_data = []
+        detector_df = pd.read_csv(detectedFlowPath, sep=';', decimal=',')
+        # Initialise variables for RMSE and MAPE
+        speed_squared_errors = 0
+        speed_absolute_percentage_errors = 0
+        density_squared_errors = 0
+        density_absolute_percentage_errors = 0
+        flow_squared_errors = 0
+        flow_absolute_percentage_errors = 0
+        n = 0  # Count valid data
+
+        # Lists to store true values for calculating the range
+        speed_true_values = []
+        density_true_values = []
+
+        # Iterate on traffic loops shared by model and SUMO data
+        for id, row in detector_df.iterrows():
+            speed_true = float(row["real_speed"])
+            speed_pred = float(row["detected_speed"])
+            density_true = float(row["real_density"])
+            density_pred = float(row["detected_density"])
+            flow_true = float(row["real_flow"])
+            flow_pred = float(row["detected_flow"])
+            if speed_pred != 0:
+                speed_squared_errors += (speed_pred - speed_true) ** 2
+                speed_absolute_percentage_errors += abs((speed_true - speed_pred) / speed_true)
+                speed_true_values.append(speed_true)
+            if density_pred != 0:
+                density_squared_errors += (density_pred - density_true) ** 2
+                density_absolute_percentage_errors += abs((density_true - density_pred) / density_true)
+                density_true_values.append(density_true)
+            if flow_pred !=0:
+                flow_squared_errors += (flow_pred - flow_true) ** 2
+                flow_absolute_percentage_errors += abs((flow_true - flow_pred) / flow_true)
+            if speed_pred == 0 or density_pred == 0 or flow_pred == 0:
+                break
+            n += 1
+        # Get RMSE e MAPE
+        if n > 0:
+            speed_rmse = math.sqrt(speed_squared_errors / n)
+            speed_mape = (speed_absolute_percentage_errors / n) * 100
+            density_rmse = math.sqrt(density_squared_errors / n)
+            density_mape = (density_absolute_percentage_errors / n) * 100
+            flow_rmse = math.sqrt(flow_squared_errors / n)
+            flow_mape = (flow_absolute_percentage_errors / n) * 100
+
+            # Calculate NRMSE
+            speed_range = max(speed_true_values) - min(speed_true_values)
+            density_range = max(density_true_values) - min(density_true_values)
+
+            speed_nrmse = speed_rmse / speed_range if speed_range != 0 else 0
+            density_nrmse = density_rmse / density_range if density_range != 0 else 0
+
+            print(f"Speed RMSE: {speed_rmse:.4f}")
+            print(f"Speed MAPE: {speed_mape:.2f}%")
+            print(f"Speed NRMSE: {speed_nrmse:.4f}")
+            print(f"Density RMSE: {density_rmse:.4f}")
+            print(f"Density MAPE: {density_mape:.2f}%")
+            print(f"Density NRMSE: {density_nrmse:.4f}")
+            print(f"Flow RMSE: {flow_rmse:.4f}")
+            print(f"Flow MAPE: {flow_pred:.2f}%")
+            error_data.append({'speed_rmse': speed_rmse,
+                               'speed_mape': speed_mape,
+                               'speed_nrmse': speed_nrmse,
+                               'density_rmse':density_rmse,
+                               'density_mape': density_mape,
+                               'density_nrmse': density_nrmse,
+                               'flow_rmse':flow_rmse,
+                               'flow_mape':flow_mape})
+            error_df = pd.DataFrame(error_data)
+            error_df.to_csv(outputFilePath, sep=';', float_format='%.4f', decimal=',')
+
+        else:
+            print("No valid data for comparison.")
+    def vTypeGeneration(self, modelType: str, tau: str = "1", additionalParam = {}):
+        """
+        Generates a vType with a specific car-following model. Depending on the model selected, two additional
+        model-specific parameters can be set. The configured model is saved in a specific folder that shows the
+        combination of models used and the date of simulation.
+        Args:
+            :param modelType: car-following model name (can be Krauss, IDM, or W99)
+            :param tau: value of tau, that is driver's desired (minimum) time headway in seconds. Default value is 1
+            :param additionalParam: list of additional parameters to configure the car-following model. There are two
+            values and they vary from model to model
+        """
+        folder_name = f"{self.date}_{self.modelType}_{modelType}/{self.timeSlot}"
+        conf_name = f"{self.date}_{self.modelType}_{modelType}"
+        # timeslot_folder = f"{self.timeSlot}"
+        folder_path = os.path.join("sumoenv/", folder_name)
+        conf_path = os.path.join("sumoenv/", conf_name)
+        # folder_path = os.path.join(date_path, timeslot_folder)
+        os.makedirs(folder_path, exist_ok=True)
+        self.simulator.changeTypePath(folder_path)
+        # XML filename
+        output_file = os.path.join(folder_path, "vtype.add.xml")
+        root = ET.Element("additional")
+        if modelType == "Krauss":
+            self.carFollowingModelType = "Krauss"
+            carFollowModel = "Krauss"
+            vtypeID = "customModel"
+            if "sigma" in additionalParam:
+                print("FOUND SIGMA")
+                sigma = additionalParam["sigma"]
+            else:
+                sigma = "0" #perfect driving
+            if "sigmaStep" in additionalParam:
+                print("FOUND SIGMA STEP")
+                sigmaStep = additionalParam["sigmaStep"]
+            else:
+                sigmaStep = "step-length"
+            vtype = ET.SubElement(root, "vType", {
+                "id": vtypeID,
+                "carFollowModel": carFollowModel,
+                "tau": tau,
+                "sigma": sigma,
+                "sigmaStep": sigmaStep
+            })
+        elif modelType == "IDM":
+            self.carFollowingModelType = "IDM"
+            carFollowModel = "IDM"
+            vtypeID = "customModel"
+            vtype = ET.SubElement(root, "vType", {
+                "id": vtypeID,
+                "carFollowModel": carFollowModel,
+                "tau": tau
+            })
+        elif modelType == "IDM":
+            self.carFollowingModelType = "IDM"
+            carFollowModel = "IDM"
+            vtypeID = "customModel"
+            if "delta" in additionalParam:
+                delta = additionalParam["delta"]
+            else:
+                delta = "4"
+            if "stepping" in additionalParam:
+                stepping = additionalParam["stepping"]
+            else:
+                stepping = "0.25"
+            vtype = ET.SubElement(root, "vType", {
+                "id": vtypeID,
+                "carFollowModel": carFollowModel,
+                "tau": tau,
+                "delta": delta,
+                "stepping": stepping
+            })
+        elif modelType == "W99":
+            self.carFollowingModelType = "W99"
+            carFollowModel = "W99"
+            vtypeID = "customModel"
+            if "cc1" in additionalParam:
+                 cc1 = additionalParam["cc1"]
+            else:
+                cc1 = "1.30"
+            if "cc2" in additionalParam:
+                cc2 = additionalParam["cc2"]
+            else:
+                cc2 = "8.0"
+            vtype = ET.SubElement(root, "vType", {
+                "id": vtypeID,
+                "carFollowModel": carFollowModel,
+                "tau": tau,
+                "cc1": cc1,
+                "cc2": cc2
+            })
+        # Writing to file
+        tree = ET.ElementTree(root)
+        ET.indent(tree, '  ')
+        tree.write(output_file, encoding="utf-8", xml_declaration=True)
+        print(f"vType File created: {output_file}")
+        return folder_path, conf_path
+
+    def runSimulation(self, withGui = False):
+        """
+        create a folder name linked to the configuration made and run the simulation. If :param withGui variable is set,
+        SUMO window will appear and wait play button to start.
+        """
+        folder_name = f"{self.date}_{self.modelType}_{self.carFollowingModelType}/{self.timeSlot}"
+        folder_path = os.path.join(SUMO_PATH, folder_name)
+        output_path = folder_path + "/output/"
+        os.makedirs(output_path, exist_ok=True)
+        self.simulator.start(activeGui=withGui, logFilePath=self.simulator.logFile)
+
+
+
+### THESE ARE SOME PLOTTING FUNCTIONS.
     def plotModel(self, result: str):
         """
         function that plots the values of flux, density and velocity against each other in three graphs.
@@ -375,15 +727,15 @@ class TrafficModeler:
         y_smooth_density = []
         i = 0
         for file in files:
-            # Estrai il nome del file senza percorso
+            # Extract file name without path
             filename = os.path.basename(file)
 
-            # Estrai i parametri dal nome del file
+            # Extract the parameters from the file name
             parts = filename.replace(".csv", "").split("_")  # Divide il nome in base a "_"
             t_value = parts[1]  # "t1"
             ap_values = parts[2:]  # ["ap1", "ap5"]
 
-            # Leggi il CSV
+            # Read the CSV
             data = pd.read_csv(resultPath + '/' + file, delimiter=';')
             data['timeslot_numeric'] = data['timeslot'].apply(timeslot_to_numeric)
             data = data.sort_values(by='timeslot_numeric')
@@ -481,90 +833,6 @@ class TrafficModeler:
         plt.tight_layout()
         plt.show()
 
-    def evaluateModel(self, edge_id: str, confPath: str, outputFilePath: str):
-        """
-        Determines the values found in simulations of speed, density, and flow of a specific traffic loop
-        (given in input through an edge_id). The results, averaged for the one-hour slot, are saved in the given output
-        .csv file.
-        Args:
-            :param edge_id: the edge_id on which to read measurements from simulations
-            :param confPath: path in which the results of all hourly simulations are saved
-            :param outputFilePath: path to the file in which to save simulation results for a loop
-        """
-        # Remove a previous output file if present
-        if os.path.isfile(outputFilePath):
-            os.remove(outputFilePath)
-        # Iterating through all one-hour simulation directories
-        for folder_name in os.listdir(confPath):
-            folder_path = os.path.join(confPath, folder_name)
-            # Check if it is a valid directory
-            if os.path.isdir(folder_path):
-                xml_file = os.path.join(folder_path, '/output/edgedata-output.xml')
-                xml_file = folder_path + "/output/edgedata-output.xml"
-                print("PATH: " + str(xml_file))
-                tree = ET.parse(xml_file)
-                root = tree.getroot()
-
-                # edge_id = '151824728#0'
-                # edge_id = '23288872#4' #the one used for experiments
-                # edge_id = '-39673910' #this is the 30 km/h one but there are few measurements
-                edgeData = []
-                for interval in root.findall('interval'):
-                    found = False
-                    for edge in interval.findall('edge'):
-                        if edge.get('id') == edge_id:  # Controlla se l'id corrisponde alla lane+
-                            found = True
-                            detected_lane_density = edge.get('laneDensity')
-                            detected_speed = edge.get('speed')
-                            detected_flow = int(edge.get('entered')) / 3600
-                            detected_density = detected_flow / float(detected_speed)
-                            detected_count = int(edge.get('entered'))
-                            model_df = pd.read_csv(folder_path+"/model.csv", sep=';', decimal=',')
-                            real_density = model_df[model_df['edge_id'] == edge_id]["density"].values[0]
-                            real_speed = round(model_df[model_df['edge_id'] == edge_id]["velocity"].values[0], 2)
-                            real_flow = model_df[model_df['edge_id'] == edge_id]["vehiclesPerSecond"].values[0]
-                            real_count = model_df[model_df['edge_id'] == edge_id]["flow"].values[0]
-
-                            edgeData.append({
-                                'edge_id': edge_id,
-                                'detected_density': detected_density,
-                                'detected_lane_density': detected_lane_density,
-                                'detected_speed': detected_speed,
-                                'detected_flow': detected_flow,
-                                'detected_count': detected_count,
-                                'real_density': real_density,
-                                'real_speed': real_speed,
-                                'real_flow': real_flow,
-                                'real_count': real_count,
-                                'timeslot': folder_name
-                            })
-                    if not found:
-                        edgeData.append({
-                            'edge_id': edge_id,
-                            'detected_density': '0',
-                            'detected_lane_density': '0',
-                            'detected_speed': '0',
-                            'detected_flow': '0',
-                            'detected_count': '0',
-                            'real_density': '0',
-                            'real_speed': '0',
-                            'real_flow': '0',
-                            'real_count': '0',
-                            'timeslot': folder_name
-                        })
-
-                detector_df = pd.DataFrame(edgeData)
-                fieldnames = edgeData[0].keys()
-                file_exists = os.path.isfile(outputFilePath)
-                with open(outputFilePath, mode='a', newline='', encoding='utf-8') as file:
-                    writer = csv.DictWriter(file, fieldnames=fieldnames, delimiter=';')
-
-                    # Write the header only if the file is new
-                    if not file_exists:
-                        writer.writeheader()
-
-                    # Add data
-                    writer.writerows(edgeData)
 
 #Not sure if to leave it
     def evaluateModelwithDetector(self, detectorFilePath,  detectorOutputSUMO: str, outputFilePath: str):
@@ -619,244 +887,6 @@ class TrafficModeler:
 
             merged_df.to_csv(outputFilePath, sep=';', float_format='%.4f', decimal=',')
             print(merged_df[['edge_id', 'flow_diff', 'velocity_diff']])
-
-    def evaluateError(self, detectedFlowPath: str, outputFilePath: str):
-        """
-        Function for calculating RMSE and MAPE values of flow, velocity and density
-        Args:
-            :param detectedFlowPath: path of the file to get flow, speed and density attribute
-            :param outputFilePath: path of the file to save error data
-        """
-        error_data = []
-        detector_df = pd.read_csv(detectedFlowPath, sep=';', decimal=',')
-        # Initialise variables for RMSE and MAPE
-        speed_squared_errors = 0
-        speed_absolute_percentage_errors = 0
-        density_squared_errors = 0
-        density_absolute_percentage_errors = 0
-        flow_squared_errors = 0
-        flow_absolute_percentage_errors = 0
-        n = 0  # Count valid data
-
-        # Lists to store true values for calculating the range
-        speed_true_values = []
-        density_true_values = []
-
-        # Iterate on traffic loops shared by model and SUMO data
-        for id, row in detector_df.iterrows():
-            speed_true = float(row["real_speed"])
-            speed_pred = float(row["detected_speed"])
-            density_true = float(row["real_density"])
-            density_pred = float(row["detected_density"])
-            flow_true = float(row["real_flow"])
-            flow_pred = float(row["detected_flow"])
-            if speed_pred != 0:
-                speed_squared_errors += (speed_pred - speed_true) ** 2
-                speed_absolute_percentage_errors += abs((speed_true - speed_pred) / speed_true)
-                speed_true_values.append(speed_true)
-            if density_pred != 0:
-                density_squared_errors += (density_pred - density_true) ** 2
-                density_absolute_percentage_errors += abs((density_true - density_pred) / density_true)
-                density_true_values.append(density_true)
-            if flow_pred !=0:
-                flow_squared_errors += (flow_pred - flow_true) ** 2
-                flow_absolute_percentage_errors += abs((flow_true - flow_pred) / flow_true)
-            if speed_pred == 0 or density_pred == 0 or flow_pred == 0:
-                break
-            n += 1
-        # Get RMSE e MAPE
-        if n > 0:
-            speed_rmse = math.sqrt(speed_squared_errors / n)
-            speed_mape = (speed_absolute_percentage_errors / n) * 100
-            density_rmse = math.sqrt(density_squared_errors / n)
-            density_mape = (density_absolute_percentage_errors / n) * 100
-            flow_rmse = math.sqrt(flow_squared_errors / n)
-            flow_mape = (flow_absolute_percentage_errors / n) * 100
-
-            # Calculate NRMSE
-            speed_range = max(speed_true_values) - min(speed_true_values)
-            density_range = max(density_true_values) - min(density_true_values)
-
-            speed_nrmse = speed_rmse / speed_range if speed_range != 0 else 0
-            density_nrmse = density_rmse / density_range if density_range != 0 else 0
-
-            print(f"Speed RMSE: {speed_rmse:.4f}")
-            print(f"Speed MAPE: {speed_mape:.2f}%")
-            print(f"Speed NRMSE: {speed_nrmse:.4f}")
-            print(f"Density RMSE: {density_rmse:.4f}")
-            print(f"Density MAPE: {density_mape:.2f}%")
-            print(f"Density NRMSE: {density_nrmse:.4f}")
-            print(f"Flow RMSE: {flow_rmse:.4f}")
-            print(f"Flow MAPE: {flow_pred:.2f}%")
-            error_data.append({'speed_rmse': speed_rmse,
-                               'speed_mape': speed_mape,
-                               'speed_nrmse': speed_nrmse,
-                               'density_rmse':density_rmse,
-                               'density_mape': density_mape,
-                               'density_nrmse': density_nrmse,
-                               'flow_rmse':flow_rmse,
-                               'flow_mape':flow_mape})
-            error_df = pd.DataFrame(error_data)
-            error_df.to_csv(outputFilePath, sep=';', float_format='%.4f', decimal=',')
-
-        else:
-            print("No valid data for comparison.")
-
-    def vTypeGeneration(self, modelType: str, tau: str = "1", additionalParam = {}):
-        """
-        Generates a vType with a specific car-following model. Depending on the model selected, two additional
-        model-specific parameters can be set. The configured model is saved in a specific folder that shows the
-        combination of models used and the date of simulation.
-        Args:
-            :param modelType: car-following model name (can be Krauss, IDM, or W99)
-            :param tau: value of tau, that is driver's desired (minimum) time headway in seconds. Default value is 1
-            :param additionalParam: list of additional parameters to configure the car-following model. There are two
-            values and they vary from model to model
-        """
-        folder_name = f"{self.date}_{self.modelType}_{modelType}/{self.timeSlot}"
-        conf_name = f"{self.date}_{self.modelType}_{modelType}"
-        # timeslot_folder = f"{self.timeSlot}"
-        folder_path = os.path.join("sumoenv/", folder_name)
-        conf_path = os.path.join("sumoenv/", conf_name)
-        # folder_path = os.path.join(date_path, timeslot_folder)
-        os.makedirs(folder_path, exist_ok=True)
-        self.simulator.changeTypePath(folder_path)
-        # XML filename
-        output_file = os.path.join(folder_path, "vtype.add.xml")
-        root = ET.Element("additional")
-        if modelType == "Krauss":
-            self.carFollowingModelType = "Krauss"
-            carFollowModel = "Krauss"
-            vtypeID = "customModel"
-            if "sigma" in additionalParam:
-                print("FOUND SIGMA")
-                sigma = additionalParam["sigma"]
-            else:
-                sigma = "0" #perfect driving
-            if "sigmaStep" in additionalParam:
-                print("FOUND SIGMA STEP")
-                sigmaStep = additionalParam["sigmaStep"]
-            else:
-                sigmaStep = "step-length"
-            vtype = ET.SubElement(root, "vType", {
-                "id": vtypeID,
-                "carFollowModel": carFollowModel,
-                "tau": tau,
-                "sigma": sigma,
-                "sigmaStep": sigmaStep
-            })
-        elif modelType == "IDM":
-            self.carFollowingModelType = "IDM"
-            carFollowModel = "IDM"
-            vtypeID = "customModel"
-            # lane_densities = [item['density'] for item in self.trafficData]
-            # velocities = [item['velocity'] for item in self.trafficData]
-            # spaceBetweenVehicles = 1 / mean(lane_densities)
-            # carLength = 5
-            # freeSpace = spaceBetweenVehicles - carLength
-            # reactionTime = freeSpace / mean(velocities)
-            vtype = ET.SubElement(root, "vType", {
-                "id": vtypeID,
-                "carFollowModel": carFollowModel,
-                "tau": tau
-            })
-        elif modelType == "IDM":
-            self.carFollowingModelType = "IDM"
-            carFollowModel = "IDM"
-            vtypeID = "customModel"
-            if "delta" in additionalParam:
-                delta = additionalParam["delta"]
-            else:
-                delta = "4"
-            if "stepping" in additionalParam:
-                stepping = additionalParam["stepping"]
-            else:
-                stepping = "0.25"
-            vtype = ET.SubElement(root, "vType", {
-                "id": vtypeID,
-                "carFollowModel": carFollowModel,
-                "tau": tau,
-                "delta": delta,
-                "stepping": stepping
-            })
-        elif modelType == "W99":
-            self.carFollowingModelType = "W99"
-            carFollowModel = "W99"
-            vtypeID = "customModel"
-            if "cc1" in additionalParam:
-                 cc1 = additionalParam["cc1"]
-            else:
-                cc1 = "1.30"
-            if "cc2" in additionalParam:
-                cc2 = additionalParam["cc2"]
-            else:
-                cc2 = "8.0"
-            vtype = ET.SubElement(root, "vType", {
-                "id": vtypeID,
-                "carFollowModel": carFollowModel,
-                "tau": tau,
-                "cc1": cc1,
-                "cc2": cc2
-            })
-        # Writing to file
-        tree = ET.ElementTree(root)
-        ET.indent(tree, '  ')
-        tree.write(output_file, encoding="utf-8", xml_declaration=True)
-        print(f"vType File created: {output_file}")
-        return folder_path, conf_path
-
-    def generateRandomRoute(self, sumoNetPath: str):
-        folder_name = f"{self.date}_{self.modelType}_{self.carFollowingModelType}/{self.timeSlot}"
-        folder_path = os.path.join("sumoenv/", folder_name)
-        os.makedirs(folder_path, exist_ok=True)
-        script = SUMO_TOOLS_PATH + "/randomTrips.py"
-        subprocess.run(['python', script, "-n", sumoNetPath, "-r", folder_path + "/sampleRoutes.rou.xml",
-                        "--output-trip-file", folder_path + "/trips.xml",
-                        "--additional-files", folder_path + "/vtype.add.xml",
-                        "--trip-attributes", "type='customIDM'",
-                        "--random-departpos", "--random-arrivalpos",
-                        "--allow-fringe", "--random",
-                        "--remove-loops",
-                        "--fringe-factor", "10", "--min-distance", "100", "--max-distance", "2000",
-                        "--random-routing-factor", "10", "--period", "0.1"])
-
-# Some computational time problems here. Maybe it's related to subprocess library
-    def generateRoute(self, inputEdgePath: str, withInitialRoute = True, useStandardRandomRoute = True):
-        if withInitialRoute:
-            self.generateRandomRoute(sumoNetPath=SUMO_NET_PATH)
-        folder_name = f"{self.date}_{self.modelType}_{self.carFollowingModelType}/{self.timeSlot}"
-        folder_path = os.path.join("sumoenv/", folder_name)
-        os.makedirs(folder_path, exist_ok=True)
-        if useStandardRandomRoute:
-            random_route_path = "sumoenv/standalone"
-        else:
-            random_route_path = folder_path
-        outputRoutePath = folder_path + "/generatedRoutes.rou.xml"
-        script = SUMO_TOOLS_PATH + "/routeSampler.py"
-        # attributes = --attributes="type=\"idmAlternative\""
-        type = "type='customKrauss'"
-        if self.carFollowingModelType == "Krauss":
-            type = "type='customKrauss'"
-        elif self.carFollowingModelType == "IDM":
-            type = "type='customIDM'"
-        elif self.carFollowingModelType == "EIDM":
-            type = "type='customEIDM'"
-        elif self.carFollowingModelType == "W99":
-            type = "type='customW99'"
-        process = subprocess.run([sys.executable, script, "--r", random_route_path + "/sampleRoutes.rou.xml",
-                        "--edgedata-files", inputEdgePath, "-o", folder_path + "/generatedRoutes.rou.xml", "--edgedata-attribute", "qPKW",
-                        "--write-flows", "number", "--attributes", type,
-                        "--total-count", "10000", "--optimize", "full", "--minimize-vehicles", "1", "--threads", "8"],
-                       stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, text=True, env=os.environ.copy(), bufsize=1)
-
-        # process.wait()
-
-    def runSimulation(self, withGui = False):
-        folder_name = f"{self.date}_{self.modelType}_{self.carFollowingModelType}/{self.timeSlot}"
-        folder_path = os.path.join(SUMO_PATH, folder_name)
-        output_path = folder_path + "/output/"
-        os.makedirs(output_path, exist_ok=True)
-        self.simulator.start(activeGui=withGui, logFilePath="./command_log.txt")
 
 
 

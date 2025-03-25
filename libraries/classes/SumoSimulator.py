@@ -18,6 +18,8 @@ import libtraci
 import traci.constants as tc
 from typing import Optional
 
+from libraries.constants import SUMO_OUTPUT_PATH
+
 
 class Simulator:
     """
@@ -55,6 +57,7 @@ class Simulator:
     ""
     """
 
+    logFile: str
     def __init__(self, configurationPath: str, logFile: str):
         """
         Initializes the Simulator with the given configuration file and log file.
@@ -63,6 +66,8 @@ class Simulator:
         :param logFile: Path to the log file where simulation logs will be saved.
         """
         self.configurationPath = configurationPath
+        self.logFile = logFile
+
         # TODO: check if this routePath variable is needed.
         self.routePath = configurationPath
         self.typePath = configurationPath
@@ -70,9 +75,7 @@ class Simulator:
         if not os.path.exists(staticpath):
             print("Error: the given path does not exist.")
             return
-
         os.environ["STATICPATH"] = staticpath
-        self.logFile = logFile
         self.listener = ValueListener()
         libtraci.addStepListener(self.listener)
 
@@ -117,7 +120,7 @@ class Simulator:
         # TODO: CHECK PERCHE' SEMBRA NON FUNZIONARE
         if libtraci.simulation.isLoaded():
             print("Warning: there was a previous simulation loaded. It will be overwritten")
-        command = ["sumo-gui" if activeGui else "sumo", "-c", self.configurationPath + "/basic/run.sumocfg"]
+        command = ["sumo-gui" if activeGui else "sumo", "-c", self.configurationPath + "/basic/run.sumocfg", "--log", self.logFile]
         libtraci.start(command, traceFile=self.logFile)
         self.resume()
 

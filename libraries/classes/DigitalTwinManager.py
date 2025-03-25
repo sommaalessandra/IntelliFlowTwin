@@ -1,5 +1,4 @@
 import sys
-
 from libraries.classes.SumoSimulator import Simulator
 from libraries.classes.Planner import Planner
 from libraries.classes.DataManager import DataManager
@@ -11,6 +10,9 @@ from subprocess import Popen
 from PIL import Image
 import pytz
 from datetime import datetime
+
+from libraries.classes.TrafficModeler import TrafficModeler
+from libraries.constants import SUMO_PATH, SUMO_NET_PATH, projectPath
 
 
 class DigitalTwinManager:
@@ -33,7 +35,7 @@ class DigitalTwinManager:
     planner: Planner
     dtDataManager: DataManager
 
-    def __init__(self, dataManager: DataManager, sumoConfigurationPath: str, sumoLogFile: str):
+    def __init__(self, dataManager: DataManager, simulator: Simulator, sumoConfigurationPath: str, sumoLogFile: str):
         """
         Initializes the DigitalTwinManager by creating instances of the DataManager, sumoenv simulator, and Planner.
 
@@ -43,7 +45,10 @@ class DigitalTwinManager:
         """
         # TODO: manage the possibility to get as input directly the simulator and the planner instances.
         self.dtDataManager = dataManager
-        self.sumoSimulator = Simulator(configurationPath=sumoConfigurationPath, logFile=sumoLogFile)
+        configurationPath = SUMO_PATH + "/standalone"
+        logFile = SUMO_PATH + "/sumo_log.txt"
+        # self.sumoSimulator = Simulator(configurationPath=configurationPath, logFile=logFile)
+        self.sumoSimulator = simulator
         self.planner = Planner(simulator=self.sumoSimulator)
 
     def simulateBasicScenarioForOneHourSlot(self, timeslot: str, date: str, entityType: str, totalVehicles: int,
@@ -72,7 +77,7 @@ class DigitalTwinManager:
 
     def generateGraphs(self, scenarioFolder: str):
         """
-        Generate some graphs based on the simulation outcome. The generated graphs show some info about the trajectory
+        Generate graphs based on the simulation outcome. The generated graphs show some info about the trajectory
         taken by the vehicles, the time spent in running/halted state and the depart delay time.
         :param scenarioFolder: the folder where the simulated scenario output is stored
         :return:
@@ -123,3 +128,69 @@ class DigitalTwinManager:
         if saveSummary:
             new_image.save(scenarioFolder + '/summary_image.png')
 
+    def configureCalibrateAndRun(self, dataFilePath: str, carFollowingModel: str, macroModelType: str, tau: str,
+                             parameters: {}, date: str, timeslot: [], edge_id: str):
+        """
+        Process of estimating traffic macroscopic values, calibrating traffic models and simulating them based on
+        collected data. The function is designed to be applicable for an entire day's measurements or a smaller
+        time window.
+        It generates speed and density estimates using a selected :macroModelType. These data are then compared with the
+        simulative outputs through the error evaluation function.
+
+        :param dataFilePath: input file containing measurements to be used for modeling and simulation activity
+        :param carFollowingModel: the model type to calibrate and set for the simulation process
+        :param macroModelType: the macromodel to apply to get flow, speed and density estimation
+        :param tau:
+        :param parameters:
+        :param date:
+        :param timeslot: The time slot for which historical traffic data is retrieved (e.g., "00:00-01:00").
+        :param edge_id:
+        """
+        basemodel = TrafficModeler(simulator=self.sumoSimulator, trafficDataFile=dataFilePath,
+                                   sumoNetFile=SUMO_NET_PATH,
+                                   date=date,
+                                   timeSlot='00:00-01:00',
+                                   modelType=macroModelType)
+        print("Starting Configuration")
+        # For each timeslot a TrafficModeler is set, hence constructing the macroscopic model
+        for hour in range(timeslot[0], timeslot[1]):
+            timeSlotFolder = ''
+            if hour < 9:
+                basemodel.changeTimeslot(timeSlot='0' + str(hour) + ':00-' + '0' + str(hour + 1) + ':00')
+                timeSlotFolder = '0' + str(hour) + ':00-' + '0' + str(hour + 1) + ':00'
+            elif hour == 9:
+                basemodel.changeTimeslot('0' + str(hour) + ':00-' + str(hour + 1) + ':00')
+                timeSlotFolder = '0' + str(hour) + ':00-' + str(hour + 1) + ':00'
+            else:
+                basemodel.changeTimeslot(str(hour) + ':00-' + str(hour + 1) + ':00')
+                timeSlotFolder = str(hour) + ':00-' + str(hour + 1) + ':00'
+            # a car-following model is constructed, creating a specific file stored in the typeFilePath
+            typeFilePath, confPath = basemodel.vTypeGeneration(modelType=carFollowingModel, tau=tau,
+                                                           additionalParam=parameters)
+            # the model values are saved in a .csv file
+            basemodel.saveTrafficData(outputDataPath=typeFilePath + "/model.csv")
+            timeSlotFolder = timeSlotFolder.replace(':', '-')
+            folder_name = f"{date}_{macroModelType}_{carFollowingModel}/{timeSlotFolder}"
+            folder_path = os.path.join(SUMO_PATH, folder_name)
+            output_path = folder_path + "/output/"
+            os.makedirs(output_path, exist_ok=True)
+            self.sumoSimulator.start(activeGui=False, logFilePath=self.sumoSimulator.logFile)
+            # basemodel.runSimulation(withGui=False)
+        confPath = projectPath + "/" + confPath
+        paramvalues = list(parameters.values())
+        # for each edge_id linked to a traffic loop, the simulation is evaluated according to the previous
+        # macroscopic values. Simulation output of flow, speed and density are compared to the macroscopic ones
+        basemodel.evaluateModel(edge_id=edge_id, confPath=confPath, outputFilePath=confPath + "/detectedFlow_t" + str(tau)
+                                                                                   + "_ap" + str(paramvalues[0]) + "_ap" + str(paramvalues[1]) + ".csv")
+
+        # the RMSE, MAPE of flow, speed and density are calculated. Additionally, squared R and GEH for flow is built
+        basemodel.evaluateError(detectedFlowPath=confPath + "/detectedFlow_t" + str(tau) + "_ap" + str(paramvalues[0])
+                                               + "_ap" + str(paramvalues[1]) + ".csv",
+                                outputFilePath=confPath + "/error_summary_t"+ str(tau)
+                                               + "_ap" + str(paramvalues[0]) + "_ap" + str(paramvalues[1]) + ".csv")
+
+        basemodel.plotTemporalResults(resultFilePath=confPath + "/detectedFlow_t" + str(tau) + "_ap" + str(paramvalues[0])
+                                               + "_ap" + str(paramvalues[1]) + ".csv", showImage=False)
+        # basemodel.compareResults(resultPath=confPath)
+        # basemodel.plotModel(result=None)
+        return confPath

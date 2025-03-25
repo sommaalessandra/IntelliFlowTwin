@@ -8,6 +8,7 @@ from tkinter.filedialog import askopenfilename
 from libraries.classes.DataManager import *
 from libraries import constants
 from libraries.classes.SumoSimulator import Simulator
+from libraries.constants import SUMO_TOOLS_PATH, SUMO_NET_PATH
 
 
 class ScenarioGenerator:
@@ -135,6 +136,56 @@ class ScenarioGenerator:
             self.sim.changeRoutePath(routePath=routeFilePath)
         else:
             print("No route file path was provided or selected.")
+
+    def generateRandomRoute(self, sumoNetPath: str, date: str, modelType: str, carFollowingModelType: str, timeSlot: str):
+        folder_name = f"{date}_{modelType}_{carFollowingModelType}/{timeSlot}"
+        folder_path = os.path.join("sumoenv/", folder_name)
+        os.makedirs(folder_path, exist_ok=True)
+        script = SUMO_TOOLS_PATH + "/randomTrips.py"
+        subprocess.run(['python', script, "-n", sumoNetPath, "-r", folder_path + "/sampleRoutes.rou.xml",
+                        "--output-trip-file", folder_path + "/trips.xml",
+                        "--additional-files", folder_path + "/vtype.add.xml",
+                        "--trip-attributes", "type='customIDM'",
+                        "--random-departpos", "--random-arrivalpos",
+                        "--allow-fringe", "--random",
+                        "--remove-loops",
+                        "--fringe-factor", "10", "--min-distance", "100", "--max-distance", "2000",
+                        "--random-routing-factor", "10", "--period", "0.1"])
+
+    # Some computational time problems here. Maybe it's related to subprocess library
+    def generateRoute(self, inputEdgePath: str, date: str, modelType: str, carFollowingModelType: str, timeSlot: str,
+                      withInitialRoute=True, useStandardRandomRoute=True, ):
+        if withInitialRoute:
+            self.generateRandomRoute(sumoNetPath=SUMO_NET_PATH)
+        folder_name = f"{date}_{modelType}_{carFollowingModelType}/{timeSlot}"
+        folder_path = os.path.join("sumoenv/", folder_name)
+        os.makedirs(folder_path, exist_ok=True)
+        if useStandardRandomRoute:
+            random_route_path = "sumoenv/standalone"
+        else:
+            random_route_path = folder_path
+        outputRoutePath = folder_path + "/generatedRoutes.rou.xml"
+        script = SUMO_TOOLS_PATH + "/routeSampler.py"
+        # attributes = --attributes="type=\"idmAlternative\""
+        type = "type='customKrauss'"
+        if self.carFollowingModelType == "Krauss":
+            type = "type='customKrauss'"
+        elif self.carFollowingModelType == "IDM":
+            type = "type='customIDM'"
+        elif self.carFollowingModelType == "EIDM":
+            type = "type='customEIDM'"
+        elif self.carFollowingModelType == "W99":
+            type = "type='customW99'"
+        process = subprocess.run([sys.executable, script, "--r", random_route_path + "/sampleRoutes.rou.xml",
+                                  "--edgedata-files", inputEdgePath, "-o",
+                                  folder_path + "/generatedRoutes.rou.xml", "--edgedata-attribute", "qPKW",
+                                  "--write-flows", "number", "--attributes", type,
+                                  "--total-count", "10000", "--optimize", "full", "--minimize-vehicles", "1",
+                                  "--threads", "8"],
+                                 stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, text=True,
+                                 env=os.environ.copy(), bufsize=1)
+
+        # process.wait()
 
 
 class Planner:

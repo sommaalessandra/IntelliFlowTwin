@@ -53,28 +53,12 @@ def loadEnvVar(file_path):
     return env_vars
 
 # function to calculate difference between actual and previous date time of dataset entries to properly simulate devices
-
 def convert_float(inp):
     splitted_data = inp.split(",")
     return float(splitted_data[-2]), float(splitted_data[-1])
 
-''' PREVIOUS FUNCTION --> TO BE DELETED
-def processingTlData(trafficData, trafficLoop):
-    # for key, values in trafficData.items():
-        # iterate through registered devices
-        for ind, device in trafficLoop.items():
-            # look for sensor belonging to device (only one in the traffic loop case)
-            for sensor in device.sensors:
-                if sensor.name == "TFO":
-                    tl = trafficData.loc[trafficData["ID_loop"] == int(sensor.device_partial_id)]
-                    flow = tl["flow"].values[0]
-                    coordinates = tl["geopoint"].values[0]
-                    # coordinates = list(map(float, coordinates))
-                    coordinates = convert_float(coordinates)
-                    direction = str(tl["direction"].values[0])
-                    sensor.send_data(flow, coordinates, direction, device_id=sensor.device_partial_id, device_key=sensor.api_key)
-'''
 
+# COMMENTED PARTS ARE FOR TIME ESTIMATION PURPOSES
 def processingTlData(timeSlot, trafficData, roads: dict):
     timestamps = []
     client = MongoClient("mongodb://localhost:27017/")
@@ -94,74 +78,66 @@ def processingTlData(timeSlot, trafficData, roads: dict):
             trafficLoopSensor = roads[roadName].getSensor(trafficLoopIdentifier)
             partial_id = trafficLoopSensor.devicePartialID
             entry = collection.find_one({"_id.id": {"$regex": partial_id}})
-            if index == len(trafficData) - 1:
-                old_mod_date = entry["modDate"] if entry else None
+            # if index == len(trafficData) - 1:
+            #     old_mod_date = entry["modDate"] if entry else None
 
 
             if trafficLoopSensor is not None and trafficLoopSensor.name == "TL":
-                if index == 0:
-                    first_start_time = time.time_ns() / 1e9
+                # if index == 0:
+                #     first_start_time = time.time_ns() / 1e9
+                #
+                # start_time = time.time_ns()
+                # print("Sending new traffic loop measurement to IoT agent...")
+                # print("ID Traffic Loop Device: " + str(trafficLoopSensor.devicePartialID))
+                # print("Traffic Flow Measurment: " + str(trafficFlow))
+                # print("Traffic Loop Position: [" + str(longitude) + ", " + str(latitude) + "]")
+                # print("Road: " + str(roadName))
 
-                start_time = time.time_ns()
-                # timestamps.append({"evento": "Start", "Sensor TL": str(trafficLoopSensor.devicePartialID),"start_timestamp": start_time})
-                print("Sending new traffic loop measurement to IoT agent...")
-                print("ID Traffic Loop Device: " + str(trafficLoopSensor.devicePartialID))
-                print("Traffic Flow Measurment: " + str(trafficFlow))
-                print("Traffic Loop Position: [" + str(longitude) + ", " + str(latitude) + "]")
-                print("Road: " + str(roadName))
-
-                # time.sleep(3)
                 trafficLoopSensor.sendData(date, timeSlot, trafficFlow, coordinates, direction,
                                            device_id=trafficLoopSensor.devicePartialID,
                                            device_key=trafficLoopSensor.apiKey)
-                end_time = time.time_ns()
-                if index == len(trafficData) - 1:
-                    new_mod_date = wait_for_mod_date_change(entry_id=partial_id, old_mod_date=old_mod_date)
-                    # new_mod_date = str(new_mod_date)
-                    # new_mod_date = int(new_mod_date[:11])
-                    # first_start_time = str(first_start_time)
-                    # first_start_time = int(first_start_time[:11])
-                    elapsed_time = (new_mod_date-first_start_time)
-                    elapsed_time = f"{int(elapsed_time)},{str(round(elapsed_time % 1, 4))[2:]}"
-                    timestamps.append({"evento": "One Hour Measurement", "Sensor TL": "All","start_timestamp": first_start_time, "end_timestamp": new_mod_date,
-                                       "elapsed_time": elapsed_time})
-                else:
-                    timestamps.append({"evento": "Sending Data", "Sensor TL": str(trafficLoopSensor.devicePartialID),"start_timestamp": start_time, "end_timestamp": end_time,
-                                    "elapsed_time": end_time-start_time})
-    configurationPath = SUMO_PATH + "/standalone"
-    logFile = "./command_log.txt"
-    sumoSimulator = Simulator(configurationPath=configurationPath, logFile=logFile)
-    print("Instantiating a Traffic Modeler...")
-    basemodel = TrafficModeler(simulator=sumoSimulator, trafficDataFile=PROCESSED_TRAFFIC_FLOW_EDGE_FILE_PATH,
-                               sumoNetFile=SUMO_NET_PATH,
-                               date='2024-02-01',
-                               timeSlot=timeSlot,
-                               modelType="greenshield")
-    basemodel.saveTrafficData(outputDataPath="time/tm_time/model.csv")
-    modeled_time = time.time_ns() / 1e9
-    basemodel.vTypeGeneration(modelType="W99", tau="1.5",
-                                                       additionalParam={"cc1": "1.3", "cc2": "8"})
-    basemodel.runSimulation(withGui=False)
-    simulated_time = time.time_ns() / 1e9
-    # modeled_time = str(modeled_time)
-    # modeled_time = int(modeled_time[:11])
-    elapsed_modeling_time = (modeled_time - first_start_time)
-    elapsed_modeling_time = f"{int(elapsed_modeling_time)},{str(round(elapsed_modeling_time % 1, 4))[2:]}"
-    elapsed_simulating_time = (simulated_time - first_start_time)
-    elapsed_simulating_time = f"{int(elapsed_simulating_time)},{str(round(elapsed_simulating_time % 1, 4))[2:]}"
-    timestamps.append(
-        {"evento": "Sending Data", "Sensor TL": str(trafficLoopSensor.devicePartialID), "start_timestamp": start_time,
-         "end_timestamp": end_time,
-         "elapsed_time": end_time - start_time})
-    timestamps.append({"evento": "Time After Modeling", "Sensor TL": "All", "start_timestamp": first_start_time,
-                       "end_timestamp": modeled_time,
-                       "elapsed_time": elapsed_modeling_time})
-    timestamps.append({"evento": "Time After Simulating", "Sensor TL": "All", "start_timestamp": first_start_time,
-                       "end_timestamp": simulated_time,
-                       "elapsed_time": elapsed_simulating_time})
-    df = pd.DataFrame(timestamps)
-    df.to_csv("time/tm_sim_time/timestamps-" + str(timeSlot.replace(':', '-')) + ".csv", index=False, sep=';')
-        # time.sleep(1) #simulating a sort of delay among entries
+                # end_time = time.time_ns()
+                # if index == len(trafficData) - 1:
+                #     new_mod_date = wait_for_mod_date_change(entry_id=partial_id, old_mod_date=old_mod_date)
+                #     elapsed_time = (new_mod_date-first_start_time)
+                #     elapsed_time = f"{int(elapsed_time)},{str(round(elapsed_time % 1, 4))[2:]}"
+                #     timestamps.append({"evento": "One Hour Measurement", "Sensor TL": "All","start_timestamp": first_start_time, "end_timestamp": new_mod_date,
+                #                        "elapsed_time": elapsed_time})
+                # else:
+                #     timestamps.append({"evento": "Sending Data", "Sensor TL": str(trafficLoopSensor.devicePartialID),"start_timestamp": start_time, "end_timestamp": end_time,
+                #                     "elapsed_time": end_time-start_time})
+    # configurationPath = SUMO_PATH + "/standalone"
+    # logFile = "./command_log.txt"
+    # sumoSimulator = Simulator(configurationPath=configurationPath, logFile=logFile)
+    # print("Instantiating a Traffic Modeler...")
+    # basemodel = TrafficModeler(simulator=sumoSimulator, trafficDataFile=PROCESSED_TRAFFIC_FLOW_EDGE_FILE_PATH,
+    #                            sumoNetFile=SUMO_NET_PATH,
+    #                            date='2024-02-01',
+    #                            timeSlot=timeSlot,
+    #                            modelType="greenshield")
+    # basemodel.saveTrafficData(outputDataPath="time/tm_time/model.csv")
+    # modeled_time = time.time_ns() / 1e9
+    # basemodel.vTypeGeneration(modelType="W99", tau="1.5",
+    #                                                    additionalParam={"cc1": "1.3", "cc2": "8"})
+    # basemodel.runSimulation(withGui=False)
+    # simulated_time = time.time_ns() / 1e9
+    # elapsed_modeling_time = (modeled_time - first_start_time)
+    # elapsed_modeling_time = f"{int(elapsed_modeling_time)},{str(round(elapsed_modeling_time % 1, 4))[2:]}"
+    # elapsed_simulating_time = (simulated_time - first_start_time)
+    # elapsed_simulating_time = f"{int(elapsed_simulating_time)},{str(round(elapsed_simulating_time % 1, 4))[2:]}"
+    # timestamps.append(
+    #     {"evento": "Sending Data", "Sensor TL": str(trafficLoopSensor.devicePartialID), "start_timestamp": start_time,
+    #      "end_timestamp": end_time,
+    #      "elapsed_time": end_time - start_time})
+    # timestamps.append({"evento": "Time After Modeling", "Sensor TL": "All", "start_timestamp": first_start_time,
+    #                    "end_timestamp": modeled_time,
+    #                    "elapsed_time": elapsed_modeling_time})
+    # timestamps.append({"evento": "Time After Simulating", "Sensor TL": "All", "start_timestamp": first_start_time,
+    #                    "end_timestamp": simulated_time,
+    #                    "elapsed_time": elapsed_simulating_time})
+    # df = pd.DataFrame(timestamps)
+    # df.to_csv("time/tm_sim_time/timestamps-" + str(timeSlot.replace(':', '-')) + ".csv", index=False, sep=';')
+
 
 
 #Function to convert geopoint format having a number without dots
