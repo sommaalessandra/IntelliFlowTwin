@@ -25,7 +25,7 @@ The FlowTwin framework incorporates *open-source data* from the following source
   [*OSM README*](https://github.com/sommaalessandra/IntelliFlowTwin/tree/main/sumoenv)
 
 <div align="center">
-  <img src="images/FlowTwinFramework" alt="FlowTwin Framework" width="500"/>
+  <img src="images/FlowTwinFramework.png" alt="FlowTwin Framework" width="500"/>
   <p><b>Figure 1:</b> FlowTwin Framework </p>
 </div>
 
