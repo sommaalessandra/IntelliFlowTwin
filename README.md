@@ -1,5 +1,63 @@
-# **MOBIlity Digital Twin of Bologna**
+# **FlowTwin - Bologna Case Study**
+**FlowTwin** is a framework designed to systematically integrate traffic flow modeling into a cohesive _Mobility Digital Twin_ (MoDT) system. This repository contains the application of this framework in the case study of the italian city of Bologna. The data used by this application are retrieved from the [Open Data Platform](https://opendata.comune.bologna.it/)
+ of the municipality of Bologna, while the entire framework is implemented using _open-source technologies_ such as **FIWARE** components for interacting with the Digital Twin and **Eclipse Simulator of Urban MObility** (SUMO) for traffic modeling and simulations.
+ The FlowTwin frameworl provides:
+ 
+ 1. Digital **representation** and state **simulation** to model the structural and behavioral aspects of Bologna's infrastructure and simulate traffic scenarios.  
+   - [*Eclipse SUMO*](https://eclipse.dev/sumo/) is utilized for simulating through different traffic models.
 
-testttde
+2. **Bidirectional synchronization** to enable data flow from physical sensors to the Digital Twin and feedback from the Digital Twin to physical traffic light systems.  
+   - [*FIWARE Generic Enablers*](https://www.fiware.org/catalogue/) (GEs) facilitate data exchange and management between the real system and its Digital Twin, ensuring semantic data interoperability.
 
-test 21
+3. **Traffic monitoring** to observe current traffic flow and stay updated on the state of Bologna City as well as simulation results based on dynamically generated scenarios.  
+   - A [*Django WebApp*](https://www.djangoproject.com/), combined with a [*Grafana*](https://grafana.com/) dashboard, is implemented to:   
+     *(i)* monitor the state of context entities modeled with FIWARE Smart Data Models,  
+     *(ii)* track traffic flow patterns using the Grafana Dashboard,  
+     *(iii)* select and calibrate traffic model for different simulating scenarios, and  
+     *(iv)* visualize simulation results after the simulation is completed.
+
+## FlowTwin Framework
+
+The FlowTwin framework incorporates *open-source data* from the following sources:
+* [**Bologna Open Data**](https://opendata.comune.bologna.it/):  Real traffic data from Bologna are collected. For more information, refer to the [*data README*](https://github.com/alessandrasomma28/MOBIDT/blob/main/data/README.md)
+* [**OpenStreetMap**](https://www.openstreetmap.org/): The platform retrieves Bologna's road network layout and 
+  additional infrastructure details, such as induction loops and traffic lights. For more information, refer to the 
+  [*OSM README*](https://github.com/sommaalessandra/IntelliFlowTwin/tree/main/sumoenv)
+
+<div align="center">
+  <img src="images/FlowTwinFramework" alt="FlowTwin Framework" width="500"/>
+  <p><b>Figure 1:</b> FlowTwin Framework </p>
+</div>
+
+  The modules involved in FlowTwin are as follows:
+
+1. **City Emulator (Mobility Virtual Environment)**: This module was introduced because direct access to Bologna's 
+   real infrastructure is not feasible. As a result, BoMoDT incorporates an emulator of Bologna's traffic data streams 
+   capable of executing control commands for adaptive traffic light management.  As a result, BoMoDT incorporates an 
+   emulator to ensure the presence of a continuously running physical counterpart in a Digital Twin context. Further details at [*BOLOGNA MVENV README*](https://github.com/sommaalessandra/IntelliFlowTwin/tree/main/mobilityvenv)
+
+2. **FIWARE** [**Orion-LD Context Broker**](https://github.com/FIWARE/context.Orion-LD): This is the mandatory 
+   component in any "powered by FIWARE" smart solution. It is responsible for managing context entities in compliance 
+   with the *Next Generation Service Interface* (NGSI) protocol in Linked Data (LD) version. The current context 
+   entities' state is stored in a **Mongo** database. Further details at [*FIWARE VENV README*](https://github.com/sommaalessandra/IntelliFlowTwin/tree/main/fiwareenv/README.md)
+
+3. **FIWARE** [**IoT Agent - JSON**](https://github.com/telefonicaid/iotagent-json): This is the Internet of Things 
+Agent (IOTA) for JSON-based protocols (with AMQP, HTTP, and MQTT transports). This IoT Agent acts as a bridge between 
+JSON and the NGSI interface of the context broker, converting device-specific protocols into the NGSI standard. 
+Devices sending measurements or receiving commands must be registered beforehand. Further details at [*FIWARE VENV 
+README*](https://github.com/alessandrasomma28/MOBIDT/blob/main/fiwareenv/README.md)
+
+4. **FIWARE** [**QuantumLeap**](https://quantumleap.readthedocs.io/en/latest/): This is a time-based 
+   data-persistence Generic Enabler subscribed to context updates, for storing and querying time-series data in 
+   **Timescale**. QuantumLeap addresses the inherent limitation of the Context Broker, which only stores the current 
+   state. Further details at [*FIWARE VENV README*](https://github.com/sommaalessandra/IntelliFlowTwin/tree/main/fiwareenv/README.md)
+
+5. **Eclipse SUMO**: This is microscopic multi-modal traffic simulator that modeling individual road users, 
+   including cars, buses, and pedestrians, enabling detailed analysis of traffic phenomena like congestion and 
+   emissions. Simulation data inputs and outputs are locally stored. Further details at [*SUMO README*](https://github.com/sommaalessandra/IntelliFlowTwin/tree/main/sumoenv/README.md)
+
+6. The **Digital Shadow Manager**, **Planner & Scenario Generator**, **Traffic Modeler**, and **Digital Twin Manager** are key Python 
+   modules available in [**libraries**](https://github.com/sommaalessandra/IntelliFlowTwin/tree/main/libraries). These modules are responsible for generating digital shadows (temporal data traces), creating and executing simulation scenarios, planning actions to be performed in the physical system, selecting and calibrating macroscopic and microscopic traffic models for simulation purposes, and orchestrating the overall Digital Twin system, respectively. 
+
+
+7. **Django WebApp & Grafana Dashboard** provides a user interface for monitoring (i) context entities modeled with FIWARE Smart Data Models, real-time traffic flow patterns, and simulation results.
