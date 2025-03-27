@@ -34,7 +34,7 @@ The emulator operates in two phases:
 1. **`setupPhysicalSystem`**  
    - Reads traffic data from `data/mvenvdata/` (Bologna Open Data format).  
    - Initializes roads and their associated devices using `PhysicalSystemConnector` classes.  
-   - Registers all entities (roads with the linked devices) to the IoT Agent.  
+   - Registers all devices (linked to a specific road) to the IoT Agent.  
 
 2. **`startPhysicalSystem`**  
    - Collects and filters data to be emulated by date.
