@@ -24,7 +24,11 @@ udtBackEnd
 │── db.sqlite3           # SQLite database file storing application data.
 │── manage.py            # Entry point for managing the WebApp backend.
 ```
+
 ## Pages
+<div align="center">
+  <img src="https://github.com/user-attachments/assets/acfcb71d-eeb6-4b70-839a-4d6b2b2d46d1" alt="FlowTwin Web App"/>
+</div>
 The Web App is structured in separate pages, in which specific functionalities are implemented. Within some of them, interactive Grafana dashboards are embedded in order to visualize the current status of the infrastructure and the history of the data
 The implemented pages are listed below
 - **Entity List**: the entity list is a page that collects all the entities registered by the Context Broker. The list can be filtered by entity type (e.g., RoadSegment). Selecting a specific entity takes you to the detail page, where the attributes, creation and last modification date are shown. For traffic loops, a graphical dashboard showing the history of readings has been integrated.
