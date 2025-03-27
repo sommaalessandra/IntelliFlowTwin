@@ -33,7 +33,7 @@ The FlowTwin framework incorporates *open-source data* from the following source
 
 1. **City Emulator (Mobility Virtual Environment)**: This module was introduced because direct access to Bologna's 
    real infrastructure is not feasible. As a result, FlowTwin incorporates a city
-   emulator to ensure the presence of a continuously running physical counterpart in a Digital Twin context. Further details at [*BOLOGNA MVENV README*](https://github.com/sommaalessandra/IntelliFlowTwin/tree/main/mobilityvenv)
+   emulator to ensure the presence of a continuously running physical counterpart in a Digital Twin context. Further details at [*CITY EMULATOR README*](https://github.com/sommaalessandra/IntelliFlowTwin/tree/main/mobilityvenv)
 
 2. **FIWARE** [**Orion-LD Context Broker**](https://github.com/FIWARE/context.Orion-LD): This is the mandatory 
    component in any "powered by FIWARE" smart solution. It is responsible for managing context entities in compliance 
