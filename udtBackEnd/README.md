@@ -29,9 +29,10 @@ udtBackEnd
 <div align="center">
   <img src="https://github.com/user-attachments/assets/acfcb71d-eeb6-4b70-839a-4d6b2b2d46d1" alt="FlowTwin Web App"/>
 </div>
+
 The Web App is structured in separate pages, in which specific functionalities are implemented. Within some of them, interactive Grafana dashboards are embedded in order to visualize the current status of the infrastructure and the history of the data
-The implemented pages are listed below
-- **Entity List**: the entity list is a page that collects all the entities registered by the Context Broker. The list can be filtered by entity type (e.g., RoadSegment). Selecting a specific entity takes you to the detail page, where the attributes, creation and last modification date are shown. For traffic loops, a graphical dashboard showing the history of readings has been integrated.
-- **Monitor**: this page shows a general Grafana dashboard showing values over time associated with all registered devices.
-- **Calibrator**: on this page you can set up a simulation process with calibrated traffic models. In fact, there is a form where you select the macromodel, the car-following model and its associated parameters, as well as indicate the date and time of the measurements you want to simulate. Once everything is set up, you can run the simulation, which will take place off-screen. When the simulation is finished, the results will be visible within the Results page.
-- **Results**: this page contains the results of the simulations performed. Selecting a simulation reports the RMSE and MAPE values of velocity and density, while for flow the R-square value and the GEH statistic are reported.
+The implemented pages are listed below:
+  - **Entity List**: the entity list is a page that collects all the entities registered by the Context Broker. The list can be filtered by entity type (e.g., RoadSegment). Selecting a specific entity takes you to the detail page, where the attributes, creation and last modification date are shown. For traffic loops, a         graphical dashboard showing the history of readings has been integrated.
+  - **Monitor**: this page shows a general Grafana dashboard showing values over time associated with all registered devices.
+  - **Calibrator**: on this page you can set up a simulation process with calibrated traffic models. In fact, there is a form where you select the macromodel, the car-following model and its associated parameters, as well as indicate the date and time of the measurements you want to simulate. Once everything is set up, you can run the simulation, which will take place off-screen. When the simulation is finished, the results will be visible within the Results page.
+  - **Results**: this page contains the results of the simulations performed. Selecting a simulation reports the RMSE and MAPE values of velocity and density, while for flow the R-square value and the GEH statistic are reported.
