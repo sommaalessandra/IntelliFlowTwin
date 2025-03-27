@@ -25,7 +25,7 @@ The FlowTwin framework incorporates *open-source data* from the following source
   [*OSM README*](https://github.com/sommaalessandra/IntelliFlowTwin/tree/main/sumoenv)
 
 <div align="center">
-  <img src="images/FlowTwinFramework.png" alt="FlowTwin Framework" width="500"/>
+  <img src="images/FlowTwinFramework.png" alt="FlowTwin Framework" width="800"/>
   <p><b>Figure 1:</b> FlowTwin Framework </p>
 </div>
 
@@ -45,7 +45,7 @@ The FlowTwin framework incorporates *open-source data* from the following source
 Agent (IOTA) for JSON-based protocols (with AMQP, HTTP, and MQTT transports). This IoT Agent acts as a bridge between 
 JSON and the NGSI interface of the context broker, converting device-specific protocols into the NGSI standard. 
 Devices sending measurements or receiving commands must be registered beforehand. Further details at [*FIWARE VENV 
-README*](https://github.com/alessandrasomma28/MOBIDT/blob/main/fiwareenv/README.md)
+README*](https://github.com/sommaalessandra/IntelliFlowTwin/tree/main/fiwareenv/README.md)
 
 4. **FIWARE** [**QuantumLeap**](https://quantumleap.readthedocs.io/en/latest/): This is a time-based 
    data-persistence Generic Enabler subscribed to context updates, for storing and querying time-series data in 
@@ -60,6 +60,9 @@ README*](https://github.com/alessandrasomma28/MOBIDT/blob/main/fiwareenv/README.
    modules available in [**libraries**](https://github.com/sommaalessandra/IntelliFlowTwin/tree/main/libraries). These modules are responsible for generating digital shadows (temporal data traces), creating and executing simulation scenarios, planning actions to be performed in the physical system, selecting and calibrating macroscopic and microscopic traffic models for simulation purposes, and orchestrating the overall Digital Twin system, respectively. 
 
 7. **Django WebApp & Grafana Dashboard** provides a user interface for monitoring (i) context entities modeled with FIWARE Smart Data Models, real-time traffic flow patterns, and simulation results.
+
+
+### Device Compatibility
 
 ## FlowTwin Repository Structure
 The repository is structured to support the **FlowTwin** framework, providing modules for data handling, traffic modeling and
@@ -97,7 +100,7 @@ simulation, Digital Twin modeling, and backend management. Below is the detailed
 │   ├── utils
 │   │   ├── generalUtils.py             # Provides generic utility functions used across the project.
 │   │   ├── preprocessingUtils.py       # Implements utilities for data preprocessing and transformation.
-│   │   └── constants.py                # Stores constants such as configurations and file paths.
+│   └── constants.py                # Stores constants such as configurations and file paths.
 │   │
 │   ├── mobilityvenv
 │   │   ├── MobilityVirtualEnvironment.py # Defines the Mobility Virtual Environment.
