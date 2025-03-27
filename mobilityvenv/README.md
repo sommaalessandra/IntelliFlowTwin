@@ -29,10 +29,18 @@ traffic_loop = Sensor(
 road.addSensor(traffic_loop)
 ```
 ### Operational Workflow
+
 The emulator operates in two phases:  
 
+<figure align="center">
+<img
+  src="https://github.com/user-attachments/assets/06f47387-b0be-437c-97ae-722c69f05147"
+  alt="City-Emulation-flow">
+</figure>
+
+
 1. **`setupPhysicalSystem`**  
-   - Reads traffic data from `data/mvenvdata/` (Bologna Open Data format).  
+   - Reads traffic data from `data/mvenvdata/` (Open Data traffic flow measurements).  
    - Initializes roads and their associated devices using `PhysicalSystemConnector` classes.  
    - Registers all devices (linked to a specific road) to the IoT Agent.  
 
