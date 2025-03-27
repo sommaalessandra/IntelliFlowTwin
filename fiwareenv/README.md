@@ -28,6 +28,13 @@ to speed up frequent queries, by leveraging **Redis** as an in-memory cache laye
 
 4. **Monitoring**:  
    Engineers query Orion-LD's API for real-time status, while Grafana pulls historical data from TimescaleDB for trend analysis.
+
+### Key Dependencies
+The following are the dependencies of the various containers in the docker-compose file:
+  - Orion-LD → MongoDB
+  - QuantumLeap → Orion-LD + TimescaleDB + Redis
+  - IoT Agent → MongoDB + Orion-LD
+   
 ### How to run
 to start the service, you can simply run:
 ```
