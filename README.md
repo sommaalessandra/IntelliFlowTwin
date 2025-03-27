@@ -120,7 +120,7 @@ simulation, Digital Twin modeling, and backend management. Below is the detailed
 │   │   ├── manage.py                   # Entry point for managing the WebApp backend.
 │
 ├── LICENSE                             # Licensing information for the repository.
-├── main.py                             # Main script for executing the BoMoDT platform.
+├── main.py                             # Main script for executing FlowTwin.
 ├── README.md                           # Documentation for understanding and using the repository.
 ├── requirements.txt                    # Lists all Python dependencies required for the project.
 ├── setup.bat                           # Batch script for setting up the environment on Windows.
