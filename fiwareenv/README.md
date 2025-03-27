@@ -14,9 +14,10 @@ to speed up frequent queries, by leveraging **Redis** as an in-memory cache laye
 
 ### Key Interactions
 1. **Device Onboarding**:  
-   A traffic sensor registers via the **IoT Agent**, which in turn it creates an NGSI-LD entity in **Orion-LD**.
+   A traffic sensor registers via the IoT Agent, which in turn it creates an NGSI-LD entity in Orion-LD.
 
 2. **Data Pipeline**:
+
    The pipeline can be summarized in this flow:
    
     ```beginSensor → Raw data → IoT Agent (JSON-to-NGSI conversion) → Orion-LD (entity update) → QuantumLeap (historical storage in TimescaleDB).```
