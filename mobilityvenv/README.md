@@ -1,16 +1,14 @@
 # City Emulator
 The City Emulator is implemented through two Python components in this folder:  
 
-1. **`MobilityVirtualEnvironment.py`**  
-   Manages the city's behavioral logic, enabling emulation workflow.  
+1. **`MobilityVirtualEnvironment.py`**: Emulates behavior of the real city system of Bologna. Using real traffic data obtained from Bologna Open Data, the component emulates the traffic loop sensors that measure the number of passing cars. 
    
-2. **`PhysicalSystemConnector.py`**  
-   Defines core classes for city entities:
+3. **`PhysicalSystemConnector.py`**: Defines core classes for city entities:
    - **Device**: base class used for representing a city device.
    - **Sensors/Actuators**: extends device class, implementing transmission functions.   
    - **PhysicalSystemConnector**: A class that binds devices (sensors/actuators) to physical entities (e.g., roads).
 
-This is an example of the creation of a sensor with the subsequent connection to the associated road:
+Here an example of a sensor creation with the subsequent connection to the associated road, instantiated with PhysicalSystemConnector:
 ```python
 from PhysicalSystemConnector import Sensor, PhysicalSystemConnector
 
@@ -20,9 +18,9 @@ road = PhysicalSystemConnector("R001", "Via Emilia")
 # Create a sensor (traffic loop)
 traffic_loop = Sensor(
     device_partialid="TL123",
-    devicekey="API_KEY_ALFANUM",
-    name="TrafficLoop",
-    sensortype="Traffic Flow"
+    devicekey="IOT_AGENT_API_KEY",
+    name="TL_Emilia",
+    sensortype="Traffic Loop"
 )
 
 # Connect the sensor to the road
@@ -30,7 +28,7 @@ road.addSensor(traffic_loop)
 ```
 ### Operational Workflow
 
-The emulator operates in two phases:  
+The emulator operates in two stages, detailed in two separate functions:
 
 <figure align="center">
 <img
@@ -46,4 +44,4 @@ The emulator operates in two phases:
 
 2. **`startPhysicalSystem`**  
    - Collects and filters data to be emulated by date.
-   - Activates the city emulation by initiating **hourly data transmission** from registered sensors.
+   - Activates the city emulation by initiating **hourly data transmission** from registered sensors to the IoT Agent.
