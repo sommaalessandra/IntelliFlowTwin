@@ -37,8 +37,8 @@ if __name__ == "__main__":
 
     #### Comment/decomment these two code lines to run the physical system.
     # TODO: thread-multiprocessing
-    roads, files = setupPhysicalSystem(IoTAgent)
-    startPhysicalSystem(roads)
+    # roads, files = setupPhysicalSystem(IoTAgent)
+    # startPhysicalSystem(roads)
 
     # 2. The DigitalTwinManager needs i) a DataManager for accessing data; ii) a SumoSimulator for running simulations
     #    iii) a Planner including a ScenarioGenerator for generating sumoenv scenarios.
@@ -55,9 +55,18 @@ if __name__ == "__main__":
     configurationPath = SUMO_PATH + "/standalone"
     logFile = SUMO_PATH + "/standalone/command_log.txt"
     sumoSimulator = Simulator(configurationPath=configurationPath, logFile=logFile)
-    # twinPlanner = Planner(simulator=sumoSimulator)
+    twinPlanner = Planner(simulator=sumoSimulator)
     twinManager = DigitalTwinManager(dataManager=dataManager, simulator=sumoSimulator, sumoConfigurationPath=configurationPath, sumoLogFile=logFile)
 
+    for hour in range(24):
+        if hour < 9:
+            timeSlotFolder = '0' + str(hour) + ':00-' + '0' + str(hour + 1) + ':00'
+        elif hour == 9:
+            timeSlotFolder = '0' + str(hour) + ':00-' + str(hour + 1) + ':00'
+        else:
+            timeSlotFolder = str(hour) + ':00-' + str(hour + 1) + ':00'
+        generateEdgeDataFile(PROCESSED_TRAFFIC_FLOW_EDGE_FILE_PATH, date='2024-02-01', time_slot=timeSlotFolder)
+        twinPlanner.scenarioGenerator.generateRoute(inputEdgePath=EDGE_DATA_FILE_PATH, timeSlot=timeSlotFolder)
     # 3. Simulation of one hour slot scenario. The function will open sumo gui. The play button must be pressed to run the simulation. When simulation ends, the function returns the folder path in which sumoenv files have been generated.
     # scenarioFolder = twinManager.simulateBasicScenarioForOneHourSlot(timeslot="00:00-01:00", date="2024/02/01", entityType='Road Segment', totalVehicles=100, minLoops=3, congestioned=False, activeGui=True, timecolumn="timeslot")
     # print(scenarioFolder)

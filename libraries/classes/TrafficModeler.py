@@ -376,6 +376,9 @@ class TrafficModeler:
         folder_path = os.path.join("sumoenv/", folder_name)
         conf_path = os.path.join("sumoenv/", conf_name)
         # folder_path = os.path.join(date_path, timeslot_folder)
+        timeslot_name = f"{self.timeSlot}"
+        route_path = os.path.join("sumoenv/routes",timeslot_name)
+        self.simulator.changeRouteFilePath(route_path)
         os.makedirs(folder_path, exist_ok=True)
         self.simulator.changeTypePath(folder_path)
         # XML filename

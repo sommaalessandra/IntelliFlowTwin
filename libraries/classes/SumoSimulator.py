@@ -54,7 +54,6 @@ class Simulator:
         - getTLSList: Method to retrieve a list of all traffic light systems (TLS).
         - checkTLS: Method to check if a given TLS exists in the simulation.
         - setTLSProgram: Method to set the traffic light program for a TLS or all TLSs.
-    ""
     """
 
     logFile: str
@@ -75,6 +74,8 @@ class Simulator:
         if not os.path.exists(staticpath):
             print("Error: the given path does not exist.")
             return
+        outputpath = os.path.abspath(self.configurationPath + "/output")
+        os.makedirs(outputpath, exist_ok=True)
         os.environ["STATICPATH"] = staticpath
         self.listener = ValueListener()
         libtraci.addStepListener(self.listener)
@@ -213,10 +214,31 @@ class Simulator:
             print("Error: the given path does not exist.")
             return
         self.routePath = routePath
-        os.environ["SIMULATIONPATH"] = routePath
+        os.environ["ROUTEFILEPATH"] = routePath
         print("The path was set to " + routePath)
 
     def changeTypePath(self, typePath: str):
+        """
+        Changes the route path for the simulator.
+
+        This function checks if the provided route path is absolute. If it is not an absolute path,
+        it converts it to an absolute path based on the current working directory.
+        After ensuring that the path exists, it updates the simulator's route path and the
+        environment variable 'ROUTEFILENAME' to reflect the new path.
+
+        :param typePath: The absolute route file path.
+        :raises FileNotFoundError: If the given route path does not exist
+
+        """
+        if not os.path.exists(typePath):
+            print("Error: the given path does not exist.")
+            return
+        self.typePath = typePath
+        os.environ["TYPEPATH"] = typePath
+        print("The path was set to " + typePath)
+
+
+    def changeRouteFilePath(self, routeFilePath: str):
         """
         Changes the route path for the simulator.
 
@@ -229,12 +251,12 @@ class Simulator:
         :raises FileNotFoundError: If the given route path does not exist
 
         """
-        if not os.path.exists(typePath):
+        if not os.path.exists(routeFilePath):
             print("Error: the given path does not exist.")
             return
-        self.typePath = typePath
-        os.environ["TYPEPATH"] = typePath
-        print("The path was set to " + typePath)
+        self.routeFilePath = routeFilePath
+        os.environ["ROUTEFILEPATH"] = routeFilePath
+        print("The path was set to " + routeFilePath)
 
     ### VEHICLE FUNCTIONS
     def getVehiclesSummary(self):

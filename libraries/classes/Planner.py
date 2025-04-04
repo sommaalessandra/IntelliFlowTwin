@@ -137,15 +137,17 @@ class ScenarioGenerator:
         else:
             print("No route file path was provided or selected.")
 
-    def generateRandomRoute(self, sumoNetPath: str, date: str, modelType: str, carFollowingModelType: str, timeSlot: str):
-        folder_name = f"{date}_{modelType}_{carFollowingModelType}/{timeSlot}"
-        folder_path = os.path.join("sumoenv/", folder_name)
+    def generateRandomRoute(self, sumoNetPath: str, timeSlot: str):
+        timeSlot = timeSlot.replace(':', '-')
+        #folder_name = f"{date}_{modelType}_{carFollowingModelType}/{timeSlot}"
+        #folder_path = os.path.join("sumoenv/", folder_name)
+        folder_name = f"{timeSlot}"
+        folder_path = os.path.join("sumoenv/routes", folder_name)
         os.makedirs(folder_path, exist_ok=True)
         script = SUMO_TOOLS_PATH + "/randomTrips.py"
-        subprocess.run(['python', script, "-n", sumoNetPath, "-r", folder_path + "/sampleRoutes.rou.xml",
-                        "--output-trip-file", folder_path + "/trips.xml",
-                        "--additional-files", folder_path + "/vtype.add.xml",
-                        "--trip-attributes", "type='customIDM'",
+        subprocess.run(['python', script, "-n", sumoNetPath, "-r", folder_path + "/generatedRoutes.rou.xml",
+                        "--output-trip-file", folder_path + "/randomTrips.rou.xml",
+                        "--trip-attributes", "type='customModel'",
                         "--random-departpos", "--random-arrivalpos",
                         "--allow-fringe", "--random",
                         "--remove-loops",
@@ -153,12 +155,14 @@ class ScenarioGenerator:
                         "--random-routing-factor", "10", "--period", "0.1"])
 
     # Some computational time problems here. Maybe it's related to subprocess library
-    def generateRoute(self, inputEdgePath: str, date: str, modelType: str, carFollowingModelType: str, timeSlot: str,
-                      withInitialRoute=True, useStandardRandomRoute=True, ):
+    def generateRoute(self, inputEdgePath: str, timeSlot: str, withInitialRoute=True, useStandardRandomRoute=False ):
+        timeSlot = timeSlot.replace(':', '-')
         if withInitialRoute:
-            self.generateRandomRoute(sumoNetPath=SUMO_NET_PATH)
-        folder_name = f"{date}_{modelType}_{carFollowingModelType}/{timeSlot}"
-        folder_path = os.path.join("sumoenv/", folder_name)
+            self.generateRandomRoute(sumoNetPath=SUMO_NET_PATH, timeSlot=timeSlot)
+        #folder_name = f"{date}_{modelType}_{carFollowingModelType}/{timeSlot}"
+        folder_name = f"{timeSlot}"
+        #folder_path = os.path.join("sumoenv/", folder_name)
+        folder_path = os.path.join("sumoenv/routes", folder_name)
         os.makedirs(folder_path, exist_ok=True)
         if useStandardRandomRoute:
             random_route_path = "sumoenv/standalone"
@@ -167,16 +171,16 @@ class ScenarioGenerator:
         outputRoutePath = folder_path + "/generatedRoutes.rou.xml"
         script = SUMO_TOOLS_PATH + "/routeSampler.py"
         # attributes = --attributes="type=\"idmAlternative\""
-        type = "type='customKrauss'"
-        if self.carFollowingModelType == "Krauss":
-            type = "type='customKrauss'"
-        elif self.carFollowingModelType == "IDM":
-            type = "type='customIDM'"
-        elif self.carFollowingModelType == "EIDM":
-            type = "type='customEIDM'"
-        elif self.carFollowingModelType == "W99":
-            type = "type='customW99'"
-        process = subprocess.run([sys.executable, script, "--r", random_route_path + "/sampleRoutes.rou.xml",
+        type = "type='customModel'"
+        #if self.carFollowingModelType == "Krauss":
+        #    type = "type='customKrauss'"
+        #elif self.carFollowingModelType == "IDM":
+        #    type = "type='customIDM'"
+        #elif self.carFollowingModelType == "EIDM":
+        #    type = "type='customEIDM'"
+        #elif self.carFollowingModelType == "W99":
+        #    type = "type='customW99'"
+        process = subprocess.run([sys.executable, script, "--r", random_route_path + "/randomTrips.rou.xml",
                                   "--edgedata-files", inputEdgePath, "-o",
                                   folder_path + "/generatedRoutes.rou.xml", "--edgedata-attribute", "qPKW",
                                   "--write-flows", "number", "--attributes", type,

@@ -140,7 +140,7 @@ class DigitalTwinManager:
         :param dataFilePath: input file containing measurements to be used for modeling and simulation activity
         :param carFollowingModel: the model type to calibrate and set for the simulation process
         :param macroModelType: the macromodel to apply to get flow, speed and density estimation
-        :param tau:
+        :param tau: the headway time, in seconds, to be observed inside the custom car-follwing model
         :param parameters:
         :param date:
         :param timeslot: The time slot for which historical traffic data is retrieved (e.g., "00:00-01:00").
@@ -174,6 +174,10 @@ class DigitalTwinManager:
             folder_path = os.path.join(SUMO_PATH, folder_name)
             output_path = folder_path + "/output/"
             os.makedirs(output_path, exist_ok=True)
+            timeslot_name = f"{timeSlotFolder}"
+            routefolder_name = os.path.join(SUMO_PATH, 'routes')
+            route_folder_path = os.path.join(routefolder_name, timeslot_name)
+            self.sumoSimulator.changeRouteFilePath(route_folder_path)
             self.sumoSimulator.start(activeGui=False, logFilePath=self.sumoSimulator.logFile)
             # basemodel.runSimulation(withGui=False)
         confPath = projectPath + "/" + confPath
