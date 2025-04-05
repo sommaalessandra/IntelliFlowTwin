@@ -63,6 +63,18 @@ README*](https://github.com/sommaalessandra/IntelliFlowTwin/tree/main/fiwareenv/
 
 ### Device Compatibility
 
+FlowTwin is deployed and tested on a Windows device. Its compatibility with Linux and macOS devices depends on the underlying technologies supporting the platform. While FIWARE is fully containerized and can potentially be adapted to other environments, the Eclipse SUMO compatibility should be verified by consulting the [*Eclipse Documentation*](https://sumo.dlr.de/docs/Installing/index.html).
+
+
+FlowTwin consists of three execution environments:
+
+1. **Docker Environment** provides a containerized infrastructure for deploying FIWARE components, including IoT Agent JSON, Orion-LD, and QuantumLeap, along with MongoDB for current data storage and TimescaleDB for historical data storage. Additionally, Grafana is containerized and available for independent visualization and monitoring, separate from the Django WebApp.
+
+2. **Eclipse Simulator Engine** is responsible for performing urban mobility simulations.
+
+3. **Python Virtual Environment** hosts the Python modules generated through the MDA-based approach, alongside additional modules developed to implement and execute the Bologna MVENV.
+
+
 ## FlowTwin Repository Structure
 The repository is structured to support the **FlowTwin** framework, providing modules for data handling, traffic modeling and
 simulation, Digital Twin modeling, and backend management. Below is the detailed structure of the repository:
@@ -134,5 +146,105 @@ The framework was tested on the Windows OS and with the components installed in 
 - **Docker 27.3.1 (with Docker Compose)**: Required to deploy the FIWARE environment and associated components. Install the 
   latest versions from [Docker](https://www.docker.com/) and [Docker Compose](https://docs.docker.com/compose/).
 - **Git**: Needed to clone the repository. Install Git from [Git SCM](https://git-scm.com/).
-- **System Requirements**: Sufficient disk space and computational power to run Docker containers, execute Eclipse 
+- **System Requirements**: Sufficient disk space and computational power to run Docker containers (the whole container system is occupying about 3GB of RAM), execute Eclipse 
   simulator and store simulation results.
+  
+FlowTwin can be run either manually through the command line or, , using the bash script in the repository.
+
+### Deployment and Execution from Command Line
+1. Clone the repository to your local machine:
+   ```bash
+   git clone repository-url
+   ```
+2. Navigate to the repository directory:
+    ```bash
+   cd /path/to/repository/BoMoDT
+   ```
+
+#### FIWARE Environment Setup
+After cloning the repository, the FIWARE environment must be activated to enable required components.
+1. Navigate to the fiwareenv directory:
+    ```bash
+   cd /path/to/repository/IntelliFlowTwin/fiwareenv
+   ```
+> Ensure that the following files are present in the fiwareenv directory: docker-compose.yml and .env
+
+2. Deploy the required containers for Orion-LD, IoT Agent JSON, QuantumLeap, MongoDB, TimescaleDB, and Grafana by 
+   running the following command:
+    ```bash
+   docker-compose up -d
+   ```
+Further details are provided in the folder [*README.md*](fiwareenv/README.md). 
+
+#### City Emulator and Python Environment Setup
+Before running `main.py` script, a Python Virtual Environment must be activated. The environment can be created 
+using the provided **requirements.txt** file. 
+
+1. Create and activate a Python virtual environment in repository directory:
+    1. If virtualenv is not installed in your local machine, install it by running:
+   ```bash
+   python3 -m pip install virtualenv
+   ```
+   2. Create a Python virtual environment:
+   ```bash
+   virtualenv venv
+   ```
+   3. Activate the virtual environment:
+   ```bash
+   source venv/bin/activate
+   ```
+2. Once the Python virtual environment has been created and activated, install the required Python packages using the 
+   **requirements.txt**:
+    ```bash
+   pip3 install -r requirements.txt
+   ```
+3. Run the `main.py` script: 
+   ```bash
+   python3 main.py
+   ```
+> **Note**: Running this command will activate the Bologna City Emulator, initiating data transmission to the Digital Twin 
+> through FIWARE GEs. The simulation scenarios are automatically configured and executed in SUMO during this process.
+
+#### Django WebApp and Grafana Dashboard
+1. Navigate to webApp backend repository:
+    ```bash
+   cd path/to/repository/IntelliFlowTwin/udtBackEnd
+   ```
+2. Run the command: 
+    ```bash
+   python3 manage.py runserver
+   ```
+
+#### Eclipse SUMO Environment Setup
+The **Eclipse SUMO Simulator** is utilized during the execution of the FlowTwin for modeling and simulating 
+traffic scenarios. Additionally, Eclipse SUMO can be executed independently using the standalone configuration 
+provided in the folder [*sumoenv/standalone*](sumoenv/standalone).
+
+For detailed instructions on setting up and executing Eclipse SUMO, refer to the [*README.md*](sumoenv/README.md) 
+file located in the `sumoenv` folder.
+
+---
+
+### Deployment and Execution using batch (only on Windows OS)
+The [`setup.bat`](setup.bat) script is provided for setting up the environment and running the application.
+
+#### Prerequisites
+
+- **Docker**: Ensure Docker is running before executing the script. If Docker is not active, the script will terminate.
+- **Python Virtual Environment (venv)**: A Python virtual environment must be created beforehand, either using the  
+  steps outlined earlier or by setting it up in your preferred IDE (e.g., PyCharm, VSCode, etc.). The script will 
+  abort if no virtual environment is detected.
+
+#### Script Workflow
+The `setup.bat` script performs the following steps:
+1. Creates the required Docker containers.
+2. Activates the Python virtual environment.
+3. Verifies that the virtual environment is correctly activated.
+4. Runs the Django web application.
+5. Executes the `main.py` script to initialize and run the MVENV.
+
+Run the script by executing:
+```bash
+setup.bat
+```
+or double clicking on `setup.bat` file. 
