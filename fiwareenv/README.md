@@ -13,21 +13,19 @@ to speed up frequent queries, by leveraging **Redis** as an in-memory cache laye
 
 
 ### Key Interactions
+Most of the interactions are explained by the data pipeline, in which the transmitted data is taken as input from the system and is modeled, stored, and routed among the various components. 
+The pipeline can be summarized in this flow:
+
+ ```beginSensor → Raw data → IoT Agent (JSON-to-NGSI conversion) → Orion-LD (entity update) → QuantumLeap (historical storage in TimescaleDB).```
+
 1. **Device Onboarding**:  
    A traffic sensor registers via the IoT Agent, which in turn it creates an NGSI-LD entity in Orion-LD.
 
-2. **Data Pipeline**:
-
-   The pipeline can be summarized in this flow:
-   
-    ```beginSensor → Raw data → IoT Agent (JSON-to-NGSI conversion) → Orion-LD (entity update) → QuantumLeap (historical storage in TimescaleDB).```
-   
-   An emulated sensor begins the transmission of new raw data to the IoT Agent. Here, IoT Agent converts the raw data into NGSI-LD format and send it to Orion-LD Context Broker.
+2. **Data Pipeline**:   
    Through its subscription mechanism, Orion-LD notifies QuantumLeap of data change in the registered entities. QuantumLeap add a timestamp to the data and archives the change into TimescaleDB.
    
-
-4. **Monitoring**:  
-   Engineers query Orion-LD's API for real-time status, while Grafana pulls historical data from TimescaleDB for trend analysis.
+3. **Monitoring**:  
+   FlowTwin leverages Orion-LD's API for real-time status query, while Grafana pulls historical data from TimescaleDB for monitoring purposes.
 
 ### Key Dependencies
 The following are the dependencies of the various containers in the docker-compose file:
