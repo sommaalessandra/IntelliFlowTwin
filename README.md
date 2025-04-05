@@ -125,3 +125,14 @@ simulation, Digital Twin modeling, and backend management. Below is the detailed
 ├── requirements.txt                    # Lists all Python dependencies required for the project.
 ├── setup.bat                           # Batch script for setting up the environment on Windows.
 ```
+## Framework Usage 
+The framework was tested on the Windows OS and with the components installed in the following version:
+
+- **Python 3.12**: Required to execute the core scripts and manage the environment. Install the latest version 
+  from  [Python.org](https://www.python.org/downloads/).
+- **Eclipse SUMO 1.21**: Necessary for traffic modeling and simulation. Download and install from [Eclipse SUMO](https://www.eclipse.org/sumo/).
+- **Docker 27.3.1 (with Docker Compose)**: Required to deploy the FIWARE environment and associated components. Install the 
+  latest versions from [Docker](https://www.docker.com/) and [Docker Compose](https://docs.docker.com/compose/).
+- **Git**: Needed to clone the repository. Install Git from [Git SCM](https://git-scm.com/).
+- **System Requirements**: Sufficient disk space and computational power to run Docker containers, execute Eclipse 
+  simulator and store simulation results.
