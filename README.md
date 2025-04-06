@@ -158,7 +158,7 @@ FlowTwin can be run either manually through the command line or, , using the bas
    ```
 2. Navigate to the repository directory:
     ```bash
-   cd /path/to/repository/BoMoDT
+   cd /path/to/repository/IntelliFlowTwin
    ```
 
 #### FIWARE Environment Setup
