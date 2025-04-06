@@ -1,5 +1,5 @@
 # City Emulator
-The City Emulator is implemented through two Python components in this folder:  
+Having no direct access to city sensor and actuators, the **City Emulator** is introduced to overcome this limitation by emulating traffic flow data and control mechanism. The City Emulator is implemented through two Python components in this folder:  
 
 1. **`MobilityVirtualEnvironment.py`**: Emulates behavior of the real city system of Bologna. Using real traffic data obtained from Bologna Open Data, the component emulates the traffic loop sensors that measure the number of passing cars. 
    
@@ -28,7 +28,7 @@ road.addSensor(traffic_loop)
 ```
 ### Operational Workflow
 
-The emulator operates in two stages, detailed in two separate functions:
+The emulator operates in two stages, both interacting with the FIWARE IoT Agent. The stages are detailed in two separate functions:
 
 <figure align="center">
 <img
@@ -39,9 +39,11 @@ The emulator operates in two stages, detailed in two separate functions:
 
 1. **`setupPhysicalSystem`**  
    - Reads traffic data from `data/mvenvdata/` (Open Data traffic flow measurements).  
-   - Initializes roads and their associated devices using `PhysicalSystemConnector` classes.  
+   - Initializes roads and their associated devices using instaces of `PhysicalSystemConnector` class.  
    - Registers all devices (linked to a specific road) to the IoT Agent.  
 
 2. **`startPhysicalSystem`**  
    - Collects and filters data to be emulated by date.
-   - Activates the city emulation by initiating **hourly data transmission** from registered sensors to the IoT Agent.
+   - Activates the city emulation by initiating **hourly data transmission** from registered sensors to the IoT Agent. Once all data for the current timeslot has been transmitted, the process pauses for one hour before advancing to the next timeslot.
+  
+As long as new data is available, the emulator is able to transmit data, effectively emulating sending information process.
