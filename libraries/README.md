@@ -17,8 +17,8 @@ Abstracts access to the various databases in the platform. Includes specific imp
   - **TimescaleDB**: storing time-series and historical traffic data.
   - **MongoDB**: managing flexible, unstructured or semi-structured entity data.
 
-- `DigitalShadowManager.py`
-  
+- `DigitalShadowManager.py`  
+  It handles the creation and local management of Digital Shadows for traffic-related entities, such as roads and traffic loops. A digital shadow represents a lightweight, structured mirror of a physical asset, enriched with contextual metadata such as coordinates, direction, traffic flow, and temporal slot. Once identified, shadows are stored locally as .csv files.
 - `DigitalTwinManager.py`  
 A "facade" class that orchestrates and coordinates the use of all other modules.  
 Provides a unified interface for traffic planning, simulation control, data retrieval, and integration with FIWARE. It provides a simplified API to manage complex workflows such as starting a simulation, fetching historical data, and pushing results into visualization pipelines.
