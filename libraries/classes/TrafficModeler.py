@@ -378,8 +378,10 @@ class TrafficModeler:
             :param additionalParam: list of additional parameters to configure the car-following model. There are two
             values and they vary from model to model
         """
-        folder_name = f"{self.date}_{self.modelType}_{modelType}/{self.timeSlot}"
-        conf_name = f"{self.date}_{self.modelType}_{modelType}"
+        first_param = str(list(additionalParam.values())[0])
+        second_param = str(list(additionalParam.values())[1])
+        folder_name = f"{self.date}_{self.modelType}_{modelType}_{tau}_{first_param}_{second_param}/{self.timeSlot}"
+        conf_name = f"{self.date}_{self.modelType}_{modelType}_{tau}_{first_param}_{second_param}"
         # timeslot_folder = f"{self.timeSlot}"
         folder_path = os.path.join("sumoenv/", folder_name)
         conf_path = os.path.join("sumoenv/", conf_name)
@@ -469,17 +471,6 @@ class TrafficModeler:
         tree.write(output_file, encoding="utf-8", xml_declaration=True)
         print(f"vType File created: {output_file}")
         return folder_path, conf_path
-
-    def runSimulation(self, withGui = False):
-        """
-        create a folder name linked to the configuration made and run the simulation. If :param withGui variable is set,
-        SUMO window will appear and wait play button to start.
-        """
-        folder_name = f"{self.date}_{self.modelType}_{self.carFollowingModelType}/{self.timeSlot}"
-        folder_path = os.path.join(SUMO_PATH, folder_name)
-        output_path = folder_path + "/output/"
-        os.makedirs(output_path, exist_ok=True)
-        self.simulator.start(activeGui=withGui, logFilePath=self.simulator.logFile)
 
 
 

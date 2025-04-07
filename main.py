@@ -67,7 +67,7 @@ if __name__ == "__main__":
     simulationDate = '2024-02-01'
 
     # put generateRoutes to true/false if you want (or not) to generate 24h traffic routes for a specific date
-    generateRoutes = True
+    generateRoutes = False
     if generateRoutes:
         for hour in range(24):
             if hour < 9:
@@ -78,6 +78,7 @@ if __name__ == "__main__":
                 timeSlotFolder = str(hour) + ':00-' + str(hour + 1) + ':00'
             generateEdgeDataFile(PROCESSED_TRAFFIC_FLOW_EDGE_FILE_PATH, date=simulationDate, time_slot=timeSlotFolder)
             twinPlanner.scenarioGenerator.generateRoute(inputEdgePath=EDGE_DATA_FILE_PATH, timeSlot=timeSlotFolder)
+
     # 3. Simulation of one hour slot scenario. The function will open sumo gui. The play button must be pressed to run the simulation. When simulation ends, the function returns the folder path in which sumoenv files have been generated.
     # scenarioFolder = twinManager.simulateBasicScenarioForOneHourSlot(timeslot="00:00-01:00", date="2024/02/01", entityType='Road Segment', totalVehicles=100, minLoops=3, congestioned=False, activeGui=True, timecolumn="timeslot")
     # print(scenarioFolder)
@@ -93,9 +94,40 @@ if __name__ == "__main__":
     ### ADDITIONAL KRAUSS PARAMS additionalParam={"sigma": "0", "sigmaStep": "1"}
     ### ADDITIONAL IDM PARAMS additionalParam={"delta": "6","stepping": "0.1"})
     ### ADDITIONAL W99 PARAMS additionalParam={"cc1": "1.5", "cc2": "10.0"})
-    twinManager.configureCalibrateAndRun(dataFilePath=PROCESSED_TRAFFIC_FLOW_EDGE_FILE_PATH, carFollowingModel=carFollowingModel,
-                                       macroModelType=macroModelType, tau="1", parameters={"sigma": "0", "sigmaStep": "0.5"},
-                                       date=simulationDate, timeslot=[0,24], edge_id=edge_id)
-
+    for i in range(4, 6):
+        if i == 0:
+            twinManager.configureCalibrateAndRun(dataFilePath=PROCESSED_TRAFFIC_FLOW_EDGE_FILE_PATH, carFollowingModel=carFollowingModel,
+                                               macroModelType=macroModelType, tau="1", parameters={"sigma": "0.5", "sigmaStep": "2"},
+                                               date=simulationDate, timeslot=[0,24], edge_id=edge_id)
+        elif i == 1:
+            twinManager.configureCalibrateAndRun(dataFilePath=PROCESSED_TRAFFIC_FLOW_EDGE_FILE_PATH,
+                                                 carFollowingModel=carFollowingModel,
+                                                 macroModelType=macroModelType, tau="1",
+                                                 parameters={"sigma": "1", "sigmaStep": "5"},
+                                                 date=simulationDate, timeslot=[0, 24], edge_id=edge_id)
+        elif i == 2:
+            twinManager.configureCalibrateAndRun(dataFilePath=PROCESSED_TRAFFIC_FLOW_EDGE_FILE_PATH,
+                                                 carFollowingModel=carFollowingModel,
+                                                 macroModelType=macroModelType, tau="1",
+                                                 parameters={"sigma": "0", "sigmaStep": "1"},
+                                                 date=simulationDate, timeslot=[0, 24], edge_id=edge_id)
+        elif i == 3:
+            twinManager.configureCalibrateAndRun(dataFilePath=PROCESSED_TRAFFIC_FLOW_EDGE_FILE_PATH,
+                                                 carFollowingModel=carFollowingModel,
+                                                 macroModelType=macroModelType, tau="1.5",
+                                                 parameters={"sigma": "0.5", "sigmaStep": "2"},
+                                                 date=simulationDate, timeslot=[0, 24], edge_id=edge_id)
+        elif i == 4:
+            twinManager.configureCalibrateAndRun(dataFilePath=PROCESSED_TRAFFIC_FLOW_EDGE_FILE_PATH,
+                                                 carFollowingModel=carFollowingModel,
+                                                 macroModelType=macroModelType, tau="1.5",
+                                                 parameters={"sigma": "1", "sigmaStep": "5"},
+                                                 date=simulationDate, timeslot=[0, 24], edge_id=edge_id)
+        elif i == 5:
+            twinManager.configureCalibrateAndRun(dataFilePath=PROCESSED_TRAFFIC_FLOW_EDGE_FILE_PATH,
+                                                 carFollowingModel=carFollowingModel,
+                                                 macroModelType=macroModelType, tau="1.5",
+                                                 parameters={"sigma": "0", "sigmaStep": "1"},
+                                                 date=simulationDate, timeslot=[0, 24], edge_id=edge_id)
 
 

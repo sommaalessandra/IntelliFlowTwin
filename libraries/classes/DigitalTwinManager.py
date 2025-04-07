@@ -170,7 +170,10 @@ class DigitalTwinManager:
             # the model values are saved in a .csv file
             basemodel.saveTrafficData(outputDataPath=typeFilePath + "/model.csv")
             timeSlotFolder = timeSlotFolder.replace(':', '-')
-            folder_name = f"{date}_{macroModelType}_{carFollowingModel}/{timeSlotFolder}"
+            first_param = str(list(parameters.values())[0])
+            second_param = str(list(parameters.values())[1])
+            folder_name = f"{date}_{macroModelType}_{carFollowingModel}_{tau}_{first_param}_{second_param}/{timeSlotFolder}"
+
             folder_path = os.path.join(SUMO_PATH, folder_name)
             output_path = folder_path + "/output/"
             os.makedirs(output_path, exist_ok=True)
@@ -179,7 +182,7 @@ class DigitalTwinManager:
             route_folder_path = os.path.join(routefolder_name, timeslot_name)
             self.sumoSimulator.changeRouteFilePath(route_folder_path)
             self.sumoSimulator.start(activeGui=False, logFilePath=self.sumoSimulator.logFile)
-            # basemodel.runSimulation(withGui=False)
+
         confPath = projectPath + "/" + confPath
         paramvalues = list(parameters.values())
         # for each edge_id linked to a traffic loop, the simulation is evaluated according to the previous
