@@ -8,24 +8,6 @@ Having no direct access to city sensor and actuators, the **City Emulator** is i
    - **Sensors/Actuators**: extends device class, implementing transmission functions.   
    - **PhysicalSystemConnector**: A class that binds devices (sensors/actuators) to physical entities (e.g., roads).
 
-Here an example of a sensor creation with the subsequent connection to the associated road, instantiated with PhysicalSystemConnector:
-```python
-from PhysicalSystemConnector import Sensor, PhysicalSystemConnector
-
-# Create a road
-road = PhysicalSystemConnector("R001", "Via Emilia")
-
-# Create a sensor (traffic loop)
-traffic_loop = Sensor(
-    device_partialid="TL123",
-    devicekey="IOT_AGENT_API_KEY",
-    name="TL_Emilia",
-    sensortype="Traffic Loop"
-)
-
-# Connect the sensor to the road
-road.addSensor(traffic_loop)
-```
 ### Operational Workflow
 
 The emulator operates in two stages, both interacting with the FIWARE IoT Agent. The stages are detailed in two separate functions:
@@ -47,3 +29,24 @@ The emulator operates in two stages, both interacting with the FIWARE IoT Agent.
    - Activates the city emulation by initiating **hourly data transmission** from registered sensors to the IoT Agent. Once all data for the current timeslot has been transmitted, the process pauses for one hour before advancing to the next timeslot.
   
 As long as new data is available, the emulator is able to transmit data, effectively emulating sending information process.
+
+## Example: Adding a Sensor to a Road
+
+Below is a minimal example of how to instantiate a road and connect a traffic loop sensor to it using the `PhysicalSystemConnector`.
+
+```python
+from PhysicalSystemConnector import Sensor, PhysicalSystemConnector
+
+# Instantiate a road
+road = PhysicalSystemConnector("R001", "Via Emilia")
+
+# Instantiate a traffic loop sensor
+traffic_loop = Sensor(
+    device_partialid="TL123",
+    devicekey="IOT_AGENT_API_KEY",
+    name="TL_Emilia",
+    sensortype="Traffic Loop"
+)
+
+# Attach the sensor to the road
+road.addSensor(traffic_loop)
