@@ -54,25 +54,39 @@ if __name__ == "__main__":
 
     configurationPath = SUMO_PATH + "/standalone"
     logFile = SUMO_PATH + "/standalone/command_log.txt"
+
+    detector_output = os.path.abspath(SUMO_PATH + "/output")
+    os.makedirs(detector_output, exist_ok=True)
+
     sumoSimulator = Simulator(configurationPath=configurationPath, logFile=logFile)
     twinPlanner = Planner(simulator=sumoSimulator)
     twinManager = DigitalTwinManager(dataManager=dataManager, simulator=sumoSimulator, sumoConfigurationPath=configurationPath, sumoLogFile=logFile)
 
-    for hour in range(24):
-        if hour < 9:
-            timeSlotFolder = '0' + str(hour) + ':00-' + '0' + str(hour + 1) + ':00'
-        elif hour == 9:
-            timeSlotFolder = '0' + str(hour) + ':00-' + str(hour + 1) + ':00'
-        else:
-            timeSlotFolder = str(hour) + ':00-' + str(hour + 1) + ':00'
-        generateEdgeDataFile(PROCESSED_TRAFFIC_FLOW_EDGE_FILE_PATH, date='2024-02-01', time_slot=timeSlotFolder)
-        twinPlanner.scenarioGenerator.generateRoute(inputEdgePath=EDGE_DATA_FILE_PATH, timeSlot=timeSlotFolder)
+    # The date to simulate is set here.
+    # TODO: ask for simulation date or start from a date on
+    simulationDate = '2024-02-01'
+
+    # put generateRoutes to true/false if you want (or not) to generate 24h traffic routes for a specific date
+    generateRoutes = True
+    if generateRoutes:
+        for hour in range(24):
+            if hour < 9:
+                timeSlotFolder = '0' + str(hour) + ':00-' + '0' + str(hour + 1) + ':00'
+            elif hour == 9:
+                timeSlotFolder = '0' + str(hour) + ':00-' + str(hour + 1) + ':00'
+            else:
+                timeSlotFolder = str(hour) + ':00-' + str(hour + 1) + ':00'
+            generateEdgeDataFile(PROCESSED_TRAFFIC_FLOW_EDGE_FILE_PATH, date=simulationDate, time_slot=timeSlotFolder)
+            twinPlanner.scenarioGenerator.generateRoute(inputEdgePath=EDGE_DATA_FILE_PATH, timeSlot=timeSlotFolder)
     # 3. Simulation of one hour slot scenario. The function will open sumo gui. The play button must be pressed to run the simulation. When simulation ends, the function returns the folder path in which sumoenv files have been generated.
     # scenarioFolder = twinManager.simulateBasicScenarioForOneHourSlot(timeslot="00:00-01:00", date="2024/02/01", entityType='Road Segment', totalVehicles=100, minLoops=3, congestioned=False, activeGui=True, timecolumn="timeslot")
     # print(scenarioFolder)
     # twinManager.generateGraphs(scenarioFolder)
     # twinManager.showGraphs(scenarioFolder, saveSummary=False)
 
+
+    # 4. Configuration of Macroscopic traffic model and car-following model with 24-hour simulation.
+    # The output of simulation will be compared to the macroscopic data previously constructed.
     macroModelType = "greenshield"
     carFollowingModel = "Krauss"
     edge_id = "23288872#4"
@@ -80,8 +94,8 @@ if __name__ == "__main__":
     ### ADDITIONAL IDM PARAMS additionalParam={"delta": "6","stepping": "0.1"})
     ### ADDITIONAL W99 PARAMS additionalParam={"cc1": "1.5", "cc2": "10.0"})
     twinManager.configureCalibrateAndRun(dataFilePath=PROCESSED_TRAFFIC_FLOW_EDGE_FILE_PATH, carFollowingModel=carFollowingModel,
-                                       macroModelType=macroModelType, tau="1.5", parameters={"sigma": "0", "sigmaStep": "0.5"},
-                                       date='2024-02-01', timeslot=[0,24], edge_id=edge_id)
+                                       macroModelType=macroModelType, tau="1", parameters={"sigma": "0", "sigmaStep": "0.5"},
+                                       date=simulationDate, timeslot=[0,24], edge_id=edge_id)
 
 
 

@@ -212,8 +212,12 @@ class TrafficModeler:
         # Iterating through all one-hour simulation directories
         for folder_name in os.listdir(confPath):
             folder_path = os.path.join(confPath, folder_name)
+
             # Check if it is a valid directory
             if os.path.isdir(folder_path):
+                if any(c.isalpha() for c in folder_name):
+                    print(f"Cartella '{folder_name}' contiene lettere → salto")
+                    continue
                 xml_file = folder_path + "/output/edgedata-output.xml"
                 print("PATH: " + str(xml_file))
                 tree = ET.parse(xml_file)
@@ -308,15 +312,15 @@ class TrafficModeler:
             density_pred = float(row["detected_density"])
             flow_true = float(row["real_flow"])
             flow_pred = float(row["detected_flow"])
-            if speed_pred != 0:
+            if speed_pred != 0 and speed_true != 0:
                 speed_squared_errors += (speed_pred - speed_true) ** 2
                 speed_absolute_percentage_errors += abs((speed_true - speed_pred) / speed_true)
                 speed_true_values.append(speed_true)
-            if density_pred != 0:
+            if density_pred != 0 and density_true !=0:
                 density_squared_errors += (density_pred - density_true) ** 2
                 density_absolute_percentage_errors += abs((density_true - density_pred) / density_true)
                 density_true_values.append(density_true)
-            if flow_pred !=0:
+            if flow_pred !=0 and flow_true !=0:
                 flow_squared_errors += (flow_pred - flow_true) ** 2
                 flow_absolute_percentage_errors += abs((flow_true - flow_pred) / flow_true)
             if speed_pred == 0 or density_pred == 0 or flow_pred == 0:
@@ -332,8 +336,12 @@ class TrafficModeler:
             flow_mape = (flow_absolute_percentage_errors / n) * 100
 
             # Calculate NRMSE
-            speed_range = max(speed_true_values) - min(speed_true_values)
-            density_range = max(density_true_values) - min(density_true_values)
+            speed_range = 0
+            density_range = 0
+            if len(speed_true_values) != 0:
+                speed_range = max(speed_true_values) - min(speed_true_values)
+            if len(density_true_values) != 0:
+                density_range = max(density_true_values) - min(density_true_values)
 
             speed_nrmse = speed_rmse / speed_range if speed_range != 0 else 0
             density_nrmse = density_rmse / density_range if density_range != 0 else 0
@@ -381,6 +389,9 @@ class TrafficModeler:
         self.simulator.changeRouteFilePath(route_path)
         os.makedirs(folder_path, exist_ok=True)
         self.simulator.changeTypePath(folder_path)
+        timeslot_name = f"{self.timeSlot}"
+        route_folder = os.path.join("sumoenv/routes/", timeslot_name)
+        self.simulator.changeRouteFilePath(route_folder)
         # XML filename
         output_file = os.path.join(folder_path, "vtype.add.xml")
         root = ET.Element("additional")

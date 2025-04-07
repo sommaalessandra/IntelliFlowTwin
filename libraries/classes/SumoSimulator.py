@@ -18,7 +18,7 @@ import libtraci
 import traci.constants as tc
 from typing import Optional
 
-from libraries.constants import SUMO_OUTPUT_PATH
+from libraries.constants import SUMO_OUTPUT_PATH, SUMO_PATH
 
 
 class Simulator:
@@ -76,6 +76,7 @@ class Simulator:
             return
         outputpath = os.path.abspath(self.configurationPath + "/output")
         os.makedirs(outputpath, exist_ok=True)
+
         os.environ["STATICPATH"] = staticpath
         self.listener = ValueListener()
         libtraci.addStepListener(self.listener)

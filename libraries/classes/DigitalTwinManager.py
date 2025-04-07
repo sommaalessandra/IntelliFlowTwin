@@ -1,4 +1,5 @@
 import sys
+import pandas as pd
 from libraries.classes.SumoSimulator import Simulator
 from libraries.classes.Planner import Planner
 from libraries.classes.DataManager import DataManager
@@ -10,7 +11,6 @@ from subprocess import Popen
 from PIL import Image
 import pytz
 from datetime import datetime
-
 from libraries.classes.TrafficModeler import TrafficModeler
 from libraries.constants import SUMO_PATH, SUMO_NET_PATH, projectPath
 
@@ -141,8 +141,8 @@ class DigitalTwinManager:
         :param carFollowingModel: the model type to calibrate and set for the simulation process
         :param macroModelType: the macromodel to apply to get flow, speed and density estimation
         :param tau: the headway time, in seconds, to be observed inside the custom car-follwing model
-        :param parameters:
-        :param date:
+        :param parameters: additional parameters that are used to calibrate the car following model
+        :param date: the date, in yyyy-mm-dd format, in which to go to evaluate the measurements
         :param timeslot: The time slot for which historical traffic data is retrieved (e.g., "00:00-01:00").
         :param edge_id:
         """
@@ -184,17 +184,21 @@ class DigitalTwinManager:
         paramvalues = list(parameters.values())
         # for each edge_id linked to a traffic loop, the simulation is evaluated according to the previous
         # macroscopic values. Simulation output of flow, speed and density are compared to the macroscopic ones
-        basemodel.evaluateModel(edge_id=edge_id, confPath=confPath, outputFilePath=confPath + "/detectedFlow_t" + str(tau)
+        df = pd.read_csv(typeFilePath + "/model.csv", sep=';', decimal=',')
+        edge_ids = df[["edge_id"]].values
+        for edge_id in edge_ids:
+            os.makedirs(confPath + "/detected_output/", exist_ok=True)
+            basemodel.evaluateModel(edge_id=edge_id[0], confPath=confPath, outputFilePath=confPath + "/detected_output/" + str(edge_id[0]) + "_detectedFlow_t" + str(tau)
                                                                                    + "_ap" + str(paramvalues[0]) + "_ap" + str(paramvalues[1]) + ".csv")
+            os.makedirs(confPath + "/error_output/", exist_ok=True)
+            # the RMSE, MAPE of flow, speed and density are calculated. Additionally, squared R and GEH for flow is built
+            basemodel.evaluateError(detectedFlowPath=confPath + "/detected_output/" + str(edge_id[0]) + "_detectedFlow_t" + str(tau) + "_ap" + str(paramvalues[0])
+                                                   + "_ap" + str(paramvalues[1]) + ".csv",
+                                    outputFilePath=confPath + "/error_output/" + str(edge_id[0]) + "_error_summary_t"+ str(tau)
+                                                   + "_ap" + str(paramvalues[0]) + "_ap" + str(paramvalues[1]) + ".csv")
 
-        # the RMSE, MAPE of flow, speed and density are calculated. Additionally, squared R and GEH for flow is built
-        basemodel.evaluateError(detectedFlowPath=confPath + "/detectedFlow_t" + str(tau) + "_ap" + str(paramvalues[0])
-                                               + "_ap" + str(paramvalues[1]) + ".csv",
-                                outputFilePath=confPath + "/error_summary_t"+ str(tau)
-                                               + "_ap" + str(paramvalues[0]) + "_ap" + str(paramvalues[1]) + ".csv")
-
-        basemodel.plotTemporalResults(resultFilePath=confPath + "/detectedFlow_t" + str(tau) + "_ap" + str(paramvalues[0])
-                                               + "_ap" + str(paramvalues[1]) + ".csv", showImage=False)
+        # basemodel.plotTemporalResults(resultFilePath=confPath + "/detectedFlow_t" + str(tau) + "_ap" + str(paramvalues[0])
+        #                                        + "_ap" + str(paramvalues[1]) + ".csv", showImage=False)
         # basemodel.compareResults(resultPath=confPath)
         # basemodel.plotModel(result=None)
         return confPath
