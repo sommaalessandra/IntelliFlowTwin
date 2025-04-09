@@ -1,4 +1,4 @@
-# **FlowTwin - Bologna Case Study**
+# **BoMoDT - Bologna Mobility Digital Twin**
 **FlowTwin** is a framework designed to systematically integrate traffic flow modeling into a cohesive _Mobility Digital Twin_ (MoDT) system. This repository contains the application of this framework in the case study of the italian city of Bologna. The data used by this application are retrieved from the [Open Data Platform](https://opendata.comune.bologna.it/)
  of the municipality of Bologna, while the entire framework is implemented using _open-source technologies_ such as **FIWARE** components for interacting with the Digital Twin and **Eclipse Simulator of Urban MObility** (SUMO) for traffic modeling and simulations.
  The FlowTwin framework provides:
