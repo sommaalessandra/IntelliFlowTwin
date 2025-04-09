@@ -5,7 +5,7 @@
     <input>
         <net-file value="../static/full.net.xml"/>
         <route-files value="${ROUTEFILEPATH}/generatedRoutes.rou.xml"/>
-        <additional-files value="../static/detectors.add.xml, ../../${TYPEPATH}/vtype.add.xml"/>
+        <additional-files value="${DETECTORPATH}/detectors.add.xml, ${TYPEPATH}/vtype.add.xml"/>
     </input>
 
 	<time> 
@@ -13,13 +13,13 @@
 	</time>
 
     <output>
-        <tripinfo-output value="../../${TYPEPATH}/output/tripinfos.xml"/>
+        <tripinfo-output value="${TYPEPATH}/output/tripinfos.xml"/>
         <save-state.prefix value="state"/>
 		<!--<fcd-output value="/output/fcd.xml"/> -->
-		<vehroute-output value="../../${TYPEPATH}/output/vehroute.xml" />
-		<summary-output value="../../${TYPEPATH}/output/summary.xml" />
+		<vehroute-output value="${TYPEPATH}/output/vehroute.xml" />
+		<summary-output value="${TYPEPATH}/output/summary.xml" />
 		<!--<queue-output value="../../${TYPEPATH}/output/queue.xml" /> -->
-		<edgedata-output value="../../${TYPEPATH}/output/edgedata-output.xml" />
+		<edgedata-output value="${TYPEPATH}/output/edgedata-output.xml" />
     </output>
 
     <report>

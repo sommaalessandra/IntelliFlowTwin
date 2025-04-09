@@ -138,6 +138,15 @@ class ScenarioGenerator:
             print("No route file path was provided or selected.")
 
     def generateRandomRoute(self, sumoNetPath: str, timeSlot: str):
+        """
+
+        Args:
+            sumoNetPath:
+            timeSlot:
+
+        Returns:
+
+        """
         timeSlot = timeSlot.replace(':', '-')
         #folder_name = f"{date}_{modelType}_{carFollowingModelType}/{timeSlot}"
         #folder_path = os.path.join("sumoenv/", folder_name)
@@ -155,11 +164,17 @@ class ScenarioGenerator:
                         "--random-routing-factor", "10", "--period", "0.1"])
 
 
-    def generateRoute(self, inputEdgePath: str, timeSlot: str, withInitialRoute=True, useStandardRandomRoute=False ):
+    def generateRoute(self, inputEdgePath: str, timeSlot: str, withInitialRoute=True ):
         """
         Based on the input edgefile that contains the traffic counts detected by the specific traffic loops in the map,
         the function generates routes for the map (saved in :param sumoNetPath) that respect these crossing constraints
+        Args:
+            :param inputEdgePath: the file containing the traffic count linked to the edge_id to observe when sampling
+            :param timeSlot: the timeslot of the simulation. It is used as a folder name.
+            :param withInitialRoute: if true, this will call generateRandomRoute. Put it to false if you already have
+            routes to sample.
 
+        Returns:
         """
         timeSlot = timeSlot.replace(':', '-')
         if withInitialRoute:
@@ -169,22 +184,10 @@ class ScenarioGenerator:
         #folder_path = os.path.join("sumoenv/", folder_name)
         folder_path = os.path.join("sumoenv/routes", folder_name)
         os.makedirs(folder_path, exist_ok=True)
-        if useStandardRandomRoute:
-            random_route_path = "sumoenv/standalone"
-        else:
-            random_route_path = folder_path
+        random_route_path = folder_path
         outputRoutePath = folder_path + "/generatedRoutes.rou.xml"
         script = SUMO_TOOLS_PATH + "/routeSampler.py"
-        # attributes = --attributes="type=\"idmAlternative\""
         type = "type='customModel'"
-        #if self.carFollowingModelType == "Krauss":
-        #    type = "type='customKrauss'"
-        #elif self.carFollowingModelType == "IDM":
-        #    type = "type='customIDM'"
-        #elif self.carFollowingModelType == "EIDM":
-        #    type = "type='customEIDM'"
-        #elif self.carFollowingModelType == "W99":
-        #    type = "type='customW99'"
         process = subprocess.run([sys.executable, script, "--r", random_route_path + "/randomTrips.rou.xml",
                                   "--edgedata-files", inputEdgePath, "-o",
                                   folder_path + "/generatedRoutes.rou.xml", "--edgedata-attribute", "qPKW",

@@ -259,6 +259,27 @@ class Simulator:
         os.environ["ROUTEFILEPATH"] = routeFilePath
         print("The path was set to " + routeFilePath)
 
+
+    def changeDetectorPath(self, detectorPath: str):
+        """
+        Changes the route path for the simulator.
+
+        This function checks if the provided route path is absolute. If it is not an absolute path,
+        it converts it to an absolute path based on the current working directory.
+        After ensuring that the path exists, it updates the simulator's route path and the
+        environment variable 'ROUTEFILENAME' to reflect the new path.
+
+        :param routePath: The absolute route file path.
+        :raises FileNotFoundError: If the given route path does not exist
+
+        """
+        if not os.path.exists(detectorPath):
+            print("Error: the given path does not exist.")
+            return
+        self.detectorPath = detectorPath
+        os.environ["DETECTORPATH"] = detectorPath
+        print("The path was set to " + detectorPath)
+
     ### VEHICLE FUNCTIONS
     def getVehiclesSummary(self):
         """

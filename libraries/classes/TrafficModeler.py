@@ -330,17 +330,16 @@ class TrafficModeler:
         folder_name = f"{self.date}_{self.modelType}_{modelType}_{tau}_{first_param}_{second_param}/{self.timeSlot}"
         conf_name = f"{self.date}_{self.modelType}_{modelType}_{tau}_{first_param}_{second_param}"
         # timeslot_folder = f"{self.timeSlot}"
-        folder_path = os.path.join("sumoenv/", folder_name)
-        conf_path = os.path.join("sumoenv/", conf_name)
+        folder_path = os.path.join(SUMO_PATH, folder_name)
+        conf_path = os.path.join(SUMO_PATH, conf_name)
         # folder_path = os.path.join(date_path, timeslot_folder)
         timeslot_name = f"{self.timeSlot}"
-        route_path = os.path.join("sumoenv/routes",timeslot_name)
+        route_path = os.path.join(SUMO_PATH + "/routes",timeslot_name)
         self.simulator.changeRouteFilePath(route_path)
         os.makedirs(folder_path, exist_ok=True)
         self.simulator.changeTypePath(folder_path)
-        timeslot_name = f"{self.timeSlot}"
-        route_folder = os.path.join("sumoenv/routes/", timeslot_name)
-        self.simulator.changeRouteFilePath(route_folder)
+        detector_path = os.path.join(SUMO_PATH, "static")
+        self.simulator.changeDetectorPath(detector_path)
         # XML filename
         output_file = os.path.join(folder_path, "vtype.add.xml")
         root = ET.Element("additional")

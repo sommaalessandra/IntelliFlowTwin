@@ -184,29 +184,30 @@ def simulationModeler(request):
 
             # Aggiunta degli additional parameters in base al modello selezionato
             if data['car_following_model'] == 'Krauss':
-                params['sigma'] = str(data['sigma'])
-                params['sigmaStep'] = str(data['sigma_step'])
+                additional_param = {'sigma': str(data['sigma']),
+                                    'sigmaStep': str(data['sigma_step'])}
                 folderResult = twinManager.configureCalibrateAndRun(dataFilePath=PROCESSED_TRAFFIC_FLOW_EDGE_FILE_PATH,
                                                   macroModelType=params['macromodel'],
                                                   carFollowingModel=params['car_following_model'], tau=params['tau'],
-                                                  parameters=params,
+                                                  parameters=additional_param,
                                                   date=params['date'], timeslot=time_slot, edge_id='23288872#4')
             elif data['car_following_model'] == 'IDM':
-                params['delta'] = str(data['delta'])
-                params['stepping'] = str(data['stepping'])
+                additional_param = {'delta': str(data['delta']),
+                                    'stepping': str(data['stepping'])}
                 folderResult = twinManager.configureCalibrateAndRun(dataFilePath=PROCESSED_TRAFFIC_FLOW_EDGE_FILE_PATH,
                                                   macroModelType=params['macromodel'],
                                                   carFollowingModel=params['car_following_model'], tau=params['tau'],
-                                                  parameters=params,
+                                                  parameters=additional_param,
                                                   date=params['date'], timeslot=time_slot,
                                                   edge_id='23288872#4')
             elif data['car_following_model'] == 'W99':
-                params['cc1'] = str(data['cc1'])
-                params['cc2'] = str(data['cc2'])
+
+                additional_param = {'cc1': str(data['cc1']),
+                                    'cc2': str(data['cc2'])}
                 folderResult = twinManager.configureCalibrateAndRun(dataFilePath=PROCESSED_TRAFFIC_FLOW_EDGE_FILE_PATH,
                                                   macroModelType=params['macromodel'],
                                                   carFollowingModel=params['car_following_model'], tau=params['tau'],
-                                                  parameters=params,
+                                                  parameters=additional_param,
                                                   date=params['date'], timeslot=time_slot,
                                                   edge_id='23288872#4')
                 print("Executed simulation " + str(folderResult))

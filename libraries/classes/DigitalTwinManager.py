@@ -29,6 +29,11 @@ class DigitalTwinManager:
     Methods:
        - __init__: Initializes the DigitalTwinManager by setting up the DataManager, Simulator, and Planner instances.
        - simulateBasicScenarioForOneHourSlot: Simulates a basic scenario for a one-hour time slot using historical data.
+       - configureCalibrateAndRun: configure and calibrates macroscopic and car-following model. Then, a 24h simulation
+       is executed and outputs are compared with the macroscopic values estimated before.
+       - generateGraphs: function to generate graphs based on a specific simulated scenario.
+       - showGraphs: function to show the generated graphs made up with generateGraphs.
+
    """
 
     sumoSimulator: Simulator
@@ -38,10 +43,10 @@ class DigitalTwinManager:
     def __init__(self, dataManager: DataManager, simulator: Simulator, sumoConfigurationPath: str, sumoLogFile: str):
         """
         Initializes the DigitalTwinManager by creating instances of the DataManager, sumoenv simulator, and Planner.
-
-        :param dataManager: Optional name for the DataManager (default is "DataManager").
-        :param sumoConfigurationPath: Path to the sumoenv configuration file.
-        :param sumoLogFile: Path to the log file for sumoenv.
+        Args:
+            :param dataManager: Optional name for the DataManager (default is "DataManager").
+            :param sumoConfigurationPath: Path to the sumoenv configuration file.
+            :param sumoLogFile: Path to the log file for sumoenv.
         """
         # TODO: manage the possibility to get as input directly the simulator and the planner instances.
         self.dtDataManager = dataManager
@@ -56,77 +61,23 @@ class DigitalTwinManager:
         """
         Simulates a basic traffic scenario for a one-hour time slot, retrieving historical data and using it to
         define the simulation parameters.
+        Args:
+            :param timeslot: The time slot for which historical traffic data is retrieved (e.g., "00:00-01:00").
+            :param date: The date on which the traffic data is based (e.g., "2024-02-01").
+            :param entityType: The type of entity being simulated (e.g., "roadsegment" or "device").
+            :param totalVehicles: The total number of vehicles to include in the simulation.
+            :param minLoops: The minimum number of simulation loops to perform.
+            :param congestioned: A boolean flag to indicate if the simulation should include congestion.
+            :param activeGui: Whether to activate the sumoenv graphical user interface (GUI) during the simulation.
+            :param timecolumn: The name of the time column in the database used to retrieve historical data (default is "timeslot").
 
-        :param timeslot: The time slot for which historical traffic data is retrieved (e.g., "00:00-01:00").
-        :param date: The date on which the traffic data is based (e.g., "2024-02-01").
-        :param entityType: The type of entity being simulated (e.g., "roadsegment" or "device").
-        :param totalVehicles: The total number of vehicles to include in the simulation.
-        :param minLoops: The minimum number of simulation loops to perform.
-        :param congestioned: A boolean flag to indicate if the simulation should include congestion.
-        :param activeGui: Whether to activate the sumoenv graphical user interface (GUI) during the simulation.
-        :param timecolumn: The name of the time column in the database used to retrieve historical data (default is "timeslot").
-
-        :return: A string representing the folder where the scenario is stored.
+        Returns: A string representing the folder where the scenario is stored.
         """
         if entityType.lower() in ["road segment", "roadsegment"]:
             timescaleManager = self.dtDataManager.getDBManagerByType("TimescaleDBManager")
             df = timescaleManager.retrieveHistoricalDataForTimeslot(timeslot=timeslot, date=date, entityType=entityType, timecolumn=timecolumn)
             scenarioFolder = self.planner.planBasicScenarioForOneHourSlot(df, entityType=entityType, totalVehicles=totalVehicles, minLoops=minLoops, congestioned=False, activeGui=activeGui)
             return scenarioFolder
-
-
-    def generateGraphs(self, scenarioFolder: str):
-        """
-        Generate graphs based on the simulation outcome. The generated graphs show some info about the trajectory
-        taken by the vehicles, the time spent in running/halted state and the depart delay time.
-        :param scenarioFolder: the folder where the simulated scenario output is stored
-        :return:
-        """
-        graphScript = constants.SUMO_TOOLS_PATH + '/visualization/plotXMLAttributes.py'
-        scenarioFolder = os.path.abspath(scenarioFolder)
-
-        trajectory_cmd = [sys.executable, graphScript, "-x", "x", "-y", "y", "-o", scenarioFolder + "/traj_out.png",
-                          scenarioFolder + "/fcd.xml", "--blind"]
-        running_halted_cmd = [sys.executable, graphScript, scenarioFolder + "/summary.xml", "-x", "time", "-y",
-                              "running,halting", "-o", scenarioFolder + "/plot_running.png", "--legend", "--blind"]
-        depart_delay_cmd = [sys.executable, graphScript, "-i", "id", "-x", "depart", "-y", "departDelay",
-                            "--scatterplot", "--xlabel", '"depart time [s]"', "--ylabel", '"depart delay [s]"',
-                            "--ylim", "0,40", "--xticks", "0,1200,200,10", "--yticks", "0,40,5,10", "--xgrid",
-                            "--ygrid", "--title", '"depart delay over depart time"', "--titlesize", "16",
-                            scenarioFolder + "/tripinfos.xml", "--blind", "-o", scenarioFolder + "/departDelay.png"]
-
-        commands = [trajectory_cmd, running_halted_cmd, depart_delay_cmd]
-        procs = [Popen(i) for i in commands]
-        for p in procs:
-            p.wait()
-
-
-    def showGraphs(self, scenarioFolder: str, saveSummary = False):
-        """
-        Groups the graphs previously generated and stored in the scenarioFolder and show them in one figure
-        :param scenarioFolder: the folder where the simulated scenario output is stored
-        :return:
-        """
-        scenarioFolder = os.path.abspath(scenarioFolder)
-
-        # Graph list
-        images = [scenarioFolder + '/traj_out.png', scenarioFolder + '/plot_running.png',scenarioFolder + '/departDelay.png']
-        imgs = [Image.open(img) for img in images]
-
-        # Group figures in one image
-        widths, heights = zip(*(i.size for i in imgs))
-        total_width = sum(widths)  # For horizontal concat
-        max_height = max(heights)
-        new_image = Image.new('RGB', (total_width, max_height))
-        x_offset = 0
-        for img in imgs:
-            new_image.paste(img, (x_offset, 0))  # Incolla nella nuova immagine
-            x_offset += img.width
-        # Show Grouped image
-        new_image.show()
-        # Save new image
-        if saveSummary:
-            new_image.save(scenarioFolder + '/summary_image.png')
 
     def configureCalibrateAndRun(self, dataFilePath: str, carFollowingModel: str, macroModelType: str, tau: str,
                              parameters: {}, date: str, timeslot: [], edge_id: str):
@@ -136,15 +87,17 @@ class DigitalTwinManager:
         time window.
         It generates speed and density estimates using a selected :macroModelType. These data are then compared with the
         simulative outputs through the error evaluation function.
+        Args:
+            :param dataFilePath: input file containing measurements to be used for modeling and simulation activity
+            :param carFollowingModel: the model type to calibrate and set for the simulation process
+            :param macroModelType: the macromodel to apply to get flow, speed and density estimation
+            :param tau: the headway time, in seconds, to be observed inside the custom car-follwing model
+            :param parameters: additional parameters that are used to calibrate the car following model
+            :param date: the date, in yyyy-mm-dd format, in which to go to evaluate the measurements
+            :param timeslot: The time slot for which historical traffic data is retrieved (e.g., "00:00-01:00").
+            :param edge_id:
 
-        :param dataFilePath: input file containing measurements to be used for modeling and simulation activity
-        :param carFollowingModel: the model type to calibrate and set for the simulation process
-        :param macroModelType: the macromodel to apply to get flow, speed and density estimation
-        :param tau: the headway time, in seconds, to be observed inside the custom car-follwing model
-        :param parameters: additional parameters that are used to calibrate the car following model
-        :param date: the date, in yyyy-mm-dd format, in which to go to evaluate the measurements
-        :param timeslot: The time slot for which historical traffic data is retrieved (e.g., "00:00-01:00").
-        :param edge_id:
+        Returns: returns the folder path in which simulations and results are stored.
         """
         basemodel = TrafficModeler(simulator=self.sumoSimulator, trafficDataFile=dataFilePath,
                                    sumoNetFile=SUMO_NET_PATH,
@@ -160,7 +113,6 @@ class DigitalTwinManager:
                 timeSlotFolder = '0' + str(hour) + ':00-' + '0' + str(hour + 1) + ':00'
             elif hour == 9:
                 basemodel.changeTimeslot('0' + str(hour) + ':00-' + str(hour + 1) + ':00')
-
                 timeSlotFolder = '0' + str(hour) + ':00-' + str(hour + 1) + ':00'
             else:
                 basemodel.changeTimeslot(str(hour) + ':00-' + str(hour + 1) + ':00')
@@ -178,13 +130,14 @@ class DigitalTwinManager:
             first_param = str(list(parameters.values())[0])
             second_param = str(list(parameters.values())[1])
             folder_name = f"{date}_{macroModelType}_{carFollowingModel}_{tau}_{first_param}_{second_param}/{timeSlotFolder}"
-
             folder_path = os.path.join(SUMO_PATH, folder_name)
             output_path = folder_path + "/output/"
             os.makedirs(output_path, exist_ok=True)
+            # Route folder construction
             timeslot_name = f"{timeSlotFolder}"
             routefolder_name = os.path.join(SUMO_PATH, 'routes')
             route_folder_path = os.path.join(routefolder_name, timeslot_name)
+            print(route_folder_path)
             self.sumoSimulator.changeRouteFilePath(route_folder_path)
             self.sumoSimulator.start(activeGui=False, logFilePath=self.sumoSimulator.logFile)
 
@@ -206,3 +159,57 @@ class DigitalTwinManager:
                                     outputFilePath=confPath + "/error_output/" + str(edge_id[0]) + "_error_summary_t"+ str(tau)
                                                    + "_ap" + str(paramvalues[0]) + "_ap" + str(paramvalues[1]) + ".csv")
         return confPath
+
+    def generateGraphs(self, scenarioFolder: str):
+        """
+        Generate graphs based on the simulation outcome. The generated graphs show some info about the trajectory
+        taken by the vehicles, the time spent in running/halted state and the depart delay time.
+        Args:
+            :param scenarioFolder: the folder where the simulated scenario output is stored
+        Return:
+        """
+        graphScript = constants.SUMO_TOOLS_PATH + '/visualization/plotXMLAttributes.py'
+        scenarioFolder = os.path.abspath(scenarioFolder)
+
+        trajectory_cmd = [sys.executable, graphScript, "-x", "x", "-y", "y", "-o", scenarioFolder + "/traj_out.png",
+                          scenarioFolder + "/fcd.xml", "--blind"]
+        running_halted_cmd = [sys.executable, graphScript, scenarioFolder + "/summary.xml", "-x", "time", "-y",
+                              "running,halting", "-o", scenarioFolder + "/plot_running.png", "--legend", "--blind"]
+        depart_delay_cmd = [sys.executable, graphScript, "-i", "id", "-x", "depart", "-y", "departDelay",
+                            "--scatterplot", "--xlabel", '"depart time [s]"', "--ylabel", '"depart delay [s]"',
+                            "--ylim", "0,40", "--xticks", "0,1200,200,10", "--yticks", "0,40,5,10", "--xgrid",
+                            "--ygrid", "--title", '"depart delay over depart time"', "--titlesize", "16",
+                            scenarioFolder + "/tripinfos.xml", "--blind", "-o", scenarioFolder + "/departDelay.png"]
+
+        commands = [trajectory_cmd, running_halted_cmd, depart_delay_cmd]
+        procs = [Popen(i) for i in commands]
+        for p in procs:
+            p.wait()
+
+    def showGraphs(self, scenarioFolder: str, saveSummary = False):
+        """
+        Groups the graphs previously generated and stored in the scenarioFolder and show them in one figure
+        Args:
+            :param scenarioFolder: the folder where the simulated scenario output is stored
+        Returns:
+        """
+        scenarioFolder = os.path.abspath(scenarioFolder)
+
+        # Graph list
+        images = [scenarioFolder + '/traj_out.png', scenarioFolder + '/plot_running.png',scenarioFolder + '/departDelay.png']
+        imgs = [Image.open(img) for img in images]
+
+        # Group figures in one image
+        widths, heights = zip(*(i.size for i in imgs))
+        total_width = sum(widths)  # For horizontal concat
+        max_height = max(heights)
+        new_image = Image.new('RGB', (total_width, max_height))
+        x_offset = 0
+        for img in imgs:
+            new_image.paste(img, (x_offset, 0))  # Incolla nella nuova immagine
+            x_offset += img.width
+        # Show Grouped image
+        new_image.show()
+        # Save new image
+        if saveSummary:
+            new_image.save(scenarioFolder + '/summary_image.png')
