@@ -154,8 +154,13 @@ class ScenarioGenerator:
                         "--fringe-factor", "10", "--min-distance", "100", "--max-distance", "2000",
                         "--random-routing-factor", "10", "--period", "0.1"])
 
-    # Some computational time problems here. Maybe it's related to subprocess library
+
     def generateRoute(self, inputEdgePath: str, timeSlot: str, withInitialRoute=True, useStandardRandomRoute=False ):
+        """
+        Based on the input edgefile that contains the traffic counts detected by the specific traffic loops in the map,
+        the function generates routes for the map (saved in :param sumoNetPath) that respect these crossing constraints
+
+        """
         timeSlot = timeSlot.replace(':', '-')
         if withInitialRoute:
             self.generateRandomRoute(sumoNetPath=SUMO_NET_PATH, timeSlot=timeSlot)

@@ -160,10 +160,15 @@ class DigitalTwinManager:
                 timeSlotFolder = '0' + str(hour) + ':00-' + '0' + str(hour + 1) + ':00'
             elif hour == 9:
                 basemodel.changeTimeslot('0' + str(hour) + ':00-' + str(hour + 1) + ':00')
+
                 timeSlotFolder = '0' + str(hour) + ':00-' + str(hour + 1) + ':00'
             else:
                 basemodel.changeTimeslot(str(hour) + ':00-' + str(hour + 1) + ':00')
                 timeSlotFolder = str(hour) + ':00-' + str(hour + 1) + ':00'
+
+            # Plot macroscopic data according to the selected macroscopic model fundamental diagram
+            # basemodel.plotModel()
+
             # a car-following model is constructed, creating a specific file stored in the typeFilePath
             typeFilePath, confPath = basemodel.vTypeGeneration(modelType=carFollowingModel, tau=tau,
                                                            additionalParam=parameters)
@@ -191,6 +196,7 @@ class DigitalTwinManager:
         edge_ids = df[["edge_id"]].values
         for edge_id in edge_ids:
             os.makedirs(confPath + "/detected_output/", exist_ok=True)
+            # Evaluate output according to macroscopic data. Data are saved in a dedicated folder
             basemodel.evaluateModel(edge_id=edge_id[0], confPath=confPath, outputFilePath=confPath + "/detected_output/" + str(edge_id[0]) + "_detectedFlow_t" + str(tau)
                                                                                    + "_ap" + str(paramvalues[0]) + "_ap" + str(paramvalues[1]) + ".csv")
             os.makedirs(confPath + "/error_output/", exist_ok=True)
@@ -199,9 +205,4 @@ class DigitalTwinManager:
                                                    + "_ap" + str(paramvalues[1]) + ".csv",
                                     outputFilePath=confPath + "/error_output/" + str(edge_id[0]) + "_error_summary_t"+ str(tau)
                                                    + "_ap" + str(paramvalues[0]) + "_ap" + str(paramvalues[1]) + ".csv")
-
-        # basemodel.plotTemporalResults(resultFilePath=confPath + "/detectedFlow_t" + str(tau) + "_ap" + str(paramvalues[0])
-        #                                        + "_ap" + str(paramvalues[1]) + ".csv", showImage=False)
-        # basemodel.compareResults(resultPath=confPath)
-        # basemodel.plotModel(result=None)
         return confPath

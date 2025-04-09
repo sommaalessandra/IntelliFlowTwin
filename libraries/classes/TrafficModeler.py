@@ -55,62 +55,7 @@ class TrafficModeler:
         self.sumoNet = sumolib.net.readNet(sumoNetFile)
         self.modelType = modelType
         self.getMacroscopicModel()
-        # self.macroscopicData = []
-        # for index, row in self.trafficData.iterrows():
-        #     edge_id = row["edge_id"]
-        #     edge = self.sumoNet.getEdge(edge_id)
-        #     length = edge.getLength()
-        #     vMax = edge.getSpeed()
-        #     laneCount = len(edge.getLanes())
-        #     vehicleLength = 7.5 #7.5 # this length is including the gap between vehicles
-        #     maxDensity = laneCount / vehicleLength
-        #     # print(f"Edge {edge_id}: k_jam = {maxDensity * 1000} vehicles/km")
-        #     first = int(timeSlot[:2])
-        #     last = int(timeSlot[6:8])
-        #     # Calculate the vehicle count for the specified time slot
-        #     if last - first > 1:  # If the time slot spans multiple hours
-        #         total_count = sum(row[f"{hour:02d}:00-{(hour + 1) % 24:02d}:00"] for hour in range(first, last))
-        #         flow = str(total_count)
-        #     else:
-        #         flow = str(row[timeSlot])
-        #
-        #     vps = int(flow) / (3600 * (last - first))  # flow is set as vehicles per second
-        #     density = vps / vMax
-        #     laneDensity = density / laneCount
-        #     laneVps = vps / laneCount
-        #     if self.modelType == "greenshield":
-        #         velocity = vMax * (1 - density / maxDensity)
-        #     elif self.modelType == "underwood":
-        #         velocity = vMax * np.exp(density / maxDensity)
-        #     elif self.modelType == "vanaerde":
-        #         critical_density = maxDensity / 2
-        #         q_max = critical_density * vMax  # max flow
-        #         c1 = (vMax / q_max) - (1 / maxDensity)
-        #         c2 = 1 / (maxDensity * q_max)
-        #
-        #         # Calcolo della velocità usando Van Aerde
-        #         velocity = vMax / (1 + c1 * density + c2 * density ** 2)
-        #
-        #     density = vps / velocity if velocity > 0 else maxDensity
-        #     laneDensity = density / laneCount
-        #     normVelocity = velocity / vMax
-        #     vpsPerLane = vps / laneCount
-        #
-        #     self.macroscopicData.append({
-        #         "edge_id": edge_id,
-        #         "length": length,
-        #         "laneCount": laneCount,
-        #         "flow": flow,
-        #         "vehiclesPerSecond": vps,
-        #         "vpsPerLane": vpsPerLane,
-        #         "laneVps": laneVps,
-        #         "density": density,
-        #         "laneDensity": laneDensity,
-        #         "maxDensity": maxDensity,
-        #         "vMax": vMax,
-        #         "velocity": velocity,
-        #         "normVelocity": normVelocity
-        #     })
+
 
     def changeTimeslot(self, timeSlot: str):
         """
@@ -131,10 +76,10 @@ class TrafficModeler:
             edge_id = row["edge_id"]
             edge = self.sumoNet.getEdge(edge_id)
             length = edge.getLength()
-            vMax = edge.getSpeed()
+            vMax = edge.getSpeed() * 3.6
             laneCount = len(edge.getLanes())
             vehicleLength = 7.5  # 7.5 # this length is including the gap between vehicles
-            maxDensity = laneCount / vehicleLength
+            maxDensity = (laneCount / vehicleLength) * 1000
             # print(f"Edge {edge_id}: k_jam = {maxDensity * 1000} vehicles/km")
             first = int(self.timeSlot[:2])
             last = int(self.timeSlot[6:8])
@@ -146,13 +91,15 @@ class TrafficModeler:
                 flow = str(row[self.timeSlot[:2]+':00-'+self.timeSlot[6:8]+':00'])
 
             vps = int(flow) / (3600 * (last - first))  # flow is set as vehicles per second
-            density = vps / vMax
+            density = int(flow) / vMax
+            # density = int(flow) / ((length/1000) * laneCount)
+            # density = density/1000
             laneDensity = density / laneCount
             laneVps = vps / laneCount
             if self.modelType == "greenshield":
                 velocity = vMax * (1 - density / maxDensity)
             elif self.modelType == "underwood":
-                velocity = vMax * np.exp(density / maxDensity)
+                velocity = vMax * np.exp(-density / (maxDensity/2))
             elif self.modelType == "vanaerde":
                 critical_density = maxDensity / 2
                 q_max = critical_density * vMax  # max flow
@@ -161,8 +108,8 @@ class TrafficModeler:
 
                 # Calcolo della velocità usando Van Aerde
                 velocity = vMax / (1 + c1 * density + c2 * density ** 2)
-
-            density = vps / velocity if velocity > 0 else maxDensity
+            # velocity = velocity / 3.6
+            #density = vps / velocity if velocity > 0 else maxDensity
             laneDensity = density / laneCount
             normVelocity = velocity / vMax
             vpsPerLane = vps / laneCount
@@ -475,14 +422,14 @@ class TrafficModeler:
 
 
 ### THESE ARE SOME PLOTTING FUNCTIONS.
-    def plotModel(self, result: str):
+    def plotModel(self, result: str = None):
         """
         function that plots the values of flux, density and velocity against each other in three graphs.
         The values are compared with the traffic model chosen at the initialization stage
         """
         print("Plotting the data according to theoretical model...")
         if result is None:
-            df = pd.DataFrame(self.trafficData)
+            df = pd.DataFrame(self.macroscopicData)
         else:
             df = pd.read_csv(result, sep=';', decimal=',')
         # unique values of max speed
@@ -491,12 +438,12 @@ class TrafficModeler:
         # Create three figures for the three plot types
         # fig1, ax1 = plt.subplots(len(unique_vmax), 1, figsize=(8, 4 * len(unique_vmax)))
         fig2, ax2 = plt.subplots(len(unique_vmax), 1, figsize=(8, 4 * len(unique_vmax)))
-        # fig3, ax3 = plt.subplots(len(unique_vmax), 1, figsize=(8, 4 * len(unique_vmax)))
+        fig3, ax3 = plt.subplots(len(unique_vmax), 1, figsize=(8, 4 * len(unique_vmax)))
 
         if len(unique_vmax) == 1:  # Garantisci che gli assi siano array anche con un solo vmax
             # ax1 = [ax1]
             ax2 = [ax2]
-            # ax3 = [ax3]
+            ax3 = [ax3]
 
         for i, v_max in enumerate(unique_vmax):
             # Filtra i dati per v_max corrente
@@ -552,29 +499,32 @@ class TrafficModeler:
                 ax2[i].scatter(subset["detected_density"], q_observed, label="Dati osservati", color='red', alpha=0.7)
             else:
                 ax2[i].scatter(subset["density"], q_observed, label="Dati osservati", color='red', alpha=0.7)
+                # ax2[i].scatter(subset["density"], subset['vehiclesPerSecond'], label="Dati osservati", color='red', alpha=0.7)
             ax2[i].set_title(f"Flusso-Densità (v_max = {v_max} km/h)")
             ax2[i].set_xlabel("Densità (veicoli/km)")
+            ax2[i].set_xlim(left=0, right=0.5)
             ax2[i].set_ylabel("Flusso (veicoli/h)")
             ax2[i].legend()
             ax2[i].grid()
 
             # Plot Flusso-Velocità
-            # ax3[i].plot(v_theoretical, q_theoretical, label=f"Curva teorica v_max = {v_max} km/h", color='purple')
-            # if result is not None:
-            #     ax3[i].scatter((subset["detected_speed"] * 3.6), q_observed, label="Dati osservati", color='brown',
-            #                    alpha=0.7)
-            # else:
-            #     ax3[i].scatter((subset["velocity"] * 3.6), q_observed, label="Dati osservati", color='brown', alpha=0.7)
-            # ax3[i].set_title(f"Flusso-Velocità (v_max = {v_max} km/h)")
-            # ax3[i].set_xlabel("Velocità (km/h)")
-            # ax3[i].set_ylabel("Flusso (veicoli/h)")
-            # ax3[i].legend()
-            # ax3[i].grid()
+            ax3[i].plot(v_theoretical, q_theoretical, label=f"Curva teorica v_max = {v_max} km/h", color='purple')
+            if result is not None:
+                ax3[i].scatter((subset["detected_speed"] * 3.6), q_observed, label="Dati osservati", color='brown',
+                               alpha=0.7)
+            else:
+                ax3[i].scatter((subset["velocity"] * 3.6), q_observed, label="Dati osservati", color='brown', alpha=0.7)
+            ax3[i].set_title(f"Flusso-Velocità (v_max = {v_max} km/h)")
+            ax3[i].set_xlabel("Velocità (km/h)")
+            # ax3[i].set_xlim(left=0, right=70)
+            ax3[i].set_ylabel("Flusso (veicoli/h)")
+            ax3[i].legend()
+            ax3[i].grid()
 
         # Migliora il layout delle figure
         # fig1.tight_layout()
         fig2.tight_layout()
-        # fig3.tight_layout()
+        fig3.tight_layout()
 
         # Mostra tutte le figure
         plt.show()
