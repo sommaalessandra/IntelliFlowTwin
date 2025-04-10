@@ -14,202 +14,7 @@ from libraries.constants import *
 import sumolib
 import os
 
-def filterRoadsLegacy(input_file, road_file, output_file ='filtered_output.csv', input_column ='Nome via', filter_column ='nome_via'):
-    """
-    The function filters a traffic input file based on the road names. The input_column and filter_column must be
-    specified to match the values of the road names between the input file and the road_file. The result will be written
-    in the given output file. Unused roadnames inside the filter will be printed.
-    """
-    # Create a set of road names from the road file
-    filter_roadnames = set()
-    with open(road_file, 'r', newline='', encoding='utf-8') as csvfile_filter:
-        reader_filter = csv.DictReader(csvfile_filter, delimiter=';')
-        # Check if filter column exist inside the road_file
-        if filter_column not in reader_filter.fieldnames:
-            print("Error: column 'nome_via' not found inside the road file.")
-            return
-        for row in reader_filter:
-            # Add column value to the filter set
-            filter_roadnames.add(row[filter_column].lower())
 
-    # Filter input file based on road names collected
-    filtered_rows = []
-    # List of road names in the input file
-    input_roadnames = set()
-    with open(input_file, 'r', newline='', encoding='utf-8') as csvfile_input:
-        reader_input = csv.DictReader(csvfile_input, delimiter=';')
-        headers = reader_input.fieldnames  # Ottieni gli header
-        filtered_rows.append(headers)
-        for row in reader_input:
-            road_name = row[input_column].lower()
-            input_roadnames.add(row[input_column].lower())
-            # Add row if the road name is in the filter set
-            if road_name in filter_roadnames:
-                filtered_rows.append([row[col] for col in headers])
-
-    # Write the result in the csv output file
-    with open(output_file, 'w', newline='', encoding='utf-8') as csvfile_output:
-        writer = csv.writer(csvfile_output, delimiter=';')
-        writer.writerows(filtered_rows)
-        print("Filtered output created. ")
-
-    unmatched_roadnames = filter_roadnames - input_roadnames
-    # Print unmatched roadnames
-    print("Unused road names in the filter:")
-    for voce in unmatched_roadnames:
-        print(voce)
-    print("The number of unmatched road names is: " + str(len(unmatched_roadnames)))
-def linkRoadsIDsLegacy(file_input, road_file_ids, output_file ='final.csv', input_roadname_column ='Nome via', direction_column ='direzione', filter_direction_column ='orientamento', roadname_column ='nome_via'):
-    """
-    The function adds the road IDs based on the road file given as a new column in the input file. The entries in the
-    input file must have a direction (expressed using direction_column) in order to be linked with the right lane ID of
-    the road.
-    """
-    df1 = pd.read_csv(file_input, sep=';')
-    # Dropping entries without a direction
-    df1 = df1.dropna(subset=[direction_column])
-    df1["edge_id"] = "unknown"
-    df2 = pd.read_csv(road_file_ids, sep=';')
-    df2['nome_via'] = df2[roadname_column].str.lower()
-    df1 = df1.reset_index()  # make sure indexes pair with number of rows
-    for index, row in df1.iterrows():
-        roadname = row[input_roadname_column].lower()
-        direction = row[direction_column]
-        # check if direction is multiple (e.g. SW for South-West)
-        if len(direction) > 1:
-            direction1 = direction[:1]
-            direction2 = direction[1:]
-            matched_row = df2[df2[roadname_column].str.contains(roadname) & (df2[filter_direction_column].str.contains(direction1) | df2[filter_direction_column].str.contains(direction2))]
-        else:
-            matched_row = df2[df2[roadname_column].str.contains(roadname) & df2[filter_direction_column].str.contains(direction)]
-        df1.at[index, 'edge_id'] = matched_row['edge_id'].values
-    df1.to_csv(PROCESSED_DATA_PATH + output_file, sep=';')
-    print("Created Output file with Road IDs linked")
-
-#This method is used to filter the file before using it inside the DT platform
-def filterDay(input_file, output_file ='day_flow.csv', date ="01/02/2024"):
-    df1 = pd.read_csv(input_file, sep=';')
-    df1 = df1[df1['data'].str.contains(date)]
-    df1.to_csv(PROCESSED_DATA_PATH + output_file, sep=';')
-
-# Function to map the existing traffic loop and generate an additional SUMO file containing the traffic detectors at
-# corresponding positions
-def generateDetectorFileLegacy(realDataFile: str, outputPath: str):
-    df = pd.read_csv(realDataFile, sep=';')
-    trafficLoopRoads = df["edge_id"].unique()
-    print(len(trafficLoopRoads.shape))
-    root = ET.Element('additional')
-    for index, road in enumerate(trafficLoopRoads):
-        # road = road.replace(" ", "")
-        if str(road) != "nan":
-            ET.SubElement(root, 'inductionLoop', id = str(index)+'_0', lane=str(road)+'_0', pos="50", freq="1800", file="e1_real_output.xml")
-        # ET.SubElement(root, 'inductionLoop', id = str(index)+'_1', lane = road+'_1', pos = "5", freq = "1800", file = "e1_real_output.xml")
-    tree = ET.ElementTree(root)
-    ET.indent(tree, '  ')
-    tree.write(outputPath+"detectors.add.xml", "UTF-8")
-def addStartEnd(inputFile, roadnameFile, arcFile, nodeFile, sumoNetFile):
-    df = pd.read_csv(inputFile, sep=';')
-    df_roadnames = pd.read_csv(roadnameFile, sep=';')
-    df_arch = pd.read_csv(arcFile, sep=';')
-    df_nodes = pd.read_csv(nodeFile, sep=';')
-    net = sumolib.net.readNet(sumoNetFile)
-    for index, row in df.iterrows():
-        codvia = row['codice via']
-        codarco = row['codice arco']
-        matched = df_arch.loc[(df_arch['CODVIA'] == codvia) & (df_arch['CODARCO'] == codarco)]
-        if matched.shape[0] > 0:
-            if type(matched['Da'].values[0]) == float:
-                starting_roadname = "None"
-            else:
-                starting_roadname = matched['Da'].values[0].lower()
-            if type(matched['A'].values[0]) == float:
-                ending_roadname = "None"
-            else:
-                ending_roadname = matched['A'].values[0].lower()
-
-            starting_node = matched["COD_NODO1"].values[0]
-            ending_node = matched["COD_NODO2"].values[0]
-
-            starting_road_coord = df_nodes.loc[df_nodes['CODICE'] == starting_node]['Geo Point'].values[0]
-            ending_road_coord = df_nodes.loc[df_nodes['CODICE'] == ending_node]['Geo Point'].values[0]
-            coords = [starting_road_coord, ending_road_coord]
-            for ind, coord in enumerate(coords):
-                lat, lon = starting_road_coord.split(',')
-                lat = float(lat)
-                lon = float(lon)
-                x, y = net.convertLonLat2XY(lon, lat)
-                print(f"SUMO reference coordinates (x,y): {x, y}")
-                candiates_edges = net.getNeighboringEdges(x, y, r=25)
-                # Sorting neighbors by distance
-                edges_and_dist = sorted(candiates_edges, key=lambda x: x[1])
-                if len(edges_and_dist) != 0:
-                    closest_edge = edges_and_dist[0][0]
-                    i = 0
-                    print(closest_edge.getType())
-                    name = (closest_edge.getName()).lower()
-                    if ind == 0:
-                        if type(matched['Da'].values[0]) == float:
-                            matchname = "None"
-                        else:
-                            matchname = matched["Da"].values[0].lower()
-                    else:
-                        if type(matched['A'].values[0]) == float:
-                            matchname = "None"
-                        else:
-                            matchname = matched["A"].values[0].lower()
-                    while name != matchname:
-                        i += 1
-                        if i == edges_and_dist.__len__():
-                            i = 0
-                            closest_edge = edges_and_dist[i][0]
-                            while closest_edge.getType in ["highway.pedestrian", "highway.track", "highway.footway",
-                                                           "highway.path",
-                                                           "highway.cycleway", "highway.steps"]:
-                                i += 1
-                                closest_edge = edges_and_dist[i][0]
-                            break
-
-                        closest_edge = edges_and_dist[i][0]
-                        name = (closest_edge.getName()).lower()
-                else:
-                    continue
-                print(f"Name: {closest_edge.getName()}")
-                print(f"Edge ID: {closest_edge.getID()}")
-                if ind == 0:
-                    df.at[index, 'starting_edge_id'] = closest_edge.getID()
-                else:
-                    df.at[index, 'ending_edge_id'] = closest_edge.getID()
-
-        else:
-            print("Error, road not found!")
-    df.to_csv(PROCESSED_DATA_PATH + "traffic_with_flow.csv", sep=';')
-def generateFlowXML(inputFile, time_slot="07:00-08:00"):
-    df = pd.read_csv(inputFile, sep=';')
-    root = ET.Element('routes')
-    for index, row in df.iterrows():
-        start = row["starting_edge_id"]
-        end = row["ending_edge_id"]
-        first = int(time_slot[0:2])
-        last = int(time_slot[6:8])
-        # check if time window is longer than one hour
-        if last - first > 1:
-            time_slots = []
-            for hour in range(first, last):
-                time_slot1 = f"{hour:02d}:00-{(hour + 1) % 24:02d}:00"
-                time_slots.append(time_slot1)
-            total_count = 0
-            for time_slot1 in time_slots:
-                total_count += row[time_slot1]
-            count = str(total_count)
-        else:
-            count = str(row[time_slot])
-        ET.SubElement(root, "flow", id=str(index), frm=str(start), to=str(end), begin="0", end="3600", number=count)
-    tree = ET.ElementTree(root)
-    ET.indent(tree, '  ')
-    tree.write(PROCESSED_DATA_PATH + "/flow.xml", "UTF-8")
-
-########################################################
-##### CORRECTED FROM HERE ....
 
 def filterWithAccuracy(file_input: str, file_accuracy: str,date_column: str,sensor_id_column: str, output_file: str,  accepted_percentage: int):
     """
@@ -445,7 +250,6 @@ def generateInductionLoopFile(inputFile: str, inductionLoopPath: str):
 def fillMissingEdgeId(roadnameFile: str):
     """
     Fill in missing edge IDs in the road names file.
-
     This function finds all entries in the specified road names file that lack an `edge_id`. For each entry with a missing
     `edge_id`, it attempts to find another entry in the same file with the same road name (`Nome via`) that has a valid
     `edge_id`. If such an entry is found, the missing `edge_id` is filled in with this value. The function also reports
@@ -576,11 +380,10 @@ def filterForShadowManager(inputFile: str):
 def generateRealFlow(inputFile: str):
     """
     Generate a real traffic flow file with selected columns.
-
     This function reads a CSV file containing traffic flow data, selects specific columns, and saves the filtered data
     to a new CSV file named `real_traffic_flow.csv` in the `REAL_TRAFFIC_FLOW_DATA_MVENV_PATH` directory.
-
-    :param inputFile: The path to the input CSV file containing traffic data.
+    Args:
+        :param inputFile: The path to the input CSV file containing traffic data.
 
     Returns:
         None: The function saves the filtered data to `real_traffic_flow.csv` in the specified directory.
@@ -609,17 +412,16 @@ def generateRealFlow(inputFile: str):
 def generateEdgeDataFile(input_file: str, date: str = "01/02/2024", time_slot: str = "00:00-01:00", duration: str = '3600'):
     """
     Generate an XML `edgedata` file for the route sampler in Eclipse SUMO.
-
     This function creates an XML file that includes edge traffic data for the specified date and time slot, based on the
     vehicle count data in `input_file`. The output XML file is saved to `EDGE_DATA_FILE_PATH`.
-
-    :param input_file: Path to the CSV file containing traffic data. The file should contain:
-                       - 'edge_id': ID of the road edge.
-                       - 'data': Date of traffic measurement.
-                       - Hourly time slot columns with vehicle counts (e.g., '00:00-01:00', '01:00-02:00').
-    :param date: Date for which traffic data is extracted, formatted as 'dd/mm/yyyy'.
-    :param time_slot: Time slot for traffic data extraction (e.g., '00:00-01:00').
-    :param duration: Duration in seconds for the interval in the XML file. Default is '3600' (one hour).
+    Args:
+        :param input_file: Path to the CSV file containing traffic data. The file should contain:
+                           - 'edge_id': ID of the road edge.
+                           - 'data': Date of traffic measurement.
+                           - Hourly time slot columns with vehicle counts (e.g., '00:00-01:00', '01:00-02:00').
+        :param date: Date for which traffic data is extracted, formatted as 'dd/mm/yyyy'.
+        :param time_slot: Time slot for traffic data extraction (e.g., '00:00-01:00').
+        :param duration: Duration in seconds for the interval in the XML file. Default is '3600' (one hour).
     """
     # Create the root element for the XML structure
     root = ET.Element('data')
@@ -656,12 +458,11 @@ def generateEdgeDataFile(input_file: str, date: str = "01/02/2024", time_slot: s
 def dailyFilter(inputFilePath: str, date: str):
     """
     Filter data by a specific date and save to a predefined daily traffic flow file.
-
     This function reads an input CSV file, filters rows based on the specified date, and saves the filtered data to `DAILY_TRAFFIC_FLOW_FILE_PATH'. The output file can be used
     within the Digital Twin environment for testing.
-
-    :param inputFilePath: Path to the input CSV file containing raw traffic data. Expected columns include:
-    :param date: Date to filter the data by, formatted as 'dd/mm/yyyy'.
+    Args:
+        :param inputFilePath: Path to the input CSV file containing raw traffic data. Expected columns include:
+        :param date: Date to filter the data by, formatted as 'dd/mm/yyyy'.
     """
     # Load the input CSV file
     df = pd.read_csv(inputFilePath, sep=';')
@@ -679,9 +480,9 @@ def dailyFilter(inputFilePath: str, date: str):
 def reorderDataset(inputFilePath: str, outputFilePath: str):
     """
     Reorder the dataset in chronological order based on the 'data' column.
-
-    :param inputFilePath: Path to the input CSV file containing the dataset.
-    :param outputFilePath: Path to the output file where the reordered dataset will be saved.
+    Args:
+        :param inputFilePath: Path to the input CSV file containing the dataset.
+        :param outputFilePath: Path to the output file where the reordered dataset will be saved.
     """
     # Load the dataset
     df = pd.read_csv(inputFilePath, sep=';')
@@ -699,11 +500,11 @@ def reorderDataset(inputFilePath: str, outputFilePath: str):
 def filteringDataset(inputFilePath: str, start_date: str, end_date: str, outputFilePath: str):
     """
     Filter the dataset for a specific date range and save it to a specified file.
-
-    :param inputFilePath: Path to the input CSV file containing the dataset.
-    :param start_date: Start date for filtering, formatted as 'mm/dd/yyyy'.
-    :param end_date: End date for filtering, formatted as 'mm/dd/yyyy'.
-    :param outputFilePath: Path where the filtered dataset will be saved.
+    Args:
+        :param inputFilePath: Path to the input CSV file containing the dataset.
+        :param start_date: Start date for filtering, formatted as 'mm/dd/yyyy'.
+        :param end_date: End date for filtering, formatted as 'mm/dd/yyyy'.
+        :param outputFilePath: Path where the filtered dataset will be saved.
 
     :side effect: Saves the filtered dataset to `outputFilePath`.
     """
@@ -859,204 +660,6 @@ def fillEdgeDataInfo(inputFilePath: str, sumoNetFile: str):
     output_file = "output_updated.xml"
     tree.write(output_file, encoding="UTF-8", xml_declaration=True)
 
-# FUNCTION TO BE DELETED
-def generateGModelData(inputFilePath: str, sumoNetFile: str, outputFilePath: str, date: str, timeSlot: str,
-                       exponential = False):
-    """
-    Generates the data that shape the traffic flow according to Greenshield's model.The data are computed using traffic
-    loops measurement as flow and retrieved road data (lanes, length, max speed) from the SUMO network
-    Args:
-        inputFilePath: path to input file from which both the edge_id and the flow value are retrieved
-        sumoNetFile:  path to the SUMO network file (e.g., `net.xml`) that includes the road network.
-        outputFilePath: path of the file to save the flow data related to the greenshield model
-        date: date of the selected traffic flow
-        timeSlot: time slot of the selected traffic flow
-        exponential: boolean to select between Greenshield (linear) or Underwood (exponential) model
-    Returns:
-        None: Saves the generated data to `outputFilePath`.
-    """
-    if not exponential:
-        print("Start processing data for Greenshield model...")
-    else:
-        print("Start processing data for Underwood model...")
-    # Load the SUMO network using sumolib
-    net = sumolib.net.readNet(sumoNetFile)
-    # Load input data and filter unique road names and geopoints
-    input_df = pd.read_csv(inputFilePath, sep=';')
-    input_df = input_df[input_df['data'].str.contains(date)]
-
-    data = []
-    for index, row in input_df.iterrows():
-        edge_id = row["edge_id"]
-        edge = net.getEdge(edge_id)
-        length = edge.getLength()
-        vMax = edge.getSpeed()
-        lane_count = len(edge.getLanes())
-        vehicleLength = 7.5 #7.5 # this length is including the gap between vehicles
-        maxDensity = lane_count / vehicleLength
-        print(f"Edge {edge_id}: k_jam = {maxDensity * 1000} vehicles/km")
-        first = int(timeSlot[:2])
-        last = int(timeSlot[6:8])
-
-        # Calculate the vehicle count for the specified time slot
-        if last - first > 1:  # If the time slot spans multiple hours
-            total_count = sum(row[f"{hour:02d}:00-{(hour + 1) % 24:02d}:00"] for hour in range(first, last))
-            flow = str(total_count)
-        else:
-            flow = str(row[timeSlot])
-
-        vps = int(flow) / (3600*(last-first)) # flow is set as vehicles per second
-        density = vps / vMax
-        if not exponential:
-            velocity = vMax * (1 - density / maxDensity)
-        else:
-            velocity = vMax * np.exp(density / maxDensity)
-        density = vps / velocity if velocity > 0 else maxDensity
-        density = density / lane_count
-        norm_velocity = velocity / vMax
-        vps_per_lane = vps /lane_count
-
-        data.append({
-            "edge_id": edge_id,
-            "length": length,
-            "lane_count": lane_count,
-            "flow": flow,
-            "vehicles_per_second": vps,
-            "vps_per_lane": vps_per_lane,
-            "density": density,
-            "max_density": maxDensity,
-            "v_max": vMax,
-            "velocity": velocity,
-            "norm_velocity": norm_velocity
-        })
-    df = pd.DataFrame(data)
-    df.to_csv(outputFilePath, sep=';', index=False, float_format='%.4f', decimal=',')
-    print("New Model data saved into: " + outputFilePath + " file")
-    print("Plotting the data according to theoretical model...")
-
-    # df = df[df['velocity'] < 10]
-    # df = df[df['velocity'] > 6]
-    # df = df[df['lane_count'] == 1]
-    # # df = df[df['maxDensity']]
-
-    # unique values of max speed
-    unique_vmax = df["v_max"].unique()
-
-    # Crea tre figure per i tre tipi di plot
-    fig1, ax1 = plt.subplots(len(unique_vmax), 1, figsize=(8, 4 * len(unique_vmax)))
-    fig2, ax2 = plt.subplots(len(unique_vmax), 1, figsize=(8, 4 * len(unique_vmax)))
-    fig3, ax3 = plt.subplots(len(unique_vmax), 1, figsize=(8, 4 * len(unique_vmax)))
-
-    if len(unique_vmax) == 1:  # Garantisci che gli assi siano array anche con un solo vmax
-        ax1 = [ax1]
-        ax2 = [ax2]
-        ax3 = [ax3]
-
-    for i, v_max in enumerate(unique_vmax):
-        # Filtra i dati per v_max corrente
-        subset = df[df["v_max"] == v_max]
-        v_max = (v_max * 3.6).round()
-        # Calcola k_jam per ogni segmento basandosi sul numero di corsie
-        # Media i valori di lane_count se ci sono più segmenti con lo stesso v_max
-        avg_lane_count = subset["lane_count"].mean()
-        # k_jam = 200 / avg_lane_count  # Stima densità al blocco
-        # k_jam = 133 / 1000  # Densità massima (esempio: 133 veicoli/km)
-        k_jam = avg_lane_count / 7.5 # Densità massima (esempio: 133 veicoli/km)
-        # Dati di densità teorici (da 0 a k_jam)
-        k = np.linspace(0, k_jam, 500)
-
-        if not exponential:
-            v_theoretical = v_max * (1 - k / k_jam)
-        else:
-            v_theoretical = v_max * np.exp(k / k_jam)
-        q_theoretical = v_theoretical * k  # Flusso teorico
-
-        # Flusso osservato
-        q_observed = subset["velocity"] * 3.6 * subset["density"]
-
-        # Plot Velocità-Densità
-        ax1[i].plot(k, v_theoretical, label=f"Curva teorica v_max = {v_max} km/h", color='blue')
-        ax1[i].scatter(subset["density"], (subset["velocity"]*3.6), label="Dati osservati", color='orange', alpha=0.7)
-        ax1[i].set_title(f"Velocità-Densità (v_max = {v_max} km/h)")
-        ax1[i].set_xlabel("Densità (veicoli/km)")
-        ax1[i].set_ylabel("Velocità (km/h)")
-        ax1[i].legend()
-        ax1[i].grid()
-
-        # Plot Flusso-Densità
-        ax2[i].plot(k, q_theoretical, label=f"Curva teorica v_max = {v_max} km/h", color='green')
-        ax2[i].scatter(subset["density"], q_observed, label="Dati osservati", color='red', alpha=0.7)
-        ax2[i].set_title(f"Flusso-Densità (v_max = {v_max} km/h)")
-        ax2[i].set_xlabel("Densità (veicoli/km)")
-        ax2[i].set_ylabel("Flusso (veicoli/h)")
-        ax2[i].legend()
-        ax2[i].grid()
-
-        # Plot Flusso-Velocità
-        ax3[i].plot(v_theoretical, q_theoretical, label=f"Curva teorica v_max = {v_max} km/h", color='purple')
-        ax3[i].scatter((subset["velocity"] * 3.6), q_observed, label="Dati osservati", color='brown', alpha=0.7)
-        ax3[i].set_title(f"Flusso-Velocità (v_max = {v_max} km/h)")
-        ax3[i].set_xlabel("Velocità (km/h)")
-        ax3[i].set_ylabel("Flusso (veicoli/h)")
-        ax3[i].legend()
-        ax3[i].grid()
-
-    # Migliora il layout delle figure
-    fig1.tight_layout()
-    fig2.tight_layout()
-    fig3.tight_layout()
-
-    # Mostra tutte le figure
-    plt.show()
-
-    # # Parametri del modello
-    # v_max = 8.3333  # Velocità massima (esempio: 30 m/s)
-    # k_jam = 133 / 1000 # Densità massima (esempio: 133 veicoli/km)
-    #
-    # # Genera dati teorici
-    # k_values = np.linspace(0, k_jam, 500)  # Range di densità
-    # if not exponential:
-    #     v_theoretical = v_max * (1 - k_values / k_jam)  # Velocità teorica
-    #     v_theoretical_norm =  (1 - k_values / k_jam)  # Velocità teorica
-    # else:
-    #     v_theoretical = v_max * np.exp(k_values / k_jam)
-    #     v_theoretical_norm =  np.exp(k_values / k_jam)  # Velocità teorica
-    # q_theoretical = k_values * v_theoretical # Flusso teorico
-    # q_theoretical_norm = k_values * v_theoretical_norm
-    #
-    # # Grafico velocità vs densità
-    # plt.figure(figsize=(10, 6))
-    # plt.plot(k_values, v_theoretical, label='Modello di Greenshield', color='blue')
-    # plt.scatter(df['density'], df['velocity'], label='Dati osservati', color='red')
-    # plt.xlabel('Densità (veicoli/km)')
-    # plt.ylabel('Velocità (m/s)')
-    # #plt.ylabel('Velocità normalizzata (v/vMax)')
-    # plt.title('Confronto Velocità vs Densità')
-    # plt.legend()
-    # plt.grid()
-    # plt.show()
-    #
-    # # Grafico flusso vs densità
-    # plt.figure(figsize=(10, 6))
-    # plt.plot(k_values, q_theoretical, label='Modello di Greenshield', color='green')
-    # plt.scatter(df['density'], (df['density'] * df['velocity']), label='Dati osservati', color='orange')
-    # plt.xlabel('Densità (veicoli/km)')
-    # plt.ylabel('Flusso (veicoli/s)')
-    # plt.title('Confronto Flusso vs Densità')
-    # plt.legend()
-    # plt.grid()
-    # plt.show()
-    #
-    #
-    # plt.figure(figsize=(10, 6))
-    # plt.plot(v_theoretical, q_theoretical, label='Modello di Greenshield', color='green')
-    # plt.scatter(df['velocity'], (df['density'] * df['velocity']), label='Dati osservati', color='orange')
-    # plt.xlabel('Densità (veicoli/km)')
-    # plt.ylabel('Flusso (veicoli/s)/lane')
-    # plt.title('Confronto Flusso vs Velocità')
-    # plt.legend()
-    # plt.grid()
-    # plt.show()
 
 def generateFlow(inputFilePath: str, modelFilePath: str,outputFilePath: str, date: str, timeSlot: str):
     """
@@ -1111,3 +714,4 @@ def generateEdgeFromFlow(inputFlowPath: str, detectorFilePath: str, outputEdgePa
     output = outputEdgePath
     subprocess.run([sys.executable, script, "--detector-file", detector,
                     "--detector-flow-file", flow, "--output-file", output, "--flow-columns", "qPKW", "-i", '61'])
+

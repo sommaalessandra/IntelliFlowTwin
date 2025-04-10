@@ -39,6 +39,15 @@ def readingFiles(folder: str):
     return data, files
 
 def generate_random_key(length):
+    """
+    Generate a random alphanumeric key with a given length
+    Args:
+        length: the length of the key that will be generated
+
+    Returns:
+        the alphanumeric random key string generated
+
+    """
     alphabet = string.ascii_letters + string.digits
     return ''.join(secrets.choice(alphabet) for i in range(length))
 

@@ -141,7 +141,7 @@ class DigitalTwinManager:
             self.sumoSimulator.changeRouteFilePath(route_folder_path)
             self.sumoSimulator.start(activeGui=False, logFilePath=self.sumoSimulator.logFile)
 
-        confPath = projectPath + "/" + confPath
+        # confPath = projectPath + "/" + confPath
         paramvalues = list(parameters.values())
         # for each edge_id linked to a traffic loop, the simulation is evaluated according to the previous
         # macroscopic values. Simulation output of flow, speed and density are compared to the macroscopic ones
@@ -158,6 +158,7 @@ class DigitalTwinManager:
                                                    + "_ap" + str(paramvalues[1]) + ".csv",
                                     outputFilePath=confPath + "/error_output/" + str(edge_id[0]) + "_error_summary_t"+ str(tau)
                                                    + "_ap" + str(paramvalues[0]) + "_ap" + str(paramvalues[1]) + ".csv")
+        basemodel.plotTemporalResultsAverage(folderPath=confPath + "/detected_output", showImage=True)
         return confPath
 
     def generateGraphs(self, scenarioFolder: str):

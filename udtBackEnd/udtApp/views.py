@@ -273,7 +273,7 @@ def serveResults(request, folder_name):
             if file.endswith(".png"):
                 image_file = file
                 break
-        csv_file = os.path.join(folder_path, "error_summary.csv")
+        csv_file = os.path.join(folder_path, "mean_errors.csv")
         table_data = None
         headers = []
         if os.path.exists(csv_file):  # Se il file esiste, lo carica

@@ -12,6 +12,7 @@ import xml.etree.ElementTree as ET
 from scipy.interpolate import UnivariateSpline
 from libraries.classes.SumoSimulator import Simulator
 from libraries.constants import SUMO_PATH, SUMO_NET_PATH, SUMO_DETECTORS_ADD_FILE_PATH, SUMO_OUTPUT_PATH, SUMO_TOOLS_PATH
+from pathlib import Path
 
 class TrafficModeler:
     """
@@ -152,6 +153,8 @@ class TrafficModeler:
             :param edge_id: the edge_id on which to read measurements from simulations
             :param confPath: path in which the results of all hourly simulations are saved
             :param outputFilePath: path to the file in which to save simulation results for a loop
+        Returns:
+            no return, the function store the model data in a specific .csv file
         """
         # Remove a previous output file if present
         if os.path.isfile(outputFilePath):
@@ -235,6 +238,8 @@ class TrafficModeler:
         Args:
             :param detectedFlowPath: path of the file to get flow, speed and density attribute
             :param outputFilePath: path of the file to save error data
+        Returns:
+            no return, the functions stores in a specific .csv file the computed errors
         """
         error_data = []
         detector_df = pd.read_csv(detectedFlowPath, sep=';', decimal=',')
@@ -324,6 +329,9 @@ class TrafficModeler:
             :param tau: value of tau, that is driver's desired (minimum) time headway in seconds. Default value is 1
             :param additionalParam: list of additional parameters to configure the car-following model. There are two
             values and they vary from model to model
+        Returns:
+            it returns two path strings: a configuration path in which all simulation file are stored and a timeslot
+            related path
         """
         first_param = str(list(additionalParam.values())[0])
         second_param = str(list(additionalParam.values())[1])
@@ -657,7 +665,81 @@ class TrafficModeler:
         # plt.tight_layout()
         # plt.show()
 
+    def plotTemporalResultsAverage(self, folderPath: str, showImage=True):
+        def timeslot_to_numeric(timeslot):
+            start_hour, start_min, end_hour, end_min = map(int, timeslot.split('-'))
+            start_seconds = start_hour * 3600 + start_min * 60
+            end_seconds = end_hour * 3600 + end_min * 60
+            return (start_seconds + end_seconds) / 2
 
+        # Lista di DataFrame letti
+        data_frames = []
+        for filename in os.listdir(folderPath):
+            if filename.endswith(".csv"):
+                df = pd.read_csv(os.path.join(folderPath, filename), delimiter=';')
+                df['timeslot_numeric'] = df['timeslot'].apply(timeslot_to_numeric)
+                data_frames.append(df)
+
+        if not data_frames:
+            print("No CSV files found in the directory.")
+            return
+
+        # Concatenazione e media per timeslot
+        combined = pd.concat(data_frames)
+        grouped = combined.groupby('timeslot_numeric').agg({
+            'detected_flow': 'mean',
+            'real_flow': 'mean',
+            'detected_speed': 'mean',
+            'real_speed': 'mean',
+            'detected_density': 'mean',
+            'real_density': 'mean'
+        }).reset_index()
+
+        # Interpolazione
+        spl1 = UnivariateSpline(grouped['timeslot_numeric'], grouped['detected_flow'], s=0)
+        spl2 = UnivariateSpline(grouped['timeslot_numeric'], grouped['detected_speed'], s=0)
+        spl3 = UnivariateSpline(grouped['timeslot_numeric'], grouped['detected_density'], s=0)
+
+        x_smooth = np.linspace(grouped['timeslot_numeric'].min(), grouped['timeslot_numeric'].max(), 500)
+        y_smooth1 = spl1(x_smooth)
+        y_smooth2 = spl2(x_smooth)
+        y_smooth3 = spl3(x_smooth)
+
+        # Plot
+        fig, axes = plt.subplots(1, 3, figsize=(21, 6))
+        fig.legend(loc="upper left")
+        plt.title(f"Modello {self.carFollowingModelType.capitalize()}: Speed and Flow over Time")
+
+        axes[0].scatter(grouped['timeslot_numeric'], grouped['detected_flow'], label="Detected Flow", color="blue",
+                        alpha=0.7)
+        axes[0].plot(x_smooth, y_smooth1, color='blue', linestyle='-', label='Detected Curve')
+        axes[0].scatter(grouped['timeslot_numeric'], grouped['real_flow'], label="Real Flow", color="red", alpha=0.7)
+        axes[0].set_xlabel("Time")
+        axes[0].set_ylabel("Flow (vehicles/h)")
+        axes[0].legend(loc="upper left")
+        axes[0].grid(True, linestyle='--', alpha=0.6)
+
+        axes[1].scatter(grouped['timeslot_numeric'], grouped['detected_speed'], label="Detected Speed", color="blue",
+                        alpha=0.7)
+        axes[1].scatter(grouped['timeslot_numeric'], grouped['real_speed'], label="Real Speed", color="red", alpha=0.7)
+        axes[1].plot(x_smooth, y_smooth2, color='blue', linestyle='-', label='Detected Curve')
+        axes[1].set_xlabel("Time")
+        axes[1].set_ylabel("Speed (m/s)")
+
+        axes[2].scatter(grouped['timeslot_numeric'], grouped['detected_density'], label="Detected Density",
+                        color="blue", alpha=0.7)
+        axes[2].scatter(grouped['timeslot_numeric'], grouped['real_density'], label="Real Density", color="red",
+                        alpha=0.7)
+        axes[2].plot(x_smooth, y_smooth3, color='blue', linestyle='-', label='Detected Curve')
+        axes[2].set_xlabel("Time")
+        axes[2].set_ylabel("Density (vehicle/m)")
+
+        plt.tight_layout()
+        path = Path(folderPath)
+        saving_folder = path.parent.absolute()
+        plt.savefig(os.path.join(saving_folder, 'plotResults.png'))
+        if showImage:
+            plt.show()
     def compareResults(self, resultPath: str, y_axis = "flow"):
         def timeslot_to_numeric(timeslot):
             start_hour, start_min, end_hour, end_min = map(int, timeslot.split('-'))

@@ -247,8 +247,8 @@ class Simulator:
         it converts it to an absolute path based on the current working directory.
         After ensuring that the path exists, it updates the simulator's route path and the
         environment variable 'ROUTEFILENAME' to reflect the new path.
-
-        :param routePath: The absolute route file path.
+        Args:
+            :param routePath: The absolute route file path.
         :raises FileNotFoundError: If the given route path does not exist
 
         """
@@ -262,12 +262,12 @@ class Simulator:
 
     def changeDetectorPath(self, detectorPath: str):
         """
-        Changes the route path for the simulator.
+        Changes the detector addional file path for the simulator.
 
         This function checks if the provided route path is absolute. If it is not an absolute path,
         it converts it to an absolute path based on the current working directory.
-        After ensuring that the path exists, it updates the simulator's route path and the
-        environment variable 'ROUTEFILENAME' to reflect the new path.
+        After ensuring that the path exists, it updates the simulator's detector path and the
+        environment variable 'DETECTORPATH' to reflect the new path.
 
         :param routePath: The absolute route file path.
         :raises FileNotFoundError: If the given route path does not exist

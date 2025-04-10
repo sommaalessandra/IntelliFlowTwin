@@ -5,14 +5,6 @@ from libraries.constants import TRAFFIC_FLOW_OPENDATA_FILE_PATH, ACCURACY_TRAFFI
 
 def run():
 
-    # generateEdgeFromFlow(inputFlowPath=FLOW_DATA_FILE_PATH, detectorFilePath=SUMO_DETECTORS_ADD_FILE_PATH, outputEdgePath=EDGE_DATA_FILE_PATH)
-    # # generateGModelData(inputFilePath=PROCESSED_TRAFFIC_FLOW_EDGE_FILE_PATH, sumoNetFile=SUMO_NET_PATH,
-    # #                    outputFilePath=MODEL_DATA_FILE_PATH, date='2024-02-01',
-    # #                    timeSlot='07:00-23:00', exponential= False)
-    # generateFlow(inputFilePath=PROCESSED_TRAFFIC_FLOW_EDGE_FILE_PATH, modelFilePath=MODEL_DATA_FILE_PATH,
-    #              outputFilePath=FLOW_DATA_FILE_PATH, date='2024-02-01',
-    #              timeSlot='10:00-11:00')
-
     #1. Fill missing direction in the Open Data traffic flow dataset according to convention
     fillMissingDirections(TRAFFIC_FLOW_OPENDATA_FILE_PATH)
 
@@ -51,10 +43,3 @@ def run():
 
     dailyFilter(PROCESSED_TRAFFIC_FLOW_EDGE_FILE_PATH, date='01/02/2024')
 
-    # generateGModelData(inputFilePath=PROCESSED_TRAFFIC_FLOW_EDGE_FILE_PATH, sumoNetFile=SUMO_NET_PATH,
-    #                    outputFilePath=MODEL_DATA_FILE_PATH, date='2024-02-01',
-    #                    timeSlot='07:00-08:00')
-    #### GENERATE flow.csv FILE TO BE FED INTO edgeDataFromFlow.py script to get edgedata.xml
-    # generateFlow(inputFilePath=PROCESSED_TRAFFIC_FLOW_EDGE_FILE_PATH, modelFilePath=MODEL_DATA_FILE_PATH,
-    #              outputFilePath=FLOW_DATA_FILE_PATH, date='2024-02-01',
-    #              timeSlot='00:00-01:00')

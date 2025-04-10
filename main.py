@@ -89,19 +89,19 @@ if __name__ == "__main__":
 
     # 5. Configuration of Macroscopic traffic model and car-following model with 24-hour simulation.
     # The output of simulation will be compared to the macroscopic data previously constructed.
-    macroModelType = "vanaerde"
+    macroModelType = "greenshield"
     carFollowingModel = "Krauss"
     edge_id = "23288872#4"
     ### ADDITIONAL KRAUSS PARAMS additionalParam={"sigma": "0", "sigmaStep": "1"}
     ### ADDITIONAL IDM PARAMS additionalParam={"delta": "6","stepping": "0.1"})
     ### ADDITIONAL W99 PARAMS additionalParam={"cc1": "1.5", "cc2": "10.0"})
     # This loop is made for an automated testing of Krauss car-following model with all its combinations
-    for i in range(2, 6):
+    for i in range(1):
         time.sleep(1)
         if i == 0:
             twinManager.configureCalibrateAndRun(dataFilePath=PROCESSED_TRAFFIC_FLOW_EDGE_FILE_PATH, carFollowingModel=carFollowingModel,
                                                macroModelType=macroModelType, tau="1", parameters={"sigma": "0.5", "sigmaStep": "2"},
-                                               date=simulationDate, timeslot=[0,24], edge_id=edge_id)
+                                               date=simulationDate, timeslot=[23,24], edge_id=edge_id)
         elif i == 1:
             twinManager.configureCalibrateAndRun(dataFilePath=PROCESSED_TRAFFIC_FLOW_EDGE_FILE_PATH,
                                                  carFollowingModel=carFollowingModel,
